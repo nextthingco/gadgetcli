@@ -1,0 +1,32 @@
+spec: 1.0
+name: gadget
+uuid: 2ru8ua9asd
+type: docker
+onboot:
+  - name: gadget-networkd
+    image: "gadget/networkd"
+    uuid: 112icx9s
+    from: "containers/test"
+    binds:
+     - /config.d/var:/var
+     - /config.d/tmp:/etc
+    capabilities:
+     - CAP_NET_ADMIN
+     - CAP_NET_BIND_SERVICE
+     - CAP_NET_RAW
+    net: host
+    command: ["/bin/networkd"]
+  - name: nginx
+    from: "containers/nginx"
+    uuid: 112icx9s
+    image: "armhf/nginx"
+    readonly: true
+services:
+  - name: poweroff
+    uuid: 112icx9s
+    image: "gadget/poweroff:latest"
+    pid: host
+    command: ["/bin/sh", "/poweroff.sh", "3"]
+    capabilities:
+     - CAP_SYS_BOOT
+    readonly: true
