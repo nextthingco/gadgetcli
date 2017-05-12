@@ -64,7 +64,7 @@ func main() {
 	// TODO: this should probably get moved into the NewConfig function
 	// TODO: look for gadget.yml in workingDirectory
 	// TODO: look for gadget.yml in ancestors of workingDirectory
-	config, err := ioutil.ReadFile("gadget.yml")
+	config, err := ioutil.ReadFile(fmt.Sprintf("%s/gadget.yml", *workingDirectory))
 	if err != nil {
 		fmt.Printf("Cannot open config file: %v\n", err)
 	}
@@ -76,7 +76,7 @@ func main() {
 	// parse arguments
 	switch args[0] {
 	case "build":
-		build(args[1:], g)
+		build(args[1:], g, workingDirectory)
 	//	case "ssh":
 	//		shell(args[1:])
 	case "version":

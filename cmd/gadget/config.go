@@ -12,6 +12,7 @@ type Gadget struct {
 	Onboot []GadgetContainer
 	Services []GadgetContainer
 }
+
 type GadgetContainer struct {
 	Name				string
 	UUID				string

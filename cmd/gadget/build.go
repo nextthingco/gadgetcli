@@ -9,7 +9,7 @@ import (
 )
 
 // Process the build arguments and execute build
-func build(args []string, g *Gadget) {
+func build(args []string, g *Gadget, workingDirectory *string) {
 	// find docker binary in path
 	binary, lookErr := exec.LookPath("docker")
 	if lookErr != nil {
@@ -24,7 +24,7 @@ func build(args []string, g *Gadget) {
 			"build",
 			"--tag",
 			fmt.Sprintf("%s_%s-img", container.Name, container.UUID), //"gadget-networkd_112icx9s-img",
-			container.From) //
+			fmt.Sprintf("%s/%s", *workingDirectory, container.From)) //
 		cmd.Env = os.Environ()
 		
 		stdOutReader, execErr := cmd.StdoutPipe()
