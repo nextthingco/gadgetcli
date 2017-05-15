@@ -75,7 +75,7 @@ func walkUp ( bottom_dir string ) (string, error) {
 	
 	var rc error = nil
 	
-	if _, err := os.Stat(fmt.Sprintf("%s/main.go", bottom_dir)); err != nil {
+	if _, err := os.Stat(fmt.Sprintf("%s/gadget.yaml", bottom_dir)); err != nil {
 		
 		// haven't found it
 		if isRoot(bottom_dir) || isDriveLetter(bottom_dir) {

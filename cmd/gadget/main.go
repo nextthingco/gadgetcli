@@ -59,21 +59,31 @@ func main() {
 		flag.Usage()
 		os.Exit(1)
 	}
-
-	fmt.Printf("Running in directory: %s\n", g.WorkingDirectory)
-
-	// read gadget.yml
+	
+	// find and read gadget.yml
 	// TODO: this should probably get moved into the NewConfig function
-	// TODO: look for gadget.yml in workingDirectory
-	// TODO: look for gadget.yml in ancestors of workingDirectory
-	config, err := ioutil.ReadFile(fmt.Sprintf("%s/gadget.yml", g.WorkingDirectory))
-	if err != nil {
-		fmt.Printf("Cannot open config file: %v\n", err)
+	var config []byte
+	var parseerr error = nil
+	var cwderr error = nil
+	
+	g.WorkingDirectory, cwderr = walkUp(g.WorkingDirectory)
+	if cwderr == nil {
+		// found the config
+		fmt.Printf("Running in directory: %s\n", g.WorkingDirectory)
+		
+		config, parseerr = ioutil.ReadFile(fmt.Sprintf("%s/gadget.yml", g.WorkingDirectory))
+		if parseerr != nil {
+			// couldn't read it
+			fmt.Printf("Cannot open config file: %v\n", parseerr)
+		}
+	} else {
+		fmt.Println(cwderr)
+		os.Exit(1)
 	}
 
 	// create new config class from gadget.yml output
 	// TODO: add error checking here.
-	g.Config, err = NewConfig(config)
+	g.Config, parseerr = NewConfig(config)
 
 	// parse arguments
 	switch args[0] {
