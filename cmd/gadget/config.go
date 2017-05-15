@@ -74,6 +74,8 @@ func isDriveLetter(path string) bool {
 func walkUp ( bottom_dir string ) (string, error) {
 	
 	var rc error = nil
+	// TODO: error checking on path
+	bottom_dir,_ = filepath.Abs(bottom_dir)
 	
 	if _, err := os.Stat(fmt.Sprintf("%s/gadget.yml", bottom_dir)); err != nil {
 		
