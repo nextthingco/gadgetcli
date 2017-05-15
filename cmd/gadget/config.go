@@ -32,9 +32,9 @@ type GadgetContainer struct {
 	Net					string
 	PID					string
 	Readonly			bool
-	Command				[]string
-	Binds				[]string
-	Capabilities		[]string
+	Command				[]string `yaml:",flow"`
+	Binds				[]string `yaml:",flow"`
+	Capabilities		[]string `yaml:",flow"`
 }
 
 func templateConfig( gName, gUu1, gUu2, gUu3 string ) GadgetConfig {
