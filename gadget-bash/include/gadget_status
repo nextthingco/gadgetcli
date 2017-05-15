@@ -1,0 +1,27 @@
+#!/bin/bash
+
+DOCKER=${DOCKER:-docker}
+SSH=${SSH:-ssh}
+REQUIRED=( ${DOCKER} ${SSH} )
+
+source ${INCLUDEDIR}/check_required
+source ${INCLUDEDIR}/common
+source ${INCLUDEDIR}/os_detect
+
+check_directory  ${DIRECTORY}
+check_file       ${DIRECTORY}/gadget.cfg
+
+source ${INCLUDEDIR}/test_ssh
+
+check_directory  ${HOME}/.ssh
+check_file       ${HOME}/.ssh/gadget_rsa
+check_file       ${HOME}/.ssh/gadget_rsa.pub
+
+source ${DIRECTORY}/gadget.cfg
+## docker ps -a with stdout, but not stderr
+${SSH} ${SSH_OPTS} -i ${HOME}/.ssh/gadget_rsa root@${IP} -t "docker ps -a --filter=ancestor=${name}_${uuid}-img --format \"{{.Image}} {{.Command}} {{.Status}}\"" 1>&3
+
+## Error check and report eg. "gadget_build error 0-15"
+RC=${?}; [ ${RC} -ne 0 ] && gadget_error ${BASH_SOURCE##*/} ${RC} ${LINENO}
+
+echo "  - done" 1>&3 2>&4

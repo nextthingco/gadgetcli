@@ -1,0 +1,68 @@
+#!/bin/bash
+
+MKDIR=${MKDIR:-mkdir}
+TOUCH=${TOUCH:-touch}
+REQUIRED=( ${MKDIR} ${TOUCH} )
+
+source ${INCLUDEDIR}/check_required
+
+## COMMON VARIABLES
+SSH_OPTS="-o ConnectTimeout=5 -oStrictHostKeyChecking=no -oUserKnownHostsFile=/dev/null"
+GADGET_VERSION="v1"
+
+function create_directory {
+	if [[ ! -d "${1}" ]]; then
+		mkdir -p ${1}
+		if [ ${?} -ne 0 ]; then
+			echo "  ERROR: failed to create directory ${1}" 1>&3 2>&4
+			exit 1
+		fi
+	fi
+}
+
+function create_file {
+	if [[ ! -f "${1}" ]]; then
+		touch ${1}
+		if [ ${?} -ne 0 ]; then
+			echo "  ERROR: failed to create file ${1}" 1>&3 2>&4
+			exit 1
+		fi
+	fi
+}
+
+function check_directory {
+	if [[ ! -d "${1}" ]]; then
+		echo "  ERROR: could not locate directory ${1}" 1>&3 2>&4
+		exit 1
+	fi
+}
+
+function check_file {
+	if [[ ! -f "${1}" ]]; then
+		echo "  ERROR: could not locate file ${1}" 1>&3 2>&4
+		exit 1
+	fi
+}
+
+function create_new_key {
+	echo "  First use: generating gadget ssh key" 1>&3 2>&4
+	${SSH_KEYGEN} -t rsa -f ${HOME}/.ssh/gadget_rsa -N ""
+	## Error check and report eg. "gadget_build error 0-15"
+	RC=${?}; [ ${RC} -ne 0 ] && gadget_error ${BASH_SOURCE##*/} ${RC} ${LINENO}
+	
+	check_directory  ${HOME}/.ssh
+	check_file       ${HOME}/.ssh/gadget_rsa
+	check_file       ${HOME}/.ssh/gadget_rsa.pub
+	
+	chmod 600 ${HOME}/.ssh/gadget_rsa*
+	
+	echo "  Adding new key to keychain" 1>&3 2>&4
+	${SSH_ADD} ${HOME}/.ssh/gadget_rsa
+	## Error check and report eg. "gadget_build error 0-15"
+	RC=${?}; [ ${RC} -ne 0 ] && gadget_error ${BASH_SOURCE##*/} ${RC} ${LINENO}
+}
+
+function gadget_error {
+	echo "  ERROR: ${1} w/ ${2} @ ${3}" 1>&3 2>&4
+	exit 1
+}

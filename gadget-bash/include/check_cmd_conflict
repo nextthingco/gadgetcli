@@ -1,0 +1,12 @@
+#!/bin/bash
+
+COUNT=0
+
+for CMD in ${COMMANDS[@]}; do
+	COUNT=$((COUNT + CMD))
+	if [[ "$COUNT" -gt "1" ]]; then
+		echo "  - gadget can only perform one command at a time."
+		exit 1
+	fi
+done
+
