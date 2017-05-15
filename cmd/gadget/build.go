@@ -10,10 +10,13 @@ import (
 
 // Process the build arguments and execute build
 func build(args []string, g *GadgetContext) {
+	
+	loadConfig(g)
+	
 	// find docker binary in path
-	binary, lookErr := exec.LookPath("docker")
-	if lookErr != nil {
-		panic(lookErr)
+	binary, err := exec.LookPath("docker")
+	if err != nil {
+		panic(err)
 	}
 
 	// loop through 'onboot' config and build containers

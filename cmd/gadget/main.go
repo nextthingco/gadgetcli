@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"io/ioutil"
 )
 
 var (
@@ -54,37 +53,13 @@ func main() {
 		flag.Usage()
 		os.Exit(1)
 	}
-	
-	// find and read gadget.yml
-	// TODO: this should probably get moved into the NewConfig function
-	// TODO: better error checking/reporting. WHY can't the config file be opened? Does it exist?
-	var config []byte
-	var parseerr error = nil
-	var cwderr error = nil
-	
-	g.WorkingDirectory, cwderr = walkUp(g.WorkingDirectory)
-	if cwderr == nil {
-		// found the config
-		fmt.Printf("Running in directory: %s\n", g.WorkingDirectory)
-		
-		config, parseerr = ioutil.ReadFile(fmt.Sprintf("%s/gadget.yml", g.WorkingDirectory))
-		if parseerr != nil {
-			// couldn't read it
-			fmt.Printf("Cannot open config file: %v\n", parseerr)
-		}
-	} else {
-		fmt.Println(cwderr)
-		os.Exit(1)
-	}
-
-	// create new config class from gadget.yml output
-	// TODO: add error checking here.
-	g.Config, parseerr = NewConfig(config)
 
 	// parse arguments
 	switch args[0] {
 	case "build":
 		build(args[1:], &g)
+	case "init":
+		gadgetInit(args[1:], &g)
 	//	case "ssh":
 	//		shell(args[1:])
 	case "version":

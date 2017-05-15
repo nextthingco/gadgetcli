@@ -7,6 +7,7 @@ import (
     "runtime"
     "path/filepath"
     "errors"
+	"io/ioutil"
 )
 
 type GadgetContext struct {
@@ -36,7 +37,34 @@ type GadgetContainer struct {
 	Capabilities		[]string
 }
 
-func NewConfig(config []byte) (GadgetConfig, error) {
+func templateConfig( gName, gUu1, gUu2, gUu3 string ) GadgetConfig {
+	return GadgetConfig{
+		Spec:	Version,
+		Name:	gName,
+		UUID:	gUu1,
+		Type:	"docker",
+		Onboot: []GadgetContainer {
+			{
+				Name:		"gadget-cpuinfo",
+				Image:		"gadget/cpuinfo",
+				UUID:		gUu2,
+				From:		"armhf/alpine",
+				Command:	[]string { "/bin/sh", "cat", "/proc/cpuinfo" },
+			},
+		},
+		Services: []GadgetContainer {
+			{
+				Name:		"gadget-dmesg",
+				Image:		"gadget/dmesg",
+				UUID:		gUu3,
+				From:		"armhf/alpine",
+				Command:	[]string { "dmesg", "-wH" },
+			},
+		},
+	}
+}
+
+func parseConfig(config []byte) (GadgetConfig, error) {
 	g := GadgetConfig{}
 
 	// Parse yaml
@@ -76,7 +104,8 @@ func walkUp ( bottom_dir string ) (string, error) {
 	
 	var rc error = nil
 	// TODO: error checking on path
-	bottom_dir,_ = filepath.Abs(bottom_dir)
+	//~ bottom_dir,_ = filepath.Abs(bottom_dir)
+	//~ ^ moved to loadConfig -- only runs once, usable later
 	
 	if _, err := os.Stat(fmt.Sprintf("%s/gadget.yml", bottom_dir)); err != nil {
 		
@@ -90,3 +119,40 @@ func walkUp ( bottom_dir string ) (string, error) {
 	
 	return bottom_dir, rc
 }
+
+
+func loadConfig ( g *GadgetContext ) {
+	
+	g.WorkingDirectory, _ = filepath.Abs(g.WorkingDirectory)
+	
+	// find and read gadget.yml
+	// TODO: this should probably get moved into the NewConfig function
+	// TODO: better error checking/reporting. WHY can't the config file be opened?
+	var config []byte
+	var parseerr error = nil
+	var cwderr error = nil
+	
+	g.WorkingDirectory, cwderr = walkUp(g.WorkingDirectory)
+	if cwderr == nil {
+		// found the config
+		fmt.Printf("Running in directory: %s\n", g.WorkingDirectory)
+		
+		config, parseerr = ioutil.ReadFile(fmt.Sprintf("%s/gadget.yml", g.WorkingDirectory))
+		if parseerr != nil {
+			// couldn't read it
+			fmt.Printf("Cannot open config file: %v\n", parseerr)
+		}
+	} else {
+		fmt.Println(cwderr)
+		os.Exit(1)
+	}
+
+	// create new config class from gadget.yml output
+	// TODO: add error checking here.
+	g.Config, parseerr = parseConfig(config)
+	
+	
+}
+
+
+
