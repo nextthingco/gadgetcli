@@ -4,7 +4,11 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-type Gadget struct {
+type GadgetContext struct {
+	Config				GadgetConfig
+	WorkingDirectory	string
+}
+type GadgetConfig struct {
 	Spec				string
 	Name				string
 	UUID				string
@@ -26,14 +30,14 @@ type GadgetContainer struct {
 	Capabilities		[]string
 }
 
-func NewConfig(config []byte) (*Gadget, error) {
-	g := Gadget{}
+func NewConfig(config []byte) (GadgetConfig, error) {
+	g := GadgetConfig{}
 
 	// Parse yaml
 	err := yaml.Unmarshal(config, &g)
 	if err != nil {
-		return &g, err
+		return g, err
 	}
 
-	return &g,nil
+	return g,nil
 }

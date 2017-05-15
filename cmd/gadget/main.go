@@ -21,6 +21,8 @@ func version() {
 }
 
 func main() {
+	g := GadgetContext{}
+
 	flag.Usage = func() {
 		fmt.Printf("USAGE: %s [options] COMMAND\n\n", filepath.Base(os.Args[0]))
 		fmt.Printf("Commands:\n")
@@ -43,7 +45,7 @@ func main() {
 	}
 	flagQuiet := flag.Bool("q", false, "Quiet execution")
 	flagVerbose := flag.Bool("v", false, "Verbose execution")
-	workingDirectory := flag.String("C", ".", "Run in directory")
+	flag.StringVar(&g.WorkingDirectory, "C", ".", "Run in directory")
 
 	flag.Parse()
 	if *flagQuiet && *flagVerbose {
@@ -58,25 +60,25 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Printf("Running in directory: %s\n", *workingDirectory)
+	fmt.Printf("Running in directory: %s\n", g.WorkingDirectory)
 
 	// read gadget.yml
 	// TODO: this should probably get moved into the NewConfig function
 	// TODO: look for gadget.yml in workingDirectory
 	// TODO: look for gadget.yml in ancestors of workingDirectory
-	config, err := ioutil.ReadFile(fmt.Sprintf("%s/gadget.yml", *workingDirectory))
+	config, err := ioutil.ReadFile(fmt.Sprintf("%s/gadget.yml", g.WorkingDirectory))
 	if err != nil {
 		fmt.Printf("Cannot open config file: %v\n", err)
 	}
 
 	// create new config class from gadget.yml output
 	// TODO: add error checking here.
-	g, err := NewConfig(config)
+	g.Config, err = NewConfig(config)
 
 	// parse arguments
 	switch args[0] {
 	case "build":
-		build(args[1:], g, workingDirectory)
+		build(args[1:], &g)
 	//	case "ssh":
 	//		shell(args[1:])
 	case "version":
