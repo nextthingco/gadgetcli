@@ -11,6 +11,7 @@ import (
 
 type GadgetContext struct {
 	Config				GadgetConfig
+	Verbose				bool
 	WorkingDirectory	string
 }
 type GadgetConfig struct {

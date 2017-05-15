@@ -43,15 +43,10 @@ func main() {
 		fmt.Printf("Options:\n")
 		flag.PrintDefaults()
 	}
-	flagQuiet := flag.Bool("q", false, "Quiet execution")
-	flagVerbose := flag.Bool("v", false, "Verbose execution")
+	flag.BoolVar(&g.Verbose, "v", false, "Verbose execution")
 	flag.StringVar(&g.WorkingDirectory, "C", ".", "Run in directory")
 
 	flag.Parse()
-	if *flagQuiet && *flagVerbose {
-		fmt.Printf("Can't set quiet and verbose flag at the same time\n")
-		os.Exit(1)
-	}
 
 	args := flag.Args()
 	if len(args) < 1 {
@@ -62,6 +57,7 @@ func main() {
 	
 	// find and read gadget.yml
 	// TODO: this should probably get moved into the NewConfig function
+	// TODO: better error checking/reporting. WHY can't the config file be opened? Does it exist?
 	var config []byte
 	var parseerr error = nil
 	var cwderr error = nil
