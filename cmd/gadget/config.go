@@ -143,14 +143,12 @@ func loadConfig ( g *GadgetContext ) {
 			fmt.Printf("Cannot open config file: %v\n", parseerr)
 		}
 	} else {
-		fmt.Println(cwderr)
-		os.Exit(1)
+		panic(cwderr)
 	}
 
 	// create new config class from gadget.yml output
 	// TODO: add error checking here.
 	g.Config, parseerr = parseConfig(config)
-	
 	
 }
 

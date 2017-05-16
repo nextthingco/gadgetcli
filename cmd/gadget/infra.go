@@ -13,7 +13,6 @@ import (
 	"crypto/x509"
 	"golang.org/x/crypto/ssh"
 	"encoding/pem"
-	//~ "encoding/base64"
 )
 
 var (
@@ -69,8 +68,7 @@ func genGadgetKeys () (string, string, error) {
 	
 	privateKey, err := rsa.GenerateKey(randSeed, 2014)
 	if err != nil {
-		fmt.Println("ERROR: something went wrong with rsa.GenerateKey: %s", err)
-		os.Exit(1)
+		panic(err)
 	}
 
 	privateKeyDer := x509.MarshalPKCS1PrivateKey(privateKey)
@@ -85,9 +83,9 @@ func genGadgetKeys () (string, string, error) {
 
 	pub, err := ssh.NewPublicKey(&publicKey)
 	if err != nil {
-		fmt.Println("ERROR: something went wrong with ssh.NewPublicKey: %s", err)
-		os.Exit(1)
+		panic(err)
 	}
+	
 	pubString := string(ssh.MarshalAuthorizedKey(pub))
 	
 	fmt.Println(privateKeyPem)
@@ -101,8 +99,7 @@ func requiredSsh () error {
 	
 	usr, err := user.Current()
 	if err != nil {
-		fmt.Println("ERROR: something went wrong with user.Current: %s", err)
-		os.Exit(1)		
+		panic(err)
 	}
 	
 	// get proper homedir locations
@@ -119,35 +116,34 @@ func requiredSsh () error {
 	// check/create ~/.ssh
 	pathExists, err := exists(sshLocation)
 	if err != nil {
-		fmt.Println("ERROR: something went wrong with pathExists `%s`: %s", sshLocation, err)
-		os.Exit(1)
+		panic(err)
 	}
 	
 	if !pathExists {
 		err = os.Mkdir(sshLocation, 0644)
+		if err != nil {
+			panic(err)
+		}
 	}
 	
 	// check/create ~/.ssh/gadget_default_rsa
 	pathExists, err = exists(defaultPrivKeyLocation)
 	if err != nil {
-		fmt.Println("ERROR: something went wrong with pathExists `%s`: %s", defaultPrivKeyLocation, err)
-		os.Exit(1)
+		panic(err)
 	}
 	
 	if !pathExists {
 		outBytes := []byte(defaultKey)
 		err = ioutil.WriteFile(defaultPrivKeyLocation, outBytes, 0600)
 		if err != nil {
-			fmt.Println("ERROR: something went wrong with defaultKey `%s`: %s", defaultPrivKeyLocation, err)
-			os.Exit(1)
+			panic(err)
 		}
 	}
 	
 	// check/create ~/.ssh/gadget_rsa[.pub]
 	gadgetPrivExists, err := exists(gadgetPrivKeyLocation)
 	if err != nil {
-		fmt.Println("ERROR: something went wrong with gadgetPrivExists `%s`: %s", gadgetPrivKeyLocation, err)
-		os.Exit(1)
+		panic(err)
 	}
 	gadgetPubExists, err := exists(gadgetPubKeyLocation)
 	if err != nil {
@@ -161,6 +157,10 @@ func requiredSsh () error {
 	// ^gross
 	if !gadgetPrivExists && !gadgetPubExists {
 		privkey, pubkey, err = genGadgetKeys()
+		if err != nil {
+			fmt.Println("ERROR: something went wrong with genGadgetKeys: %s", err)
+			os.Exit(1)
+		}
 		
 		outBytes := []byte(privkey)
 		err = ioutil.WriteFile(gadgetPrivKeyLocation, outBytes, 0600)
