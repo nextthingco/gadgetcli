@@ -1,15 +1,10 @@
 package main
 
 import (
-	//"flag"
 	"fmt"
 	"os"
-	//"os/exec"
-	//"bufio"
-	//"strings"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/terminal"
-	//"bytes"
 	"syscall"
 )
 

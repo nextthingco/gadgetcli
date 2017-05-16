@@ -151,12 +151,8 @@ func requiredSsh () error {
 		os.Exit(1)
 	}
 	
-	var privkey, pubkey string = "", ""
-	_ = privkey
-	_ = pubkey
-	// ^gross
 	if !gadgetPrivExists && !gadgetPubExists {
-		privkey, pubkey, err = genGadgetKeys()
+		privkey, pubkey, err := genGadgetKeys()
 		if err != nil {
 			fmt.Println("ERROR: something went wrong with genGadgetKeys: %s", err)
 			os.Exit(1)
