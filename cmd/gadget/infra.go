@@ -133,11 +133,14 @@ func requiredSsh() error {
 	}
 
 	if !pathExists {
+		fmt.Println("[SETUP]  Unable to locate default gadget ssh key, generating..")
+		fmt.Printf("[SETUP]    default private key: ~/.ssh/gadget_default_rsa  ")
 		outBytes := []byte(defaultKey)
 		err = ioutil.WriteFile(defaultPrivKeyLocation, outBytes, 0600)
 		if err != nil {
 			panic(err)
 		}
+		fmt.Printf("✔\n")
 	}
 
 	// check/create ~/.ssh/gadget_rsa[.pub]
@@ -152,25 +155,31 @@ func requiredSsh() error {
 	}
 
 	if !gadgetPrivExists && !gadgetPubExists {
+		fmt.Println("[SETUP]  Unable to locate personal gadget ssh keys, generating..")
+		
 		privkey, pubkey, err := genGadgetKeys()
 		if err != nil {
 			fmt.Println("ERROR: something went wrong with genGadgetKeys: %s", err)
 			os.Exit(1)
 		}
-
+		
+		fmt.Printf("[SETUP]    private key: ~/.ssh/gadget_rsa  ")
 		outBytes := []byte(privkey)
 		err = ioutil.WriteFile(gadgetPrivKeyLocation, outBytes, 0600)
 		if err != nil {
 			fmt.Println("ERROR: something went wrong with gadgetPrivKey `%s`: %s", gadgetPrivKeyLocation, err)
 			os.Exit(1)
 		}
-
+		fmt.Printf("✔\n")
+		
+		fmt.Printf("[SETUP]    public key: ~/.ssh/gadget_rsa.pub  ")
 		outBytes = []byte(pubkey)
 		err = ioutil.WriteFile(gadgetPubKeyLocation, outBytes, 0600)
 		if err != nil {
 			fmt.Println("ERROR: something went wrong with gadgetPrivKey `%s`: %s", gadgetPubKeyLocation, err)
 			os.Exit(1)
 		}
+		fmt.Printf("✔\n")
 	}
 
 	return nil
@@ -236,13 +245,15 @@ func gadgetInstallKeys() {
 		client.Close()
 		panic(err)
 	}
-
+	
 	dest := "/root/.ssh/authorized_keys"
+	fmt.Println("[COMMS]  Installing personal gadget ssh key..")
+	fmt.Printf("[COMMS]    gadget:%s ", dest)
 	err = scp.CopyPath(gadgetPubKeyLocation, dest, session)
 	if _, err := os.Stat(gadgetPubKeyLocation); os.IsNotExist(err) {
-		fmt.Printf("no such file or directory: %s", gadgetPubKeyLocation)
+		fmt.Printf("[COMMS]    ERROR: no such file or directory: %s", gadgetPubKeyLocation)
 	} else {
-		fmt.Println("success")
+		fmt.Printf("✔\n")
 	}
 
 	defer client.Close()
@@ -252,20 +263,20 @@ func ensureKeys() error {
 
 	_, err := gadgetLogin(gadgetPrivKeyLocation)
 	if err != nil {
-		fmt.Println("Private key login failed, trying default key")
+		fmt.Println("[COMMS]  Private key login failed, trying default key")
 		_, err = gadgetLogin(defaultPrivKeyLocation)
 		if err != nil {
-			fmt.Println("Default key login also failed, did you leave your keys at home?")
+			fmt.Println("[COMMS]  Default key login also failed, did you leave your keys at home?")
 			return err
 		} else {
-			fmt.Println("Default key success")
+			fmt.Println("[COMMS]  Default key success")
 			gadgetInstallKeys()
 			if err != nil {
 				panic(err)
 			}
 		}
 	} else {
-		fmt.Println("Private key success")
+		fmt.Println("[COMMS]  Private key success")
 	}
 
 	return err
