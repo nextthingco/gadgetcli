@@ -1,19 +1,18 @@
-
 package main
 
 import (
-    "runtime"
-	"os"
-	"os/user"
-	"fmt"
-	"time"
-	"math/rand"
-	"io/ioutil"
 	"crypto/rsa"
 	"crypto/x509"
-	"golang.org/x/crypto/ssh"
 	"encoding/pem"
+	"fmt"
 	"github.com/tmc/scp"
+	"golang.org/x/crypto/ssh"
+	"io/ioutil"
+	"math/rand"
+	"os"
+	"os/user"
+	"runtime"
+	"time"
 )
 
 var (
@@ -46,27 +45,31 @@ EGjLLdEY/nQkBYT5HmV4lilHlrb+fZcM0+FegopkKXAOzEqkLTI2ibiItCT12nLB
 FwRYLLbqbGByhykSn5ybp/DuSQpH4blitu/fEYOg6QX/I/6zayd+
 -----END RSA PRIVATE KEY-----
 `
-	
+
 	ip = "192.168.81.1:22"
-	
-	sshLocation = ""
+
+	sshLocation            = ""
 	defaultPrivKeyLocation = ""
-	gadgetPrivKeyLocation = ""
-	gadgetPubKeyLocation = ""
+	gadgetPrivKeyLocation  = ""
+	gadgetPubKeyLocation   = ""
 )
 
 func exists(path string) (bool, error) {
-    _, err := os.Stat(path)
-    if err == nil { return true, nil }
-    if os.IsNotExist(err) { return false, nil }
-    return true, err
+	_, err := os.Stat(path)
+	if err == nil {
+		return true, nil
+	}
+	if os.IsNotExist(err) {
+		return false, nil
+	}
+	return true, err
 }
 
-func genGadgetKeys () (string, string, error) {
-	
+func genGadgetKeys() (string, string, error) {
+
 	randSeedSource := rand.NewSource(time.Now().UnixNano())
 	randSeed := rand.New(randSeedSource)
-	
+
 	privateKey, err := rsa.GenerateKey(randSeed, 2014)
 	if err != nil {
 		panic(err)
@@ -86,49 +89,49 @@ func genGadgetKeys () (string, string, error) {
 	if err != nil {
 		panic(err)
 	}
-	
+
 	pubString := string(ssh.MarshalAuthorizedKey(pub))
-	
+
 	return privateKeyPem, pubString, err
 }
 
-func requiredSsh () error {
-	
+func requiredSsh() error {
+
 	usr, err := user.Current()
 	if err != nil {
 		panic(err)
 	}
-	
+
 	// get proper homedir locations
 	sshLocation = fmt.Sprintf("%s/.ssh", usr.HomeDir)
 	defaultPrivKeyLocation = fmt.Sprintf("%s/.ssh/gadget_default_rsa", usr.HomeDir)
 	gadgetPrivKeyLocation = fmt.Sprintf("%s/.ssh/gadget_rsa", usr.HomeDir)
 	gadgetPubKeyLocation = fmt.Sprintf("%s/.ssh/gadget_rsa.pub", usr.HomeDir)
-	
+
 	// check OS for IP address
 	if runtime.GOOS == "windows" {
 		ip = "192.168.82.1:22"
 	}
-	
+
 	// check/create ~/.ssh
 	pathExists, err := exists(sshLocation)
 	if err != nil {
 		panic(err)
 	}
-	
+
 	if !pathExists {
 		err = os.Mkdir(sshLocation, 0644)
 		if err != nil {
 			panic(err)
 		}
 	}
-	
+
 	// check/create ~/.ssh/gadget_default_rsa
 	pathExists, err = exists(defaultPrivKeyLocation)
 	if err != nil {
 		panic(err)
 	}
-	
+
 	if !pathExists {
 		outBytes := []byte(defaultKey)
 		err = ioutil.WriteFile(defaultPrivKeyLocation, outBytes, 0600)
@@ -136,7 +139,7 @@ func requiredSsh () error {
 			panic(err)
 		}
 	}
-	
+
 	// check/create ~/.ssh/gadget_rsa[.pub]
 	gadgetPrivExists, err := exists(gadgetPrivKeyLocation)
 	if err != nil {
@@ -147,21 +150,21 @@ func requiredSsh () error {
 		fmt.Println("ERROR: something went wrong with gadgetPubExists `%s`: %s", gadgetPubKeyLocation, err)
 		os.Exit(1)
 	}
-	
+
 	if !gadgetPrivExists && !gadgetPubExists {
 		privkey, pubkey, err := genGadgetKeys()
 		if err != nil {
 			fmt.Println("ERROR: something went wrong with genGadgetKeys: %s", err)
 			os.Exit(1)
 		}
-		
+
 		outBytes := []byte(privkey)
 		err = ioutil.WriteFile(gadgetPrivKeyLocation, outBytes, 0600)
 		if err != nil {
 			fmt.Println("ERROR: something went wrong with gadgetPrivKey `%s`: %s", gadgetPrivKeyLocation, err)
 			os.Exit(1)
 		}
-		
+
 		outBytes = []byte(pubkey)
 		err = ioutil.WriteFile(gadgetPubKeyLocation, outBytes, 0600)
 		if err != nil {
@@ -169,16 +172,16 @@ func requiredSsh () error {
 			os.Exit(1)
 		}
 	}
-		
+
 	return nil
 }
 
-func gadgetLogin (keyLocation string) error {
+func gadgetLogin(keyLocation string) (*ssh.Client, error) {
 	key, err := ioutil.ReadFile(keyLocation)
 	if err != nil {
 		panic(err)
 	}
-	
+
 	// Create the Signer for this private key.
 	signer, err := ssh.ParsePrivateKey(key)
 	if err != nil {
@@ -196,20 +199,20 @@ func gadgetLogin (keyLocation string) error {
 	// Connect to the remote server and perform the SSH handshake.
 	client, err := ssh.Dial("tcp", ip, config)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	
-	defer client.Close()
-	
-	return err
+
+	//defer client.Close()
+
+	return client, err
 }
 
-func gadgetInstallKeys () {
+func gadgetInstallKeys() {
 	key, err := ioutil.ReadFile(defaultPrivKeyLocation)
 	if err != nil {
 		panic(err)
 	}
-	
+
 	signer, err := ssh.ParsePrivateKey(key)
 	if err != nil {
 		panic(err)
@@ -227,7 +230,7 @@ func gadgetInstallKeys () {
 	if err != nil {
 		panic(err)
 	}
-	
+
 	session, err := client.NewSession()
 	if err != nil {
 		client.Close()
@@ -235,22 +238,22 @@ func gadgetInstallKeys () {
 	}
 
 	dest := "/root/.ssh/authorized_keys"
-    err = scp.CopyPath(gadgetPubKeyLocation, dest, session)
-    if _, err := os.Stat(dest); os.IsNotExist(err) {
-        fmt.Printf("no such file or directory: %s", dest)
-    } else {
-        fmt.Println("success")
-    }
-	
+	err = scp.CopyPath(gadgetPubKeyLocation, dest, session)
+	if _, err := os.Stat(gadgetPubKeyLocation); os.IsNotExist(err) {
+		fmt.Printf("no such file or directory: %s", gadgetPubKeyLocation)
+	} else {
+		fmt.Println("success")
+	}
+
 	defer client.Close()
 }
 
-func ensureKeys () error {
-	
-	err := gadgetLogin(gadgetPrivKeyLocation)
+func ensureKeys() error {
+
+	_, err := gadgetLogin(gadgetPrivKeyLocation)
 	if err != nil {
 		fmt.Println("Private key login failed, trying default key")
-		err = gadgetLogin(defaultPrivKeyLocation)
+		_, err = gadgetLogin(defaultPrivKeyLocation)
 		if err != nil {
 			fmt.Println("Default key login also failed, did you leave your keys at home?")
 			return err
@@ -264,6 +267,23 @@ func ensureKeys () error {
 	} else {
 		fmt.Println("Private key success")
 	}
-	
+
 	return err
+}
+
+func runRemoteCommand(client *ssh.Client, cmd string) error {
+	session, err := client.NewSession()
+	if err != nil {
+		client.Close()
+		panic(err)
+	}
+
+	err = session.Start(cmd)
+	if err != nil {
+		panic(err)
+	}
+	session.Stdout = os.Stdout
+	session.Stderr = os.Stderr
+	session.Wait()
+	return nil
 }

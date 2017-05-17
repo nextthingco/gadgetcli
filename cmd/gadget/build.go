@@ -2,17 +2,17 @@ package main
 
 import (
 	//"flag"
+	"bufio"
 	"fmt"
 	"os"
 	"os/exec"
-	"bufio"
 )
 
 // Process the build arguments and execute build
 func build(args []string, g *GadgetContext) {
-	
+
 	loadConfig(g)
-	
+
 	// find docker binary in path
 	binary, err := exec.LookPath("docker")
 	if err != nil {
@@ -20,7 +20,7 @@ func build(args []string, g *GadgetContext) {
 	}
 
 	// loop through 'onboot' config and build containers
-	for _,container := range g.Config.Onboot {
+	for _, container := range g.Config.Onboot {
 		fmt.Println(" ==> Building:", container.Name)
 
 		cmd := exec.Command(binary,
@@ -29,7 +29,7 @@ func build(args []string, g *GadgetContext) {
 			fmt.Sprintf("%s_%s-img", container.Name, container.UUID), //"gadget-networkd_112icx9s-img",
 			fmt.Sprintf("%s/%s", g.WorkingDirectory, container.From)) //
 		cmd.Env = os.Environ()
-		
+
 		stdOutReader, execErr := cmd.StdoutPipe()
 		stdErrReader, execErr := cmd.StderrPipe()
 		outScanner := bufio.NewScanner(stdOutReader)

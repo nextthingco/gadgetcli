@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	Version = "unknown"
+	Version   = "unknown"
 	GitCommit = "unknown"
 )
 
@@ -21,13 +21,12 @@ func version() {
 
 func main() {
 	g := GadgetContext{}
-	
+
 	err := requiredSsh()
 	if err != nil {
 		panic(err)
 	}
-	
-	
+
 	flag.Usage = func() {
 		fmt.Printf("USAGE: %s [options] COMMAND\n\n", filepath.Base(os.Args[0]))
 		fmt.Printf("Commands:\n")
@@ -70,6 +69,10 @@ func main() {
 	//		shell(args[1:])
 	case "start":
 		gadgetStart(args[1:], &g)
+	case "status":
+		gadgetStatus(args[1:], &g)
+	case "delete":
+		gadgetDelete(args[1:], &g)
 	case "version":
 		version()
 	case "help":
