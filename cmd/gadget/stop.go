@@ -16,15 +16,15 @@ func gadgetStop(args []string, g *GadgetContext) {
 	}
 
 	for _, onboot := range g.Config.Onboot {
-		commandFormat := `docker stop $(docker ps -aq --filter ancestor=%s)`
-		cmd := fmt.Sprintf(commandFormat, onboot.ImageAlias)
+		commandFormat := `docker stop %s`
+		cmd := fmt.Sprintf(commandFormat, onboot.Alias)
 		runRemoteCommand(client, cmd)
 		if err != nil {
 			panic(err)
 		}
 
-		commandFormat = `docker rm $(docker ps -aq --filter ancestor=%s)`
-		cmd = fmt.Sprintf(commandFormat, onboot.ImageAlias)
+		commandFormat = `docker rm %s`
+		cmd = fmt.Sprintf(commandFormat, onboot.Alias)
 		runRemoteCommand(client, cmd)
 		if err != nil {
 			panic(err)

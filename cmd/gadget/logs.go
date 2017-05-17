@@ -16,8 +16,8 @@ func gadgetLogs(args []string, g *GadgetContext) {
 	}
 
 	for _, onboot := range g.Config.Onboot {
-		commandFormat := `docker logs $(docker ps -aq --filter ancestor=%s)`
-		cmd := fmt.Sprintf(commandFormat, onboot.ImageAlias)
+		commandFormat := `docker logs %s)`
+		cmd := fmt.Sprintf(commandFormat, onboot.Alias)
 		runRemoteCommand(client, cmd)
 		if err != nil {
 			panic(err)
