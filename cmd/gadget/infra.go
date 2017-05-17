@@ -13,6 +13,7 @@ import (
 	"crypto/x509"
 	"golang.org/x/crypto/ssh"
 	"encoding/pem"
+	"github.com/tmc/scp"
 )
 
 var (
@@ -203,6 +204,47 @@ func gadgetLogin (keyLocation string) error {
 	return err
 }
 
+func gadgetInstallKeys () {
+	key, err := ioutil.ReadFile(defaultPrivKeyLocation)
+	if err != nil {
+		panic(err)
+	}
+	
+	signer, err := ssh.ParsePrivateKey(key)
+	if err != nil {
+		panic(err)
+	}
+
+	config := &ssh.ClientConfig{
+		User: "root",
+		Auth: []ssh.AuthMethod{
+			ssh.PublicKeys(signer),
+		},
+		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+	}
+
+	client, err := ssh.Dial("tcp", ip, config)
+	if err != nil {
+		panic(err)
+	}
+	
+	session, err := client.NewSession()
+	if err != nil {
+		client.Close()
+		panic(err)
+	}
+
+	dest := "/root/.ssh/authorized_keys"
+    err = scp.CopyPath(gadgetPubKeyLocation, dest, session)
+    if _, err := os.Stat(dest); os.IsNotExist(err) {
+        fmt.Printf("no such file or directory: %s", dest)
+    } else {
+        fmt.Println("success")
+    }
+	
+	defer client.Close()
+}
+
 func ensureKeys () error {
 	
 	err := gadgetLogin(gadgetPrivKeyLocation)
@@ -214,7 +256,10 @@ func ensureKeys () error {
 			return err
 		} else {
 			fmt.Println("Default key success")
-			// copy over private key
+			gadgetInstallKeys()
+			if err != nil {
+				panic(err)
+			}
 		}
 	} else {
 		fmt.Println("Private key success")
