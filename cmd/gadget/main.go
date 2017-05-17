@@ -62,6 +62,8 @@ func main() {
 		gadgetInit(args[1:], &g)
 	//	case "ssh":
 	//		shell(args[1:])
+	case "start":
+		gadgetStart(args[1:], &g)
 	case "version":
 		version()
 	case "help":

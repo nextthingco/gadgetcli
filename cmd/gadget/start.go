@@ -6,14 +6,15 @@ import (
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/terminal"
 	"syscall"
+	"sync"
 )
 
 
 // Process the build arguments and execute build
 func gadgetStart(args []string, g *GadgetContext) {
-	// find docker binary in path
+	loadConfig(g)
 
-	config := &ssh.ClientConfig{
+	sshConfig := &ssh.ClientConfig{
 		User: os.Getenv("LOGNAME"),
 		Auth: []ssh.AuthMethod{
 			ssh.RetryableAuthMethod(ssh.PasswordCallback(
@@ -27,23 +28,37 @@ func gadgetStart(args []string, g *GadgetContext) {
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	}
 
-	client, err := ssh.Dial("tcp", "localhost:22", config)
+	client, err := ssh.Dial("tcp", "localhost:22", sshConfig)
 	if err != nil {
 		panic(err)
 	}
 
-	session, err := client.NewSession()
-	if err != nil {
-		client.Close()
-		panic(err)
-	}
 
-	fmt.Println("Running docker info...")
-	// docker create --name ${name}_${uuid} ${name}_${uuid}-img
-	out, err := session.CombinedOutput("printenv SHELL")
-	if err != nil {
-		panic(err)
-	}
+	outputChannel := make(chan string)
 
-	fmt.Print( string(out) )
+	wg := sync.WaitGroup{}
+	for _,container := range g.Config.Onboot {
+		wg.Add(1)
+		go func(container GadgetContainer) {
+			defer wg.Done()
+			session, err := client.NewSession()
+			if err != nil {
+				client.Close()
+				panic(err)
+			}
+			// docker create --name ${name}_${uuid} ${name}_${uuid}-img
+			out, err := session.CombinedOutput("printenv SHELL")
+			if err != nil {
+				panic(err)
+			}
+			outputString := fmt.Sprintf("%s: %s", container.Name, string(out))
+			outputChannel <- outputString
+		}(container)
+	}
+	go func() {
+		for data := range outputChannel {
+			fmt.Print(data)
+		}
+	}()
+	wg.Wait()
 }
