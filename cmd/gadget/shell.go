@@ -2,6 +2,8 @@ package main
 
 import (
 	"golang.org/x/crypto/ssh"
+	"golang.org/x/crypto/ssh/terminal"
+	"os"
 )
 
 // Process the build arguments and execute build
@@ -20,13 +22,16 @@ func gadgetShell(args []string) {
 		panic(err)
 	}
 
+	session.Stdout = os.Stdout
+	session.Stderr = os.Stderr
+	session.Stdin  = os.Stdin
+
 	modes := ssh.TerminalModes{
-		// ssh.ECHO:          0,     // disable echoing
-		ssh.TTY_OP_ISPEED: 14400, // input speed = 14.4kbaud
-		ssh.TTY_OP_OSPEED: 14400, // output speed = 14.4kbaud
+		ssh.ECHO:          1,     // disable echoing
+		ssh.ECHONL:          1,
 	}
 
-	if err := session.RequestPty("xterm", 80, 40, modes); err != nil {
+	if err := session.RequestPty("xterm", 25, 80, modes); err != nil {
 		session.Close()
 		panic(err)
 	}
@@ -34,5 +39,12 @@ func gadgetShell(args []string) {
 	if err := session.Shell(); err != nil {
 		panic(err)
 	}
+	oldState, err := terminal.MakeRaw(0)
+	if err != nil {
+	        panic(err)
+	}
+	defer terminal.Restore(0, oldState)
+
+	session.Wait()
 	
 }
