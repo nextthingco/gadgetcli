@@ -38,7 +38,7 @@ func main() {
 		fmt.Printf("  status      Build gadget config file\n")
 		fmt.Printf("  delete      Build gadget config file\n")
 		fmt.Printf("  shell       Connect to remote device running GadgetOS\n")
-		fmt.Printf("  log         Build gadget config file\n")
+		fmt.Printf("  logs        Build gadget config file\n")
 		fmt.Printf("  version     Print version information\n")
 		fmt.Printf("  help        Print this message\n")
 		fmt.Printf("\n")
@@ -61,18 +61,24 @@ func main() {
 
 	// parse arguments
 	switch args[0] {
-	case "build":
-		build(args[1:], &g)
 	case "init":
 		gadgetInit(args[1:], &g)
-	//	case "ssh":
-	//		shell(args[1:])
+	case "build":
+		build(args[1:], &g)
+	//	case "deploy":
+	//		gadgetDeploy(args[1:], &g)
 	case "start":
 		gadgetStart(args[1:], &g)
+	case "stop":
+		gadgetStop(args[1:], &g)
 	case "status":
 		gadgetStatus(args[1:], &g)
 	case "delete":
 		gadgetDelete(args[1:], &g)
+	//	case "shell":
+	//		gadgetShell(args[1:])
+	case "logs":
+		gadgetLogs(args[1:], &g)
 	case "version":
 		version()
 	case "help":
