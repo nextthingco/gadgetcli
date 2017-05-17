@@ -21,7 +21,13 @@ func version() {
 
 func main() {
 	g := GadgetContext{}
-
+	
+	err := requiredSsh()
+	if err != nil {
+		panic(err)
+	}
+	
+	
 	flag.Usage = func() {
 		fmt.Printf("USAGE: %s [options] COMMAND\n\n", filepath.Base(os.Args[0]))
 		fmt.Printf("Commands:\n")
