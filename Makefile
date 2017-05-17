@@ -8,6 +8,7 @@ SOURCES=\
 	cmd/gadget/status.go \
 	cmd/gadget/logs.go \
 	cmd/gadget/stop.go \
+	cmd/gadget/shell.go \
 	cmd/gadget/start.go
 
 DEPENDS=\

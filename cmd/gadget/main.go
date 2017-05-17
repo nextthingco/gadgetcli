@@ -75,8 +75,8 @@ func main() {
 		gadgetStatus(args[1:], &g)
 	case "delete":
 		gadgetDelete(args[1:], &g)
-	//	case "shell":
-	//		gadgetShell(args[1:])
+	case "shell":
+		gadgetShell(args[1:])
 	case "logs":
 		gadgetLogs(args[1:], &g)
 	case "version":
