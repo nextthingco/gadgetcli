@@ -88,10 +88,6 @@ func genGadgetKeys () (string, string, error) {
 	
 	pubString := string(ssh.MarshalAuthorizedKey(pub))
 	
-	fmt.Println(privateKeyPem)
-	fmt.Println(pubString)
-	
-	
 	return privateKeyPem, pubString, err
 }
 
@@ -172,6 +168,57 @@ func requiredSsh () error {
 			os.Exit(1)
 		}
 	}
-	
+		
 	return nil
+}
+
+func gadgetLogin (keyLocation string) error {
+	key, err := ioutil.ReadFile(keyLocation)
+	if err != nil {
+		panic(err)
+	}
+	
+	// Create the Signer for this private key.
+	signer, err := ssh.ParsePrivateKey(key)
+	if err != nil {
+		panic(err)
+	}
+
+	config := &ssh.ClientConfig{
+		User: "root",
+		Auth: []ssh.AuthMethod{
+			ssh.PublicKeys(signer),
+		},
+		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+	}
+
+	// Connect to the remote server and perform the SSH handshake.
+	client, err := ssh.Dial("tcp", ip, config)
+	if err != nil {
+		return err
+	}
+	
+	defer client.Close()
+	
+	return err
+}
+
+func ensureKeys () error {
+	
+	err := gadgetLogin(gadgetPrivKeyLocation)
+	if err != nil {
+		fmt.Println("Private key login failed, trying default key")
+		err = gadgetLogin(defaultPrivKeyLocation)
+		if err != nil {
+			fmt.Println("Default key login also failed, did you leave your keys at home?")
+			return err
+		} else {
+			fmt.Println("Default key success")
+			// copy over private key
+		}
+	} else {
+		fmt.Println("Private key success")
+	}
+	
+	return err
 }

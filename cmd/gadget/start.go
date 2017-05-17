@@ -13,7 +13,9 @@ import (
 // Process the build arguments and execute build
 func gadgetStart(args []string, g *GadgetContext) {
 	loadConfig(g)
-
+	
+	ensureKeys()
+	
 	sshConfig := &ssh.ClientConfig{
 		User: os.Getenv("LOGNAME"),
 		Auth: []ssh.AuthMethod{
