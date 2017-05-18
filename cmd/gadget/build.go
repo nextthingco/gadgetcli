@@ -20,14 +20,15 @@ func build(args []string, g *GadgetContext) {
 	}
 
 	// loop through 'onboot' config and build containers
-	for _, container := range g.Config.Onboot {
-		fmt.Println(" ==> Building:", container.Name)
+	for _, onboot := range g.Config.Onboot {
+		fmt.Println(" ==> Building:", onboot.Name)
 
+		containerDirectory := fmt.Sprintf("%s/%s", g.WorkingDirectory, onboot.Directory)
 		cmd := exec.Command(binary,
 			"build",
 			"--tag",
-			fmt.Sprintf("%s_%s-img", container.Name, container.UUID), //"gadget-networkd_112icx9s-img",
-			fmt.Sprintf("%s/%s", g.WorkingDirectory, container.Directory)) //
+			onboot.ImageAlias,
+			containerDirectory)
 		cmd.Env = os.Environ()
 
 		stdOutReader, execErr := cmd.StdoutPipe()
