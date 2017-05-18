@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	dockerFileContents = "FROM armhf/alpine\n\nADD blink-leds"
+	dockerFileContents = "FROM armhf/alpine\n\nADD blink-leds /"
 	
 	blinkLedsContents = `
 #!/bin/sh
