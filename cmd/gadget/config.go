@@ -155,4 +155,9 @@ func loadConfig(g *GadgetContext) {
 		onboot.ImageAlias = fmt.Sprintf("%s-img", onboot.Alias)
 		g.Config.Onboot[index] = onboot
 	}
+	for index, service := range g.Config.Services {
+		service.Alias = fmt.Sprintf("%s_%s", service.Name, service.UUID)
+		service.ImageAlias = fmt.Sprintf("%s-img", service.Alias)
+		g.Config.Services[index] = service
+	}
 }
