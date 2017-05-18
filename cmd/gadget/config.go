@@ -54,11 +54,12 @@ func templateConfig(gName, gUu1, gUu2, gUu3 string) GadgetConfig {
 		},
 		Services: []GadgetContainer{
 			{
-				Name:      "gadget-dmesg",
-				Image:     "gadget/dmesg",
+				Name:      "gadget-blink",
+				Image:     "gadget/blink",
 				UUID:      gUu3,
-				Directory: "dmesg",
-				Command:   []string{"dmesg", "-wH"},
+				Directory: "blink",
+				Command:   []string{"/blink-leds"},
+				Binds:     []string{"/sys:/sys"},
 			},
 		},
 	}
