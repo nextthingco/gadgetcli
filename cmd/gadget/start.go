@@ -17,6 +17,16 @@ func gadgetStart(args []string, g *GadgetContext) {
 	}
 
 	for _, onboot := range g.Config.Onboot {
+
+		commandFormat := `docker start %s`
+		cmd := fmt.Sprintf(commandFormat, onboot.Alias)
+		runRemoteCommand(client, cmd)
+		if err != nil {
+			panic(err)
+		}
+
+	}
+	for _, onboot := range g.Config.Services {
 		commandFormat := `docker create --name %s %s %s`
 		cmd := fmt.Sprintf(commandFormat, onboot.Alias, onboot.ImageAlias, strings.Join(onboot.Command[:]," "))
 		runRemoteCommand(client, cmd)
