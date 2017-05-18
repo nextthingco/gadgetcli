@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
@@ -11,8 +12,10 @@ import (
 	"math/rand"
 	"os"
 	"os/user"
+	"os/exec"
 	"runtime"
 	"time"
+	"strings"
 )
 
 var (
@@ -284,14 +287,14 @@ func ensureKeys() error {
 	return err
 }
 
-func runRemoteCommand(client *ssh.Client, cmd string) error {
+func runRemoteCommand(client *ssh.Client, cmd ...string) error {
 	session, err := client.NewSession()
 	if err != nil {
 		client.Close()
 		panic(err)
 	}
 
-	err = session.Start(cmd)
+	err = session.Start(strings.Join(cmd[:], " "))
 	if err != nil {
 		panic(err)
 	}
@@ -299,4 +302,39 @@ func runRemoteCommand(client *ssh.Client, cmd string) error {
 	session.Stderr = os.Stderr
 	session.Wait()
 	return nil
+}
+
+func runLocalCommand(binary string, arguments ...string) {
+	cmd := exec.Command(binary, arguments...)
+	
+	cmd.Env = os.Environ()
+
+	stdOutReader, execErr := cmd.StdoutPipe()
+	stdErrReader, execErr := cmd.StderrPipe()
+	outScanner := bufio.NewScanner(stdOutReader)
+	errScanner := bufio.NewScanner(stdErrReader)
+
+	// goroutine to print stdout and stderr
+	go func() {
+		// TODO: goroutine gets launched and never exits.
+		for {
+			// TODO: add a check here to only print stdout if verbose
+			/*if outScanner.Scan() {
+				fmt.Println(string(outScanner.Text()))
+			}*/
+			_ = outScanner.Scan()
+			if errScanner.Scan() {
+				fmt.Println(string(errScanner.Text()))
+			}
+		}
+	}()
+
+	execErr = cmd.Start()
+	if execErr != nil {
+		panic(execErr)
+	}
+	execErr = cmd.Wait()
+	if execErr != nil {
+		panic(execErr)
+	}
 }
