@@ -203,6 +203,7 @@ func gadgetLogin(keyLocation string) (*ssh.Client, error) {
 			ssh.PublicKeys(signer),
 		},
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+		Timeout: (time.Second * 3),
 	}
 
 	// Connect to the remote server and perform the SSH handshake.
@@ -233,6 +234,7 @@ func gadgetInstallKeys() {
 			ssh.PublicKeys(signer),
 		},
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+		Timeout: (time.Second * 3),
 	}
 
 	client, err := ssh.Dial("tcp", ip, config)
@@ -269,14 +271,14 @@ func ensureKeys() error {
 			fmt.Println("[COMMS]  Default key login also failed, did you leave your keys at home?")
 			return err
 		} else {
-			fmt.Println("[COMMS]  Default key success")
+			fmt.Println("[COMMS]  Default key login success")
 			gadgetInstallKeys()
 			if err != nil {
 				panic(err)
 			}
 		}
 	} else {
-		fmt.Println("[COMMS]  Private key success")
+		fmt.Println("[COMMS]  Private key login success")
 	}
 
 	return err
