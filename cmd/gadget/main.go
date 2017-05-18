@@ -65,8 +65,8 @@ func main() {
 		gadgetInit(args[1:], &g)
 	case "build":
 		build(args[1:], &g)
-	//	case "deploy":
-	//		gadgetDeploy(args[1:], &g)
+	case "deploy":
+		gadgetDeploy(args[1:], &g)
 	case "start":
 		gadgetStart(args[1:], &g)
 	case "stop":
