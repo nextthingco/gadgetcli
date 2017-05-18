@@ -27,7 +27,7 @@ func build(args []string, g *GadgetContext) {
 			"build",
 			"--tag",
 			fmt.Sprintf("%s_%s-img", container.Name, container.UUID), //"gadget-networkd_112icx9s-img",
-			fmt.Sprintf("%s/%s", g.WorkingDirectory, container.From)) //
+			fmt.Sprintf("%s/%s", g.WorkingDirectory, container.Directory)) //
 		cmd.Env = os.Environ()
 
 		stdOutReader, execErr := cmd.StdoutPipe()

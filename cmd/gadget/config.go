@@ -28,15 +28,15 @@ type GadgetContainer struct {
 	Name         string
 	UUID         string
 	Image        string
-	From         string
+	Directory    string
 	Net          string
 	PID          string
 	Readonly     bool
-	Command      []string 	`yaml:",flow"`
-	Binds        []string 	`yaml:",flow"`
-	Capabilities []string 	`yaml:",flow"`
-	Alias        string		"alias,omitempty"
-	ImageAlias   string		"imagealias,omitempty"
+	Command      []string `yaml:",flow"`
+	Binds        []string `yaml:",flow"`
+	Capabilities []string `yaml:",flow"`
+	Alias        string   "alias,omitempty"
+	ImageAlias   string   "imagealias,omitempty"
 }
 
 func templateConfig(gName, gUu1, gUu2, gUu3 string) GadgetConfig {
@@ -54,11 +54,11 @@ func templateConfig(gName, gUu1, gUu2, gUu3 string) GadgetConfig {
 		},
 		Services: []GadgetContainer{
 			{
-				Name:    "gadget-dmesg",
-				Image:   "gadget/dmesg",
-				UUID:    gUu3,
-				From:    "armhf/alpine",
-				Command: []string{"dmesg", "-wH"},
+				Name:      "gadget-dmesg",
+				Image:     "gadget/dmesg",
+				UUID:      gUu3,
+				Directory: "dmesg",
+				Command:   []string{"dmesg", "-wH"},
 			},
 		},
 	}
