@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 )
 
 // Process the build arguments and execute build
@@ -16,8 +17,8 @@ func gadgetStart(args []string, g *GadgetContext) {
 	}
 
 	for _, onboot := range g.Config.Onboot {
-		commandFormat := `docker create --name %s %s`
-		cmd := fmt.Sprintf(commandFormat, onboot.Alias, onboot.ImageAlias)
+		commandFormat := `docker create --name %s %s %s`
+		cmd := fmt.Sprintf(commandFormat, onboot.Alias, onboot.ImageAlias, strings.Join(onboot.Command[:]," "))
 		runRemoteCommand(client, cmd)
 		if err != nil {
 			panic(err)
