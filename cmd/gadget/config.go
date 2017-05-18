@@ -32,11 +32,11 @@ type GadgetContainer struct {
 	Net          string
 	PID          string
 	Readonly     bool
-	Command      []string `yaml:",flow"`
-	Binds        []string `yaml:",flow"`
-	Capabilities []string `yaml:",flow"`
-	Alias        string
-	ImageAlias   string
+	Command      []string 	`yaml:",flow"`
+	Binds        []string 	`yaml:",flow"`
+	Capabilities []string 	`yaml:",flow"`
+	Alias        string		"alias,omitempty"
+	ImageAlias   string		"imagealias,omitempty"
 }
 
 func templateConfig(gName, gUu1, gUu2, gUu3 string) GadgetConfig {
@@ -47,11 +47,9 @@ func templateConfig(gName, gUu1, gUu2, gUu3 string) GadgetConfig {
 		Type: "docker",
 		Onboot: []GadgetContainer{
 			{
-				Name:    "gadget-cpuinfo",
-				Image:   "gadget/cpuinfo",
+				Name:    "hello-world",
+				Image:   "armhf/hello-world",
 				UUID:    gUu2,
-				From:    "armhf/alpine",
-				Command: []string{"/bin/sh", "cat", "/proc/cpuinfo"},
 			},
 		},
 		Services: []GadgetContainer{
