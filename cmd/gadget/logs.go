@@ -15,6 +15,8 @@ func gadgetLogs(args []string, g *GadgetContext) {
 		panic(err)
 	}
 
+	fmt.Println("[GADGT]  Retrieving logs:")
+	
 	for _, onboot := range g.Config.Onboot {
 		commandFormat := `docker logs %s`
 		cmd := fmt.Sprintf(commandFormat, onboot.Alias)

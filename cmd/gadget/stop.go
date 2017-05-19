@@ -15,7 +15,13 @@ func gadgetStop(args []string, g *GadgetContext) {
 		panic(err)
 	}
 
+
+	fmt.Println("[GADGT]  Stopping:")
+	fmt.Println("[GADGT]    - Onboot:")
+
 	for _, onboot := range g.Config.Onboot {
+		fmt.Printf("[GADGT]    %s ", onboot.Alias)
+		
 		commandFormat := `docker stop %s`
 		cmd := fmt.Sprintf(commandFormat, onboot.Alias)
 		runRemoteCommand(client, cmd)
@@ -31,7 +37,11 @@ func gadgetStop(args []string, g *GadgetContext) {
 		}
 	}
 
+	fmt.Println("[GADGT]    - Services:")
+	
 	for _, service := range g.Config.Services {
+		fmt.Printf("[GADGT]    %s ", service.Alias)
+		
 		commandFormat := `docker stop %s`
 		cmd := fmt.Sprintf(commandFormat, service.Alias)
 		runRemoteCommand(client, cmd)

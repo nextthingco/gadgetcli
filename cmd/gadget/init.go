@@ -73,7 +73,7 @@ func gadgetInit(args []string, g *GadgetContext) {
 	g.WorkingDirectory, _ = filepath.Abs(g.WorkingDirectory)
 	initName := filepath.Base(g.WorkingDirectory)
 	
-	fmt.Printf("[INIT ]    in %s", initName)
+	fmt.Printf("[INIT ]    in %s ", g.WorkingDirectory)
 
 	initConfig := templateConfig(initName, fmt.Sprintf("%s", initUu1), fmt.Sprintf("%s", initUu2), fmt.Sprintf("%s", initUu3))
 

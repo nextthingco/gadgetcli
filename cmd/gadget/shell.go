@@ -4,6 +4,7 @@ import (
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/terminal"
 	"os"
+	"fmt"
 )
 
 // Process the build arguments and execute build
@@ -39,6 +40,9 @@ func gadgetShell(args []string) {
 	if err := session.Shell(); err != nil {
 		panic(err)
 	}
+	
+	fmt.Println("[COMMS]  Entering shell..")
+	
 	oldState, err := terminal.MakeRaw(0)
 	if err != nil {
 	        panic(err)
@@ -46,5 +50,7 @@ func gadgetShell(args []string) {
 	defer terminal.Restore(0, oldState)
 
 	session.Wait()
+	
+	fmt.Println("[COMMS]  Closed shell.")
 	
 }

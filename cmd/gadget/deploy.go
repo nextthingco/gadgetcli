@@ -14,8 +14,8 @@ func deployContainer( client *ssh.Client, container * GadgetContainer, autostart
 	if err != nil {
 		panic(err)
 	}
-
-	fmt.Println("==> deploying:", container.ImageAlias)
+	
+	fmt.Println("[GADGT]  Deploying: %s", container.ImageAlias)
 	docker := exec.Command(binary, "save", container.ImageAlias)
 
 	session, err := client.NewSession()
@@ -32,12 +32,12 @@ func deployContainer( client *ssh.Client, container * GadgetContainer, autostart
 	session.Stdout = os.Stdout
 	session.Stderr = os.Stderr
 	
-	fmt.Println("Starting session")
+	fmt.Println("[GADGT]    Starting session")
 	if err := session.Start(`docker load`); err != nil {
 		panic(err)
 	}
 
-	fmt.Println("Starting docker")
+	fmt.Println("[GADGT]    Starting docker")
 	if err := docker.Start(); err != nil {
 		panic(err)
 	}
@@ -45,14 +45,14 @@ func deployContainer( client *ssh.Client, container * GadgetContainer, autostart
 
 	go func() {
 		defer pw.Close()
-		fmt.Println("Waiting on docker")
+		fmt.Println("[GADGT]    Waiting on docker")
 		if err := docker.Wait(); err != nil {
 			panic(err)
 		}
 	}()
 	
 	session.Wait()
-	fmt.Println("closing session")
+	fmt.Println("[GADGT]    Closing session")
 	session.Close()
 
 	if autostart {

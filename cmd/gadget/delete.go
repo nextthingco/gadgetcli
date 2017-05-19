@@ -16,14 +16,12 @@ func gadgetDelete(args []string, g *GadgetContext) {
 	fmt.Println("[GADGT]  Deleting:")
 	
 	for _, onboot := range g.Config.Onboot {
-		fmt.Printf("[GADGT]    %s ", onboot.Name)
+		fmt.Printf("[GADGT]    %s ", onboot.ImageAlias)
 		runRemoteCommand(client, "docker", "rmi", onboot.ImageAlias)
-		fmt.Printf("✔\n")
 	}
 
 	for _, service := range g.Config.Services {
-		fmt.Printf("[GADGT]    %s ", service.Name)
-		runRemoteCommand(client, "docker", "rmi", service.ImageAlias)		
-		fmt.Printf("✔\n")
+		fmt.Printf("[GADGT]    %s ", service.ImageAlias)
+		runRemoteCommand(client, "docker", "rmi", service.ImageAlias)
 	}
 }

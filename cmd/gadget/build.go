@@ -20,7 +20,7 @@ func build(args []string, g *GadgetContext) {
 	
 	// loop through 'onboot' config and build containers
 	for _, onboot := range append(g.Config.Onboot, g.Config.Services...) {
-		fmt.Printf("[BUILD]    %s ", onboot.Name)
+		fmt.Printf("[BUILD]    %s ", onboot.ImageAlias)
 
 		// use local directory for build
 		if onboot.Directory != "" {
