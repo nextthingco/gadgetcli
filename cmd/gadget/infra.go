@@ -153,7 +153,7 @@ func requiredSsh() error {
 	}
 	gadgetPubExists, err := exists(gadgetPubKeyLocation)
 	if err != nil {
-		fmt.Println("ERROR: something went wrong with gadgetPubExists `%s`: %s", gadgetPubKeyLocation, err)
+		fmt.Println("[SETUP]  something went wrong with gadgetPubExists `%s`: %s", gadgetPubKeyLocation, err)
 		os.Exit(1)
 	}
 
@@ -162,7 +162,7 @@ func requiredSsh() error {
 		
 		privkey, pubkey, err := genGadgetKeys()
 		if err != nil {
-			fmt.Println("ERROR: something went wrong with genGadgetKeys: %s", err)
+			fmt.Println("[SETUP]  something went wrong with genGadgetKeys: %s", err)
 			os.Exit(1)
 		}
 		
@@ -170,7 +170,7 @@ func requiredSsh() error {
 		outBytes := []byte(privkey)
 		err = ioutil.WriteFile(gadgetPrivKeyLocation, outBytes, 0600)
 		if err != nil {
-			fmt.Println("ERROR: something went wrong with gadgetPrivKey `%s`: %s", gadgetPrivKeyLocation, err)
+			fmt.Println("[SETUP]  something went wrong with gadgetPrivKey `%s`: %s", gadgetPrivKeyLocation, err)
 			os.Exit(1)
 		}
 		fmt.Printf("✔\n")
@@ -179,7 +179,7 @@ func requiredSsh() error {
 		outBytes = []byte(pubkey)
 		err = ioutil.WriteFile(gadgetPubKeyLocation, outBytes, 0600)
 		if err != nil {
-			fmt.Println("ERROR: something went wrong with gadgetPrivKey `%s`: %s", gadgetPubKeyLocation, err)
+			fmt.Println("[SETUP]  something went wrong with gadgetPrivKey `%s`: %s", gadgetPubKeyLocation, err)
 			os.Exit(1)
 		}
 		fmt.Printf("✔\n")

@@ -67,8 +67,13 @@ func gadgetInit(args []string, g *GadgetContext) {
 	initUu2 := uuid.NewV4()
 	initUu3 := uuid.NewV4()
 
+
+	fmt.Println("[INIT ]  Creating new project:")
+
 	g.WorkingDirectory, _ = filepath.Abs(g.WorkingDirectory)
 	initName := filepath.Base(g.WorkingDirectory)
+	
+	fmt.Printf("[INIT ]    in %s", initName)
 
 	initConfig := templateConfig(initName, fmt.Sprintf("%s", initUu1), fmt.Sprintf("%s", initUu2), fmt.Sprintf("%s", initUu3))
 
@@ -106,5 +111,7 @@ func gadgetInit(args []string, g *GadgetContext) {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+	
+	fmt.Printf("✔\n")
 	
 }

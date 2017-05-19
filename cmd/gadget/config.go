@@ -112,7 +112,7 @@ func walkUp(bottom_dir string) (string, error) {
 
 		// haven't found it
 		if isRoot(bottom_dir) || isDriveLetter(bottom_dir) {
-			return "", errors.New("config: could not find configuration file")
+			return "", errors.New("[SETUP]  could not find configuration file")
 		} else {
 			bottom_dir, rc = walkUp(filepath.Dir(bottom_dir))
 		}
@@ -135,12 +135,13 @@ func loadConfig(g *GadgetContext) {
 	g.WorkingDirectory, cwderr = walkUp(g.WorkingDirectory)
 	if cwderr == nil {
 		// found the config
-		fmt.Printf("Running in directory: %s\n", g.WorkingDirectory)
+		fmt.Printf("[SETUP]  Running in directory:\n")
+		fmt.Printf("[SETUP]    %s\n", g.WorkingDirectory)
 
 		config, parseerr = ioutil.ReadFile(fmt.Sprintf("%s/gadget.yml", g.WorkingDirectory))
 		if parseerr != nil {
 			// couldn't read it
-			fmt.Printf("Cannot open config file: %v\n", parseerr)
+			fmt.Printf("[SETUP]  Cannot open config file: %v\n", parseerr)
 		}
 	} else {
 		panic(cwderr)

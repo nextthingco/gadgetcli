@@ -16,9 +16,11 @@ func build(args []string, g *GadgetContext) {
 		panic(err)
 	}
 
+	fmt.Println("[BUILD]  Building:")
+	
 	// loop through 'onboot' config and build containers
 	for _, onboot := range append(g.Config.Onboot, g.Config.Services...) {
-		fmt.Println(" ==> Building:", onboot.Name)
+		fmt.Printf("[BUILD]    %s ", onboot.Name)
 
 		// use local directory for build
 		if onboot.Directory != "" {
@@ -37,5 +39,7 @@ func build(args []string, g *GadgetContext) {
 				onboot.Image,
 				onboot.ImageAlias)
 		}
+		
+		fmt.Printf("✔\n")
 	}
 }
