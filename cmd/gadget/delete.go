@@ -1,9 +1,5 @@
 package main
 
-import (
-	"fmt"
-)
-
 // Process the build arguments and execute build
 func gadgetDelete(args []string, g *GadgetContext) {
 	loadConfig(g)
@@ -16,11 +12,10 @@ func gadgetDelete(args []string, g *GadgetContext) {
 	}
 
 	for _, onboot := range g.Config.Onboot {
-		commandFormat := `docker rmi %s`
-		cmd := fmt.Sprintf(commandFormat, onboot.ImageAlias)
-		runRemoteCommand(client, cmd)
-		if err != nil {
-			panic(err)
-		}
+		runRemoteCommand(client, "docker", "rmi", onboot.ImageAlias)
+	}
+
+	for _, service := range g.Config.Services {
+		runRemoteCommand(client, "docker", "rmi", service.ImageAlias)
 	}
 }

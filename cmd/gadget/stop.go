@@ -29,6 +29,21 @@ func gadgetStop(args []string, g *GadgetContext) {
 		if err != nil {
 			panic(err)
 		}
+	}
 
+	for _, service := range g.Config.Services {
+		commandFormat := `docker stop %s`
+		cmd := fmt.Sprintf(commandFormat, service.Alias)
+		runRemoteCommand(client, cmd)
+		if err != nil {
+			panic(err)
+		}
+
+		commandFormat = `docker rm %s`
+		cmd = fmt.Sprintf(commandFormat, service.Alias)
+		runRemoteCommand(client, cmd)
+		if err != nil {
+			panic(err)
+		}
 	}
 }
