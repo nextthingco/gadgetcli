@@ -15,7 +15,7 @@ func deployContainer( client *ssh.Client, container * GadgetContainer, autostart
 		panic(err)
 	}
 	
-	fmt.Println("[GADGT]  Deploying: %s", container.ImageAlias)
+	fmt.Printf("[GADGT]  Deploying: %s\n", container.ImageAlias)
 	docker := exec.Command(binary, "save", container.ImageAlias)
 
 	session, err := client.NewSession()
