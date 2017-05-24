@@ -2,6 +2,7 @@ SOURCES=\
 	cmd/gadget/main.go \
 	cmd/gadget/config.go \
 	cmd/gadget/build.go \
+	cmd/gadget/add.go \
 	cmd/gadget/delete.go \
 	cmd/gadget/deploy.go \
 	cmd/gadget/init.go \
