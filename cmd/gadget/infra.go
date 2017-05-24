@@ -5,6 +5,7 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
+	"errors"
 	"fmt"
 	"github.com/tmc/scp"
 	"golang.org/x/crypto/ssh"
@@ -298,10 +299,11 @@ func runRemoteCommand(client *ssh.Client, cmd ...string) error {
 	if err != nil {
 		panic(err)
 	}
-	session.Stdout = os.Stdout
-	session.Stderr = os.Stderr
-	session.Wait()
-	return nil
+	// TODO: capture both stdout and stderr into buffers and return them
+	//session.Stdout = os.Stdout
+	//session.Stderr = os.Stderr
+	err = session.Wait()
+	return err
 }
 
 func runLocalCommand(binary string, arguments ...string) {
@@ -337,4 +339,44 @@ func runLocalCommand(binary string, arguments ...string) {
 	if execErr != nil {
 		panic(execErr)
 	}
+}
+
+
+func prependToStrings(stringArray []string, prefix string) []string {
+	for key,value := range stringArray {
+		s := []string{prefix, value}
+		stringArray[key] = strings.Join(s,"")
+	}
+	return stringArray //strings.Join(stringArray, " ")
+}
+
+
+func findContainer(name string, containers []GadgetContainer) ( GadgetContainer, error ) {
+	for _,container := range containers {
+		if container.Name == name {
+			return container, nil
+		}
+	}
+	return GadgetContainer{}, errors.New(fmt.Sprintf("[BUILD]  could not find container: %s", name))
+}
+
+func findStagedContainers(args []string, containers []GadgetContainer) []GadgetContainer {
+	var stagedContainers []GadgetContainer
+
+	// if we have any arguments, we're specifying containers to build
+	if len(args) > 0 {
+		for _,arg := range args {
+			c,err := findContainer(arg, containers)
+			if err != nil {
+				//error here
+			} else {
+				stagedContainers = append(stagedContainers, c)
+			}
+		}
+	}
+
+	if len(stagedContainers) == 0 {
+		stagedContainers = containers
+	}
+	return stagedContainers
 }
