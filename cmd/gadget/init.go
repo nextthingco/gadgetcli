@@ -12,8 +12,7 @@ import (
 var (
 	dockerFileContents = "FROM armhf/alpine\n\nADD blink-leds /"
 	
-	blinkLedsContents = `
-#!/bin/sh
+	blinkLedsContents = `#!/bin/sh
 MODE="ascend"
 SPEED=0.125
 for i in $(seq 132 139)
@@ -56,8 +55,7 @@ else
                 done
                 sleep $SPEED
         done
-fi
-`
+fi`
 )
 
 // Process the build arguments and execute build

@@ -5,6 +5,16 @@ import (
 	"strings"
 )
 
+func getBinds( binds string) string {
+	
+	if binds != "" {
+		binds = fmt.Sprintf("-v %s", binds)
+	}
+	
+	return binds
+	
+}
+
 // Process the build arguments and execute build
 func gadgetStart(args []string, g *GadgetContext) {
 	loadConfig(g)
@@ -22,10 +32,19 @@ func gadgetStart(args []string, g *GadgetContext) {
 
 	for _, onboot := range g.Config.Onboot {
 
-		fmt.Printf("[GADGT]      %s ", onboot.Alias)
+		commandFormat := `docker create --name %s %s %s %s`
 		
-		commandFormat := `docker start %s`
-		cmd := fmt.Sprintf(commandFormat, onboot.Alias)
+		binds := getBinds(strings.Join(onboot.Binds[:], " -v "))
+		
+		cmd := fmt.Sprintf(commandFormat, onboot.Alias, binds, onboot.ImageAlias, strings.Join(onboot.Command[:]," "))
+		fmt.Printf("%s\n", cmd)
+		runRemoteCommand(client, cmd)
+		if err != nil {
+			panic(err)
+		}
+
+		commandFormat = `docker start %s`
+		cmd = fmt.Sprintf(commandFormat, onboot.Alias)
 		runRemoteCommand(client, cmd)
 		if err != nil {
 			panic(err)
@@ -37,9 +56,13 @@ func gadgetStart(args []string, g *GadgetContext) {
 	for _, onboot := range g.Config.Services {
 		
 		fmt.Printf("[GADGT]      %s ", onboot.Alias)
+
+		commandFormat := `docker create --name %s %s %s %s`
 		
-		commandFormat := `docker create --name %s %s %s`
-		cmd := fmt.Sprintf(commandFormat, onboot.Alias, onboot.ImageAlias, strings.Join(onboot.Command[:]," "))
+		binds := getBinds(strings.Join(onboot.Binds[:], " -v "))
+		
+		cmd := fmt.Sprintf(commandFormat, onboot.Alias, binds, onboot.ImageAlias, strings.Join(onboot.Command[:]," "))
+		fmt.Printf("%s\n", cmd)
 		runRemoteCommand(client, cmd)
 		if err != nil {
 			panic(err)
