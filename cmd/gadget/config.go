@@ -77,6 +77,24 @@ func parseConfig(config []byte) (GadgetConfig, error) {
 	return g, nil
 }
 
+func cleanConfig( g GadgetConfig ) GadgetConfig {
+	
+	// helper function to remove hidden config
+	// items before writing the struct out
+	
+	for i := range g.Onboot {
+		g.Onboot[i].Alias = ""
+		g.Onboot[i].ImageAlias = ""
+	}
+
+	for i := range g.Services {
+		g.Services[i].Alias = ""
+		g.Services[i].ImageAlias = ""
+	}
+	
+	return g	
+}
+
 // helper function for walkup, determines if cwd is '/'
 func isRoot(path string) bool {
 	if runtime.GOOS != "windows" {

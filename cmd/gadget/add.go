@@ -27,12 +27,14 @@ func gadgetAdd(args []string, g *GadgetContext) {
 		addUsage()
 	}
 	
+	
+	fmt.Printf("[SETUP]  Adding new %s: \"%s\" ", args[0], args[1])
+	
 	addGadgetContainer := GadgetContainer {	
 		Name: 	args[1], 
 		Image: 	fmt.Sprintf("%s/%s", g.Config.Name, args[1]),
 		UUID: 	fmt.Sprintf("%s", addUu),
 	}
-			
 	
 	// parse arguments
 	switch args[0] {
@@ -44,8 +46,10 @@ func gadgetAdd(args []string, g *GadgetContext) {
 		fmt.Printf("%q is not valid command.\n\n", args[0])
 		addUsage()
 	}
+	
+	g.Config = cleanConfig(g.Config)
 
-	outBytes, err := yaml.Marshal(g)
+	outBytes, err := yaml.Marshal(g.Config)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -56,5 +60,7 @@ func gadgetAdd(args []string, g *GadgetContext) {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+	
+	fmt.Printf("✔\n")
 	
 }
