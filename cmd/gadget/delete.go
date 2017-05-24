@@ -19,6 +19,12 @@ func gadgetDelete(args []string, g *GadgetContext) {
 	
 	for _, container := range stagedContainers {
 		fmt.Printf("[GADGT]    %s ", container.ImageAlias)
-		runRemoteCommand(client, "docker", "rmi", container.ImageAlias)
+		err = runRemoteCommand(client, "docker", "rmi", container.ImageAlias)
+		if err != nil {
+			fmt.Printf("✘\n")
+			panic(err)
+		}
+		
+		fmt.Printf("✔\n")
 	}
 }
