@@ -17,9 +17,11 @@ func gadgetStatus(args []string, g *GadgetContext) {
 
 	fmt.Println("[GADGT]  Retrieving status:")
 	
-	for _, onboot := range g.Config.Onboot {
+	stagedContainers := findStagedContainers(args, append(g.Config.Onboot, g.Config.Services...))
+	
+	for _, container := range stagedContainers {
 		commandFormat := `docker ps -a --filter=ancestor=%s --format "{{.Image}} {{.Command}} {{.Status}}"`
-		cmd := fmt.Sprintf(commandFormat, onboot.ImageAlias)
+		cmd := fmt.Sprintf(commandFormat, container.ImageAlias)
 		runRemoteCommand(client, cmd)
 		if err != nil {
 			panic(err)

@@ -5,14 +5,9 @@ import (
 	"strings"
 )
 
-func getBinds( binds string) string {
-	
-	if binds != "" {
-		binds = fmt.Sprintf("-v %s", binds)
-	}
-	
+func getBindString( container GadgetContainer ) string {
+	binds := strings.Join( prependToStrings(container.Binds[:],"-v "), " ")
 	return binds
-	
 }
 
 // Process the build arguments and execute build
@@ -26,52 +21,26 @@ func gadgetStart(args []string, g *GadgetContext) {
 		panic(err)
 	}
 
-
 	fmt.Println("[GADGT]  Starting:")
-	fmt.Println("[GADGT]    Onboot:")
 
-	for _, onboot := range g.Config.Onboot {
-
-		commandFormat := `docker create --name %s %s %s %s`
-		
-		binds := getBinds(strings.Join(onboot.Binds[:], " -v "))
-		
-		cmd := fmt.Sprintf(commandFormat, onboot.Alias, binds, onboot.ImageAlias, strings.Join(onboot.Command[:]," "))
-		fmt.Printf("%s\n", cmd)
-		runRemoteCommand(client, cmd)
-		if err != nil {
-			panic(err)
-		}
-
-		commandFormat = `docker start %s`
-		cmd = fmt.Sprintf(commandFormat, onboot.Alias)
-		runRemoteCommand(client, cmd)
-		if err != nil {
-			panic(err)
-		}
-	}
+	stagedContainers := findStagedContainers(args, append(g.Config.Onboot, g.Config.Services...))
 	
-	fmt.Println("[GADGT]    Services:")
-	
-	for _, onboot := range g.Config.Services {
+	for _, container := range stagedContainers {
 		
-		fmt.Printf("[GADGT]      %s ", onboot.Alias)
+		fmt.Printf("[GADGT]    %s ", container.Alias)
 
-		commandFormat := `docker create --name %s %s %s %s`
+		binds := getBindString(container)
+		commands := strings.Join(container.Command[:]," ")
 		
-		binds := getBinds(strings.Join(onboot.Binds[:], " -v "))
-		
-		cmd := fmt.Sprintf(commandFormat, onboot.Alias, binds, onboot.ImageAlias, strings.Join(onboot.Command[:]," "))
-		fmt.Printf("%s\n", cmd)
-		runRemoteCommand(client, cmd)
+		err = runRemoteCommand(client, "docker create --name", container.Alias, binds, container.ImageAlias, commands)
 		if err != nil {
+			fmt.Printf("✘\n")
 			panic(err)
 		}
 
-		commandFormat = `docker start %s`
-		cmd = fmt.Sprintf(commandFormat, onboot.Alias)
-		runRemoteCommand(client, cmd)
+		err = runRemoteCommand(client, "docker start", container.Alias)
 		if err != nil {
+			fmt.Printf("✘\n")
 			panic(err)
 		}
 

@@ -15,45 +15,24 @@ func gadgetStop(args []string, g *GadgetContext) {
 		panic(err)
 	}
 
-
 	fmt.Println("[GADGT]  Stopping:")
-	fmt.Println("[GADGT]    - Onboot:")
-
-	for _, onboot := range g.Config.Onboot {
-		fmt.Printf("[GADGT]    %s ", onboot.Alias)
-		
-		commandFormat := `docker stop %s`
-		cmd := fmt.Sprintf(commandFormat, onboot.Alias)
-		runRemoteCommand(client, cmd)
-		if err != nil {
-			panic(err)
-		}
-
-		commandFormat = `docker rm %s`
-		cmd = fmt.Sprintf(commandFormat, onboot.Alias)
-		runRemoteCommand(client, cmd)
-		if err != nil {
-			panic(err)
-		}
-	}
-
-	fmt.Println("[GADGT]    - Services:")
+	stagedContainers := findStagedContainers(args, append(g.Config.Onboot, g.Config.Services...))
 	
-	for _, service := range g.Config.Services {
-		fmt.Printf("[GADGT]    %s ", service.Alias)
+	for _, container := range stagedContainers {
+		fmt.Printf("[GADGT]    %s ", container.Alias)
 		
-		commandFormat := `docker stop %s`
-		cmd := fmt.Sprintf(commandFormat, service.Alias)
-		runRemoteCommand(client, cmd)
+		err = runRemoteCommand(client, "docker stop", container.Alias)
 		if err != nil {
+			fmt.Printf("✘\n")
 			panic(err)
 		}
 
-		commandFormat = `docker rm %s`
-		cmd = fmt.Sprintf(commandFormat, service.Alias)
-		runRemoteCommand(client, cmd)
+		err = runRemoteCommand(client, "docker rm", container.Alias)
 		if err != nil {
+			fmt.Printf("✘\n")
 			panic(err)
 		}
+
+		fmt.Printf("✔\n")
 	}
 }

@@ -17,27 +17,28 @@ func build(args []string, g *GadgetContext) {
 	}
 
 	fmt.Println("[BUILD]  Building:")
-	
-	// loop through 'onboot' config and build containers
-	for _, onboot := range append(g.Config.Onboot, g.Config.Services...) {
-		fmt.Printf("[BUILD]    %s ", onboot.ImageAlias)
+
+	stagedContainers := findStagedContainers(args, append(g.Config.Onboot, g.Config.Services...))
+
+	for _, container := range stagedContainers {
+		fmt.Printf("[BUILD]    %s ", container.ImageAlias)
 
 		// use local directory for build
-		if onboot.Directory != "" {
-			containerDirectory := fmt.Sprintf("%s/%s", g.WorkingDirectory, onboot.Directory)
+		if container.Directory != "" {
+			containerDirectory := fmt.Sprintf("%s/%s", g.WorkingDirectory, container.Directory)
 			runLocalCommand(binary,
 				"build",
 				"--tag",
-				onboot.ImageAlias,
+				container.ImageAlias,
 				containerDirectory)
 		} else {
 			runLocalCommand(binary,
 				"pull",
-				onboot.Image)
+				container.Image)
 			runLocalCommand(binary,
 				"tag",
-				onboot.Image,
-				onboot.ImageAlias)
+				container.Image,
+				container.ImageAlias)
 		}
 		
 		fmt.Printf("✔\n")

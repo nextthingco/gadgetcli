@@ -76,10 +76,9 @@ func gadgetDeploy(args []string, g *GadgetContext) {
 		panic(err)
 	}
 
-	for _, onboot := range g.Config.Onboot {
-		deployContainer(client, &onboot, true)
-	}
-	for _, service := range g.Config.Services {
-		deployContainer(client, &service, false)
+	stagedContainers := findStagedContainers(args, append(g.Config.Onboot, g.Config.Services...))
+
+	for _, container := range stagedContainers {
+		deployContainer(client, &container, false)
 	}
 }
