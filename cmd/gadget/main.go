@@ -31,6 +31,7 @@ func main() {
 		fmt.Printf("USAGE: %s [options] COMMAND\n\n", filepath.Base(os.Args[0]))
 		fmt.Printf("Commands:\n")
 		fmt.Printf("  init        Initialize gadget project\n")
+		fmt.Printf("  add         Initialize gadget project\n")
 		fmt.Printf("  build       Build gadget config file\n")
 		fmt.Printf("  deploy      Build gadget config file\n")
 		fmt.Printf("  start       Build gadget config file\n")
@@ -63,6 +64,8 @@ func main() {
 	switch args[0] {
 	case "init":
 		gadgetInit(args[1:], &g)
+	case "add":
+		gadgetAdd(args[1:], &g)
 	case "build":
 		build(args[1:], &g)
 	case "deploy":
