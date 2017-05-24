@@ -52,16 +52,6 @@ func templateConfig(gName, gUu1, gUu2, gUu3 string) GadgetConfig {
 				UUID:    gUu2,
 			},
 		},
-		Services: []GadgetContainer{
-			{
-				Name:      "gadget-blink",
-				Image:     "gadget/blink",
-				UUID:      gUu3,
-				Directory: "blink",
-				Command:   []string{"/blink-leds"},
-				Binds:     []string{"/sys:/sys"},
-			},
-		},
 	}
 }
 

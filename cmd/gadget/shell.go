@@ -29,7 +29,7 @@ func gadgetShell(args []string) {
 
 	modes := ssh.TerminalModes{
 		ssh.ECHO:          1,     // disable echoing
-		ssh.ECHONL:          1,
+		ssh.ECHONL:        1,
 	}
 
 	if err := session.RequestPty("xterm", 25, 80, modes); err != nil {
