@@ -1,3 +1,6 @@
+VERSION="0.0"
+GIT_COMMIT=$(shell git rev-list -1 HEAD)
+
 SOURCES=\
 	cmd/gadget/main.go \
 	cmd/gadget/config.go \
@@ -22,7 +25,7 @@ DEPENDS=\
 	golang.org/x/crypto/ssh/terminal\
 
 gadget: $(SOURCES)
-	go build -ldflags="-s -w" -v ./cmd/gadget
+	go build -ldflags="-s -w -X main.Version=$(VERSION) -X main.GitCommit=$(GIT_COMMIT)" -v ./cmd/gadget
 
 tidy:
 	go fmt ./cmd/gadget
