@@ -7,24 +7,24 @@ import (
 
 // Process the build arguments and execute build
 func GadgetStart(args []string, g *GadgetContext) {
-	g.loadConfig()
-	ensureKeys()
+	g.LoadConfig()
+	EnsureKeys()
 
-	client, err := gadgetLogin(gadgetPrivKeyLocation)
+	client, err := GadgetLogin(gadgetPrivKeyLocation)
 
 	if err != nil {
 		panic(err)
 	}
 
 	fmt.Println("[GADGT]  Starting:")
-	stagedContainers,_ := findStagedContainers(args, append(g.Config.Onboot, g.Config.Services...))
+	stagedContainers,_ := FindStagedContainers(args, append(g.Config.Onboot, g.Config.Services...))
 	for _, container := range stagedContainers {
 		
 		fmt.Printf("[GADGT]    %s ", container.Alias)
-		binds := strings.Join( prependToStrings(container.Binds[:],"-v "), " ")
+		binds := strings.Join( PrependToStrings(container.Binds[:],"-v "), " ")
 		commands := strings.Join(container.Command[:]," ")
 		
-		stdout, stderr, err := runRemoteCommand(client, "docker create --name", container.Alias, binds, container.ImageAlias, commands)
+		stdout, stderr, err := RunRemoteCommand(client, "docker create --name", container.Alias, binds, container.ImageAlias, commands)
 		fmt.Println(stdout)
 		fmt.Println(stderr)
 		if err != nil {
@@ -32,7 +32,7 @@ func GadgetStart(args []string, g *GadgetContext) {
 			panic(err)
 		}
 
-		stdout, stderr, err = runRemoteCommand(client, "docker start", container.Alias)
+		stdout, stderr, err = RunRemoteCommand(client, "docker start", container.Alias)
 		fmt.Println(stdout)
 		fmt.Println(stderr)
 		if err != nil {

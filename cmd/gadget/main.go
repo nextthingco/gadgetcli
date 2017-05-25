@@ -22,7 +22,7 @@ func GadgetVersion() {
 func main() {
 	g := GadgetContext{}
 
-	err := requiredSsh()
+	err := RequiredSsh()
 	if err != nil {
 		panic(err)
 	}

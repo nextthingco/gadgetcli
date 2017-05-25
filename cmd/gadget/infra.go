@@ -71,7 +71,7 @@ func exists(path string) (bool, error) {
 	return true, err
 }
 
-func genGadgetKeys() (string, string, error) {
+func GenGadgetKeys() (string, string, error) {
 
 	randSeedSource := rand.NewSource(time.Now().UnixNano())
 	randSeed := rand.New(randSeedSource)
@@ -101,7 +101,7 @@ func genGadgetKeys() (string, string, error) {
 	return privateKeyPem, pubString, err
 }
 
-func requiredSsh() error {
+func RequiredSsh() error {
 
 	usr, err := user.Current()
 	if err != nil {
@@ -163,7 +163,7 @@ func requiredSsh() error {
 	if !gadgetPrivExists && !gadgetPubExists {
 		fmt.Println("[SETUP]  Unable to locate personal gadget ssh keys, generating..")
 		
-		privkey, pubkey, err := genGadgetKeys()
+		privkey, pubkey, err := GenGadgetKeys()
 		if err != nil {
 			fmt.Println("[SETUP]  something went wrong with genGadgetKeys: %s", err)
 			os.Exit(1)
@@ -191,7 +191,7 @@ func requiredSsh() error {
 	return nil
 }
 
-func gadgetLogin(keyLocation string) (*ssh.Client, error) {
+func GadgetLogin(keyLocation string) (*ssh.Client, error) {
 	key, err := ioutil.ReadFile(keyLocation)
 	if err != nil {
 		panic(err)
@@ -223,7 +223,7 @@ func gadgetLogin(keyLocation string) (*ssh.Client, error) {
 	return client, err
 }
 
-func gadgetInstallKeys() {
+func GadgetInstallKeys() {
 	key, err := ioutil.ReadFile(defaultPrivKeyLocation)
 	if err != nil {
 		panic(err)
@@ -267,20 +267,20 @@ func gadgetInstallKeys() {
 	defer client.Close()
 }
 
-func ensureKeys() error {
+func EnsureKeys() error {
 
-	_, err := gadgetLogin(gadgetPrivKeyLocation)
+	_, err := GadgetLogin(gadgetPrivKeyLocation)
 	if err != nil {
 		fmt.Println(gadgetPrivKeyLocation)
 		fmt.Println("[COMMS]  Private key login failed, trying default key")
 		fmt.Println(defaultPrivKeyLocation)
-		_, err = gadgetLogin(defaultPrivKeyLocation)
+		_, err = GadgetLogin(defaultPrivKeyLocation)
 		if err != nil {
 			fmt.Println("[COMMS]  Default key login also failed, did you leave your keys at home?")
 			return err
 		} else {
 			fmt.Println("[COMMS]  Default key login success")
-			gadgetInstallKeys()
+			GadgetInstallKeys()
 			if err != nil {
 				panic(err)
 			}
@@ -292,7 +292,7 @@ func ensureKeys() error {
 	return err
 }
 
-func runRemoteCommand(client *ssh.Client, cmd ...string) (*bytes.Buffer, *bytes.Buffer, error) {
+func RunRemoteCommand(client *ssh.Client, cmd ...string) (*bytes.Buffer, *bytes.Buffer, error) {
 	session, err := client.NewSession()
 	if err != nil {
 		client.Close()
@@ -312,7 +312,7 @@ func runRemoteCommand(client *ssh.Client, cmd ...string) (*bytes.Buffer, *bytes.
 	return &outBuffer, &errBuffer, err
 }
 
-func runLocalCommand(binary string, arguments ...string) {
+func RunLocalCommand(binary string, arguments ...string) {
 	cmd := exec.Command(binary, arguments...)
 	
 	cmd.Env = os.Environ()
@@ -348,7 +348,7 @@ func runLocalCommand(binary string, arguments ...string) {
 }
 
 
-func prependToStrings(stringArray []string, prefix string) []string {
+func PrependToStrings(stringArray []string, prefix string) []string {
 	for key,value := range stringArray {
 		s := []string{prefix, value}
 		stringArray[key] = strings.Join(s,"")
@@ -356,14 +356,14 @@ func prependToStrings(stringArray []string, prefix string) []string {
 	return stringArray //strings.Join(stringArray, " ")
 }
 
-func findStagedContainers(args []string, containers GadgetContainers) (GadgetContainers, error) {
+func FindStagedContainers(args []string, containers GadgetContainers) (GadgetContainers, error) {
 	var stagedContainers GadgetContainers
 	var unavailableContainers []string
 
 	// if we have any arguments, we're specifying containers to build
 	if len(args) > 0 {
 		for _,arg := range args {
-			c,err := containers.find(arg)
+			c,err := containers.Find(arg)
 			if err != nil {
 				unavailableContainers = append(unavailableContainers, arg)
 			} else {

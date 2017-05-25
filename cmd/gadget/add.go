@@ -19,7 +19,7 @@ func addUsage() {
 // Process the build arguments and execute build
 func GadgetAdd(args []string, g *GadgetContext) {
 
-	g.loadConfig()
+	g.LoadConfig()
 
 	addUu := uuid.NewV4()
 	
@@ -47,7 +47,7 @@ func GadgetAdd(args []string, g *GadgetContext) {
 		addUsage()
 	}
 	
-	g.Config = cleanConfig(g.Config)
+	g.Config = CleanConfig(g.Config)
 
 	outBytes, err := yaml.Marshal(g.Config)
 	if err != nil {

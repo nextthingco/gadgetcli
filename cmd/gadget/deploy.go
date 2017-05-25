@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-func deployContainer( client *ssh.Client, container * GadgetContainer, autostart bool) {
+func DeployContainer( client *ssh.Client, container * GadgetContainer, autostart bool) {
 	binary, err := exec.LookPath("docker")
 	if err != nil {
 		panic(err)
@@ -56,7 +56,7 @@ func deployContainer( client *ssh.Client, container * GadgetContainer, autostart
 	session.Close()
 
 	if autostart {
-		runRemoteCommand(client, "docker",
+		RunRemoteCommand(client, "docker",
 			"create",
 			"--name", container.Alias,
 			"--restart=always",
@@ -67,18 +67,18 @@ func deployContainer( client *ssh.Client, container * GadgetContainer, autostart
 // Process the build arguments and execute build
 func GadgetDeploy(args []string, g *GadgetContext) {
 
-	g.loadConfig()
-	ensureKeys()
+	g.LoadConfig()
+	EnsureKeys()
 
-	client, err := gadgetLogin(gadgetPrivKeyLocation)
+	client, err := GadgetLogin(gadgetPrivKeyLocation)
 
 	if err != nil {
 		panic(err)
 	}
 
-	stagedContainers,_ := findStagedContainers(args, append(g.Config.Onboot, g.Config.Services...))
+	stagedContainers,_ := FindStagedContainers(args, append(g.Config.Onboot, g.Config.Services...))
 
 	for _, container := range stagedContainers {
-		deployContainer(client, &container, false)
+		DeployContainer(client, &container, false)
 	}
 }

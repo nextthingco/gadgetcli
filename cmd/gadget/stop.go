@@ -6,22 +6,22 @@ import (
 
 // Process the build arguments and execute build
 func GadgetStop(args []string, g *GadgetContext) {
-	g.loadConfig()
-	ensureKeys()
+	g.LoadConfig()
+	EnsureKeys()
 
-	client, err := gadgetLogin(gadgetPrivKeyLocation)
+	client, err := GadgetLogin(gadgetPrivKeyLocation)
 
 	if err != nil {
 		panic(err)
 	}
 
 	fmt.Println("[GADGT]  Stopping:")
-	stagedContainers,_ := findStagedContainers(args, append(g.Config.Onboot, g.Config.Services...))
+	stagedContainers,_ := FindStagedContainers(args, append(g.Config.Onboot, g.Config.Services...))
 	
 	for _, container := range stagedContainers {
 		fmt.Printf("[GADGT]    %s ", container.Alias)
 		
-		stdout, stderr, err := runRemoteCommand(client, "docker stop", container.Alias)
+		stdout, stderr, err := RunRemoteCommand(client, "docker stop", container.Alias)
 		fmt.Println(stdout)
 		fmt.Println(stderr)
 		if err != nil {
@@ -29,7 +29,7 @@ func GadgetStop(args []string, g *GadgetContext) {
 			panic(err)
 		}
 
-		stdout, stderr, err = runRemoteCommand(client, "docker rm", container.Alias)
+		stdout, stderr, err = RunRemoteCommand(client, "docker rm", container.Alias)
 		fmt.Println(stdout)
 		fmt.Println(stderr)
 		if err != nil {

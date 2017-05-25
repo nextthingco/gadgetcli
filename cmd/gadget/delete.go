@@ -4,10 +4,10 @@ import "fmt"
 
 // Process the build arguments and execute build
 func GadgetDelete(args []string, g *GadgetContext) {
-	g.loadConfig()
-	ensureKeys()
+	g.LoadConfig()
+	EnsureKeys()
 
-	client, err := gadgetLogin(gadgetPrivKeyLocation)
+	client, err := GadgetLogin(gadgetPrivKeyLocation)
 
 	if err != nil {
 		panic(err)
@@ -15,11 +15,11 @@ func GadgetDelete(args []string, g *GadgetContext) {
 
 	fmt.Println("[GADGT]  Deleting:")
 
-	stagedContainers,_ := findStagedContainers(args, append(g.Config.Onboot, g.Config.Services...))
+	stagedContainers,_ := FindStagedContainers(args, append(g.Config.Onboot, g.Config.Services...))
 	
 	for _, container := range stagedContainers {
 		fmt.Printf("[GADGT]    %s ", container.ImageAlias)
-		stdout, stderr, err := runRemoteCommand(client, "docker", "rmi", container.ImageAlias)
+		stdout, stderr, err := RunRemoteCommand(client, "docker", "rmi", container.ImageAlias)
 		if err != nil {
 			fmt.Printf("✘\n")
 			panic(err)

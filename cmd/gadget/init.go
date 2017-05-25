@@ -24,7 +24,7 @@ func GadgetInit(args []string, g *GadgetContext) {
 	
 	fmt.Printf("[INIT ]    in %s ", g.WorkingDirectory)
 
-	initConfig := templateConfig(initName, fmt.Sprintf("%s", initUu1), fmt.Sprintf("%s", initUu2), fmt.Sprintf("%s", initUu3))
+	initConfig := TemplateConfig(initName, fmt.Sprintf("%s", initUu1), fmt.Sprintf("%s", initUu2), fmt.Sprintf("%s", initUu3))
 
 	outBytes, err := yaml.Marshal(initConfig)
 	if err != nil {

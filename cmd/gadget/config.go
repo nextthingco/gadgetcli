@@ -39,7 +39,7 @@ type GadgetContainer struct {
 	ImageAlias   string   "imagealias,omitempty"
 }
 
-func templateConfig(gName, gUu1, gUu2, gUu3 string) GadgetConfig {
+func TemplateConfig(gName, gUu1, gUu2, gUu3 string) GadgetConfig {
 	return GadgetConfig{
 		Spec: Version,
 		Name: gName,
@@ -55,7 +55,7 @@ func templateConfig(gName, gUu1, gUu2, gUu3 string) GadgetConfig {
 	}
 }
 
-func parseConfig(config []byte) (GadgetConfig, error) {
+func ParseConfig(config []byte) (GadgetConfig, error) {
 	g := GadgetConfig{}
 
 	// Parse yaml
@@ -67,7 +67,7 @@ func parseConfig(config []byte) (GadgetConfig, error) {
 	return g, nil
 }
 
-func cleanConfig( g GadgetConfig ) GadgetConfig {
+func CleanConfig( g GadgetConfig ) GadgetConfig {
 	
 	// helper function to remove hidden config
 	// items before writing the struct out
@@ -109,7 +109,7 @@ func isDriveLetter(path string) bool {
 
 // recursive function, returns ("", rc) on failure
 // returns ("/path/to/dir", rc) on success
-func walkUp(bottom_dir string) (string, error) {
+func WalkUp(bottom_dir string) (string, error) {
 
 	var rc error = nil
 	// TODO: error checking on path
@@ -122,14 +122,14 @@ func walkUp(bottom_dir string) (string, error) {
 		if isRoot(bottom_dir) || isDriveLetter(bottom_dir) {
 			return "", errors.New("[SETUP]  could not find configuration file")
 		} else {
-			bottom_dir, rc = walkUp(filepath.Dir(bottom_dir))
+			bottom_dir, rc = WalkUp(filepath.Dir(bottom_dir))
 		}
 	}
 
 	return bottom_dir, rc
 }
 
-func (g *GadgetContext) loadConfig() {
+func (g *GadgetContext) LoadConfig() {
 
 	g.WorkingDirectory, _ = filepath.Abs(g.WorkingDirectory)
 
@@ -140,7 +140,7 @@ func (g *GadgetContext) loadConfig() {
 	var parseerr error = nil
 	var cwderr error = nil
 
-	g.WorkingDirectory, cwderr = walkUp(g.WorkingDirectory)
+	g.WorkingDirectory, cwderr = WalkUp(g.WorkingDirectory)
 	if cwderr == nil {
 		// found the config
 		fmt.Printf("[SETUP]  Running in directory:\n")
@@ -157,7 +157,7 @@ func (g *GadgetContext) loadConfig() {
 
 	// create new config class from gadget.yml output
 	// TODO: add error checking here.
-	g.Config, parseerr = parseConfig(config)
+	g.Config, parseerr = ParseConfig(config)
 
 	for index, onboot := range g.Config.Onboot {
 		onboot.Alias = fmt.Sprintf("%s_%s", onboot.Name, onboot.UUID)
@@ -172,7 +172,7 @@ func (g *GadgetContext) loadConfig() {
 }
 type GadgetContainers []GadgetContainer
 
-func (containers GadgetContainers) find(name string) (GadgetContainer, error) {
+func (containers GadgetContainers) Find(name string) (GadgetContainer, error) {
 for _,container := range containers {
 		if container.Name == name {
 			return container, nil

@@ -10,9 +10,9 @@ import (
 // Process the build arguments and execute build
 func GadgetShell(args []string) {
 	
-	ensureKeys()
+	EnsureKeys()
 
-	client, err := gadgetLogin(gadgetPrivKeyLocation)
+	client, err := GadgetLogin(gadgetPrivKeyLocation)
 
 	if err != nil {
 		panic(err)
