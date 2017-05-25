@@ -7,7 +7,7 @@ import (
 
 // Process the build arguments and execute build
 func gadgetStart(args []string, g *GadgetContext) {
-	loadConfig(g)
+	g.loadConfig()
 	ensureKeys()
 
 	client, err := gadgetLogin(gadgetPrivKeyLocation)
@@ -17,13 +17,10 @@ func gadgetStart(args []string, g *GadgetContext) {
 	}
 
 	fmt.Println("[GADGT]  Starting:")
-
-	stagedContainers := findStagedContainers(args, append(g.Config.Onboot, g.Config.Services...))
-	
+	stagedContainers,_ := findStagedContainers(args, append(g.Config.Onboot, g.Config.Services...))
 	for _, container := range stagedContainers {
 		
 		fmt.Printf("[GADGT]    %s ", container.Alias)
-
 		binds := strings.Join( prependToStrings(container.Binds[:],"-v "), " ")
 		commands := strings.Join(container.Command[:]," ")
 		

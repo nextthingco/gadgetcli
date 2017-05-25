@@ -2,10 +2,11 @@ package main
 
 import (
 	"bufio"
+	"errors"
+	//"bytes"
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
-	"errors"
 	"fmt"
 	"github.com/tmc/scp"
 	"golang.org/x/crypto/ssh"
@@ -350,25 +351,16 @@ func prependToStrings(stringArray []string, prefix string) []string {
 	return stringArray //strings.Join(stringArray, " ")
 }
 
-
-func findContainer(name string, containers []GadgetContainer) ( GadgetContainer, error ) {
-	for _,container := range containers {
-		if container.Name == name {
-			return container, nil
-		}
-	}
-	return GadgetContainer{}, errors.New(fmt.Sprintf("[BUILD]  could not find container: %s", name))
-}
-
-func findStagedContainers(args []string, containers []GadgetContainer) []GadgetContainer {
-	var stagedContainers []GadgetContainer
+func findStagedContainers(args []string, containers GadgetContainers) (GadgetContainers, error) {
+	var stagedContainers GadgetContainers
+	var unavailableContainers []string
 
 	// if we have any arguments, we're specifying containers to build
 	if len(args) > 0 {
 		for _,arg := range args {
-			c,err := findContainer(arg, containers)
+			c,err := containers.find(arg)
 			if err != nil {
-				//error here
+				unavailableContainers = append(unavailableContainers, arg)
 			} else {
 				stagedContainers = append(stagedContainers, c)
 			}
@@ -378,5 +370,6 @@ func findStagedContainers(args []string, containers []GadgetContainer) []GadgetC
 	if len(stagedContainers) == 0 {
 		stagedContainers = containers
 	}
-	return stagedContainers
+	err := errors.New(fmt.Sprintf("Could not find containers: %s", strings.Join(unavailableContainers, ", ")))
+	return stagedContainers, err
 }

@@ -6,7 +6,7 @@ import (
 
 // Process the build arguments and execute build
 func gadgetLogs(args []string, g *GadgetContext) {
-	loadConfig(g)
+	g.loadConfig()
 	ensureKeys()
 
 	client, err := gadgetLogin(gadgetPrivKeyLocation)

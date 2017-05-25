@@ -129,7 +129,7 @@ func walkUp(bottom_dir string) (string, error) {
 	return bottom_dir, rc
 }
 
-func loadConfig(g *GadgetContext) {
+func (g *GadgetContext) loadConfig() {
 
 	g.WorkingDirectory, _ = filepath.Abs(g.WorkingDirectory)
 
@@ -169,4 +169,14 @@ func loadConfig(g *GadgetContext) {
 		service.ImageAlias = fmt.Sprintf("%s-img", service.Alias)
 		g.Config.Services[index] = service
 	}
+}
+type GadgetContainers []GadgetContainer
+
+func (containers GadgetContainers) find(name string) (GadgetContainer, error) {
+for _,container := range containers {
+		if container.Name == name {
+			return container, nil
+		}
+	}
+	return GadgetContainer{}, errors.New(fmt.Sprintf("[CONFIG]  could not find container: %s", name))
 }

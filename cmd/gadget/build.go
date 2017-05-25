@@ -8,7 +8,7 @@ import (
 // Process the build arguments and execute build
 func build(args []string, g *GadgetContext) {
 
-	loadConfig(g)
+	g.loadConfig()
 
 	// find docker binary in path
 	binary, err := exec.LookPath("docker")
@@ -18,7 +18,7 @@ func build(args []string, g *GadgetContext) {
 
 	fmt.Println("[BUILD]  Building:")
 
-	stagedContainers := findStagedContainers(args, append(g.Config.Onboot, g.Config.Services...))
+	stagedContainers,_ := findStagedContainers(args, append(g.Config.Onboot, g.Config.Services...))
 
 	for _, container := range stagedContainers {
 		fmt.Printf("[BUILD]    %s ", container.ImageAlias)

@@ -19,7 +19,7 @@ func addUsage() {
 // Process the build arguments and execute build
 func gadgetAdd(args []string, g *GadgetContext) {
 
-	loadConfig(g)
+	g.loadConfig()
 
 	addUu := uuid.NewV4()
 	
