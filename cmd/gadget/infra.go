@@ -111,8 +111,8 @@ func requiredSsh() error {
 	// get proper homedir locations
 	sshLocation = filepath.Join(usr.HomeDir,".ssh")
 	defaultPrivKeyLocation = filepath.Join(sshLocation,"gadget_default_rsa")
-	gadgetPrivKeyLocation = filepath.Join(sshLocation,"gadget_default_rsa")
-	gadgetPubKeyLocation = filepath.Join(sshLocation,"gadget_default_rsa")
+	gadgetPrivKeyLocation = filepath.Join(sshLocation,"gadget_rsa")
+	gadgetPubKeyLocation = filepath.Join(sshLocation,"gadget_rsa.pub")
 
 	// check OS for IP address
 	if runtime.GOOS == "windows" {
