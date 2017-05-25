@@ -74,7 +74,7 @@ func genGadgetKeys() (string, string, error) {
 	randSeedSource := rand.NewSource(time.Now().UnixNano())
 	randSeed := rand.New(randSeedSource)
 
-	privateKey, err := rsa.GenerateKey(randSeed, 2014)
+	privateKey, err := rsa.GenerateKey(randSeed, 2048)
 	if err != nil {
 		panic(err)
 	}
