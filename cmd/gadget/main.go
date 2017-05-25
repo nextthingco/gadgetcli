@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -24,7 +25,8 @@ func main() {
 
 	err := RequiredSsh()
 	if err != nil {
-		panic(err)
+		fmt.Printf("ERROR: failed at RequiredSsh in main()")
+		os.Exit(1)
 	}
 
 	flag.Usage = func() {
@@ -65,7 +67,7 @@ func main() {
 	case "init":
 		GadgetInit(args[1:], &g)
 	case "add":
-		GadgetAdd(args[1:], &g)
+		err = GadgetAdd(args[1:], &g)
 	case "build":
 		GadgetBuild(args[1:], &g)
 	case "deploy":
@@ -91,6 +93,10 @@ func main() {
 	default:
 		fmt.Printf("%q is not valid command.\n\n", args[0])
 		flag.Usage()
+		err = errors.New("ERROR: incorrect usage")
+	}
+	
+	if err != nil {
 		os.Exit(1)
 	}
 }

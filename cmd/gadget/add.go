@@ -2,31 +2,31 @@ package main
 
 import (
 	"fmt"
+	"errors"
 	"github.com/satori/go.uuid"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
-	"os"
 )
 
-func addUsage() {
+func addUsage() error {
 	fmt.Println("Usage: gadget [flags] add [type] [name]")
 	fmt.Println("               *opt        *req   *req ")
 	fmt.Println("Type: service | onboot                 ")
 	fmt.Println("Name: friendly name for container      ")
-	os.Exit(1)
+	
+	return errors.New("Incorrect add usage")
 }
 
 // Process the build arguments and execute build
-func GadgetAdd(args []string, g *GadgetContext) {
+func GadgetAdd(args []string, g *GadgetContext) error {
 
 	g.LoadConfig()
 
 	addUu := uuid.NewV4()
 	
 	if len(args) != 2 {
-		addUsage()
+		return addUsage()
 	}
-	
 	
 	fmt.Printf("[SETUP]  Adding new %s: \"%s\" ", args[0], args[1])
 	
@@ -51,16 +51,15 @@ func GadgetAdd(args []string, g *GadgetContext) {
 
 	outBytes, err := yaml.Marshal(g.Config)
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		return err
 	}
 
 	err = ioutil.WriteFile(fmt.Sprintf("%s/gadget.yml", g.WorkingDirectory), outBytes, 0644)
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		return err
 	}
 	
 	fmt.Printf("✔\n")
 	
+	return err
 }
