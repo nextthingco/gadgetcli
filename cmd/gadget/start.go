@@ -5,11 +5,6 @@ import (
 	"strings"
 )
 
-func getBindString( container GadgetContainer ) string {
-	binds := strings.Join( prependToStrings(container.Binds[:],"-v "), " ")
-	return binds
-}
-
 // Process the build arguments and execute build
 func gadgetStart(args []string, g *GadgetContext) {
 	loadConfig(g)
@@ -29,7 +24,7 @@ func gadgetStart(args []string, g *GadgetContext) {
 		
 		fmt.Printf("[GADGT]    %s ", container.Alias)
 
-		binds := getBindString(container)
+		binds := strings.Join( prependToStrings(container.Binds[:],"-v "), " ")
 		commands := strings.Join(container.Command[:]," ")
 		
 		err = runRemoteCommand(client, "docker create --name", container.Alias, binds, container.ImageAlias, commands)
