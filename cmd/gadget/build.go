@@ -6,7 +6,7 @@ import (
 )
 
 // Process the build arguments and execute build
-func build(args []string, g *GadgetContext) {
+func GadgetBuild(args []string, g *GadgetContext) {
 
 	g.loadConfig()
 

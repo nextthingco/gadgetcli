@@ -3,7 +3,7 @@ package main
 import "fmt"
 
 // Process the build arguments and execute build
-func gadgetDelete(args []string, g *GadgetContext) {
+func GadgetDelete(args []string, g *GadgetContext) {
 	g.loadConfig()
 	ensureKeys()
 

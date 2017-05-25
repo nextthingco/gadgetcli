@@ -6,7 +6,7 @@ import (
 )
 
 // Process the build arguments and execute build
-func gadgetStart(args []string, g *GadgetContext) {
+func GadgetStart(args []string, g *GadgetContext) {
 	g.loadConfig()
 	ensureKeys()
 

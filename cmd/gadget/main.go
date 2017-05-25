@@ -12,7 +12,7 @@ var (
 	GitCommit = "unknown"
 )
 
-func version() {
+func GadgetVersion() {
 	fmt.Println(filepath.Base(os.Args[0]))
 	fmt.Printf("  version: %s\n", Version)
 	fmt.Printf("  commit: %s\n", GitCommit)
@@ -63,31 +63,31 @@ func main() {
 	// parse arguments
 	switch args[0] {
 	case "init":
-		gadgetInit(args[1:], &g)
+		GadgetInit(args[1:], &g)
 	case "add":
-		gadgetAdd(args[1:], &g)
+		GadgetAdd(args[1:], &g)
 	case "build":
-		build(args[1:], &g)
+		GadgetBuild(args[1:], &g)
 	case "deploy":
-		gadgetDeploy(args[1:], &g)
+		GadgetDeploy(args[1:], &g)
 	case "start":
-		gadgetStart(args[1:], &g)
+		GadgetStart(args[1:], &g)
 	case "stop":
-		gadgetStop(args[1:], &g)
+		GadgetStop(args[1:], &g)
 	case "status":
-		gadgetStatus(args[1:], &g)
+		GadgetStatus(args[1:], &g)
 	case "delete":
-		gadgetDelete(args[1:], &g)
+		GadgetDelete(args[1:], &g)
 	case "shell":
-		gadgetShell(args[1:])
+		GadgetShell(args[1:])
 	case "logs":
-		gadgetLogs(args[1:], &g)
+		GadgetLogs(args[1:], &g)
 	case "version":
-		version()
+		GadgetVersion()
 	case "help":
 		flag.Usage()
 	case "run":
-		gadgetRun(args[1:], &g)
+		GadgetRun(args[1:], &g)
 	default:
 		fmt.Printf("%q is not valid command.\n\n", args[0])
 		flag.Usage()

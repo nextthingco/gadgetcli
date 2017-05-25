@@ -65,7 +65,7 @@ func deployContainer( client *ssh.Client, container * GadgetContainer, autostart
 	}
 }
 // Process the build arguments and execute build
-func gadgetDeploy(args []string, g *GadgetContext) {
+func GadgetDeploy(args []string, g *GadgetContext) {
 
 	g.loadConfig()
 	ensureKeys()

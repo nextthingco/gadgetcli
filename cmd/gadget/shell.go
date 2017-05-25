@@ -8,7 +8,7 @@ import (
 )
 
 // Process the build arguments and execute build
-func gadgetShell(args []string) {
+func GadgetShell(args []string) {
 	
 	ensureKeys()
 

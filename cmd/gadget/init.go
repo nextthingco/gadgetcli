@@ -10,7 +10,7 @@ import (
 )
 
 // Process the build arguments and execute build
-func gadgetInit(args []string, g *GadgetContext) {
+func GadgetInit(args []string, g *GadgetContext) {
 
 	initUu1 := uuid.NewV4()
 	initUu2 := uuid.NewV4()

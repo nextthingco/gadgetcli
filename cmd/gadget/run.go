@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-func gadgetRun(args []string, g *GadgetContext) {
+func GadgetRun(args []string, g *GadgetContext) {
 	g.loadConfig()
 	ensureKeys()
 

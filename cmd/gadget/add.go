@@ -17,7 +17,7 @@ func addUsage() {
 }
 
 // Process the build arguments and execute build
-func gadgetAdd(args []string, g *GadgetContext) {
+func GadgetAdd(args []string, g *GadgetContext) {
 
 	g.loadConfig()
 
