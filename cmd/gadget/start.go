@@ -24,13 +24,17 @@ func gadgetStart(args []string, g *GadgetContext) {
 		binds := strings.Join( prependToStrings(container.Binds[:],"-v "), " ")
 		commands := strings.Join(container.Command[:]," ")
 		
-		err = runRemoteCommand(client, "docker create --name", container.Alias, binds, container.ImageAlias, commands)
+		stdout, stderr, err := runRemoteCommand(client, "docker create --name", container.Alias, binds, container.ImageAlias, commands)
+		fmt.Println(stdout)
+		fmt.Println(stderr)
 		if err != nil {
 			fmt.Printf("✘\n")
 			panic(err)
 		}
 
-		err = runRemoteCommand(client, "docker start", container.Alias)
+		stdout, stderr, err = runRemoteCommand(client, "docker start", container.Alias)
+		fmt.Println(stdout)
+		fmt.Println(stderr)
 		if err != nil {
 			fmt.Printf("✘\n")
 			panic(err)

@@ -86,6 +86,8 @@ func main() {
 		version()
 	case "help":
 		flag.Usage()
+	case "run":
+		gadgetRun(args[1:], &g)
 	default:
 		fmt.Printf("%q is not valid command.\n\n", args[0])
 		flag.Usage()

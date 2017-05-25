@@ -3,7 +3,7 @@ package main
 import (
 	"bufio"
 	"errors"
-	//"bytes"
+	"bytes"
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
@@ -271,7 +271,9 @@ func ensureKeys() error {
 
 	_, err := gadgetLogin(gadgetPrivKeyLocation)
 	if err != nil {
+		fmt.Println(gadgetPrivKeyLocation)
 		fmt.Println("[COMMS]  Private key login failed, trying default key")
+		fmt.Println(defaultPrivKeyLocation)
 		_, err = gadgetLogin(defaultPrivKeyLocation)
 		if err != nil {
 			fmt.Println("[COMMS]  Default key login also failed, did you leave your keys at home?")
@@ -290,7 +292,7 @@ func ensureKeys() error {
 	return err
 }
 
-func runRemoteCommand(client *ssh.Client, cmd ...string) error {
+func runRemoteCommand(client *ssh.Client, cmd ...string) (*bytes.Buffer, *bytes.Buffer, error) {
 	session, err := client.NewSession()
 	if err != nil {
 		client.Close()
@@ -301,11 +303,13 @@ func runRemoteCommand(client *ssh.Client, cmd ...string) error {
 	if err != nil {
 		panic(err)
 	}
-	// TODO: capture both stdout and stderr into buffers and return them
-	//session.Stdout = os.Stdout
-	//session.Stderr = os.Stderr
+	var outBuffer bytes.Buffer
+	var errBuffer bytes.Buffer
+	session.Stdout = &outBuffer
+	session.Stderr = &errBuffer
 	err = session.Wait()
-	return err
+	
+	return &outBuffer, &errBuffer, err
 }
 
 func runLocalCommand(binary string, arguments ...string) {

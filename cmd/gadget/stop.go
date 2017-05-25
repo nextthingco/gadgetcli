@@ -21,13 +21,17 @@ func gadgetStop(args []string, g *GadgetContext) {
 	for _, container := range stagedContainers {
 		fmt.Printf("[GADGT]    %s ", container.Alias)
 		
-		err = runRemoteCommand(client, "docker stop", container.Alias)
+		stdout, stderr, err := runRemoteCommand(client, "docker stop", container.Alias)
+		fmt.Println(stdout)
+		fmt.Println(stderr)
 		if err != nil {
 			fmt.Printf("✘\n")
 			panic(err)
 		}
 
-		err = runRemoteCommand(client, "docker rm", container.Alias)
+		stdout, stderr, err = runRemoteCommand(client, "docker rm", container.Alias)
+		fmt.Println(stdout)
+		fmt.Println(stderr)
 		if err != nil {
 			fmt.Printf("✘\n")
 			panic(err)
