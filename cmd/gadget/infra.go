@@ -18,6 +18,7 @@ import (
 	"runtime"
 	"time"
 	"strings"
+	"path/filepath"
 )
 
 var (
@@ -108,10 +109,10 @@ func requiredSsh() error {
 	}
 
 	// get proper homedir locations
-	sshLocation = fmt.Sprintf("%s/.ssh", usr.HomeDir)
-	defaultPrivKeyLocation = fmt.Sprintf("%s/.ssh/gadget_default_rsa", usr.HomeDir)
-	gadgetPrivKeyLocation = fmt.Sprintf("%s/.ssh/gadget_rsa", usr.HomeDir)
-	gadgetPubKeyLocation = fmt.Sprintf("%s/.ssh/gadget_rsa.pub", usr.HomeDir)
+	sshLocation = filepath.Join(usr.HomeDir,".ssh")
+	defaultPrivKeyLocation = filepath.Join(sshLocation,"gadget_default_rsa")
+	gadgetPrivKeyLocation = filepath.Join(sshLocation,"gadget_default_rsa")
+	gadgetPubKeyLocation = filepath.Join(sshLocation,"gadget_default_rsa")
 
 	// check OS for IP address
 	if runtime.GOOS == "windows" {
