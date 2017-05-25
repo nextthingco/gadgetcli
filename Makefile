@@ -12,11 +12,14 @@ DEPENDS=\
 	golang.org/x/crypto/ssh/terminal\
 
 gadget: $(SOURCES)
-	go build -ldflags="-s -w -X main.Version=$(VERSION) -X main.GitCommit=$(GIT_COMMIT)" -v ./cmd/gadget
+	@echo "Building Gadget"
+	@go build -ldflags="-s -w -X main.Version=$(VERSION) -X main.GitCommit=$(GIT_COMMIT)" -v ./cmd/gadget
 
 tidy:
-	go fmt ./cmd/gadget
+	@echo "Tidying up sources"
+	@go fmt ./cmd/gadget
 test: gadget
+	@echo "Beginning tests"
 	mkdir test-project
 	./gadget -C test-project init
 	./gadget -C test-project build
@@ -29,4 +32,5 @@ test: gadget
 	./gadget -C test-project delete
 
 get:
-	go get ${DEPENDS}
+	@echo "Downloading external dependencies"
+	@go get ${DEPENDS}
