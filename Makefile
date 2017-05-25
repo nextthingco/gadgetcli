@@ -1,20 +1,7 @@
 VERSION="0.0"
 GIT_COMMIT=$(shell git rev-list -1 HEAD)
 
-SOURCES=\
-	cmd/gadget/main.go \
-	cmd/gadget/config.go \
-	cmd/gadget/build.go \
-	cmd/gadget/add.go \
-	cmd/gadget/delete.go \
-	cmd/gadget/deploy.go \
-	cmd/gadget/init.go \
-	cmd/gadget/infra.go \
-	cmd/gadget/status.go \
-	cmd/gadget/logs.go \
-	cmd/gadget/stop.go \
-	cmd/gadget/shell.go \
-	cmd/gadget/start.go
+SOURCES=$(shell ls cmd/gadget/*.go)
 
 DEPENDS=\
 	golang.org/x/crypto/ssh\
