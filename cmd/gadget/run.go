@@ -1,8 +1,9 @@
 package main
 
 import (
-	"fmt"
+	//"fmt"
 	"strings"
+	log "github.com/sirupsen/logrus"
 )
 
 func GadgetRun(args []string, g *GadgetContext) error {
@@ -15,8 +16,13 @@ func GadgetRun(args []string, g *GadgetContext) error {
 	}
 
 	stdout, stderr, err := RunRemoteCommand(client, strings.Join(args, " "))
-	fmt.Println(stdout.String())
-	fmt.Println(stderr.String())
+
+	log.WithFields(log.Fields{
+		"command": strings.Join(args, " "),
+		"stdout": stdout.String(),
+		"stderr": stderr.String(),
+	}).Info("Ran remote command")
+
 	if err != nil {
 		return err
 	}

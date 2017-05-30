@@ -2,10 +2,11 @@ package main
 
 import (
 	"flag"
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
+	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -87,13 +88,19 @@ func main() {
 	}
 	flag.BoolVar(&g.Verbose, "v", false, "Verbose execution")
 	flag.StringVar(&g.WorkingDirectory, "C", ".", "Run in directory")
-
 	flag.Parse()
+
+	if g.Verbose {
+		log.SetLevel(log.DebugLevel)
+	} else {
+		log.SetLevel(log.WarnLevel)
+	}
 
 	args := flag.Args()
 	if len(args) < 1 {
 		fmt.Printf("Please specify a command.\n\n")
 		flag.Usage()
+		log.Error("No Command Specified")
 		os.Exit(1)
 	}
 
@@ -102,7 +109,9 @@ func main() {
 	if err != nil {
 		fmt.Printf("%q is not valid command.\n\n", args[0])
 		flag.Usage()
-		err = errors.New("ERROR: incorrect usage")
+		log.WithFields(log.Fields{
+			"command": strings.Join(args[0:], " "),
+		}).Error("Command is not valid")
 		os.Exit(1)
 	}
 
@@ -110,6 +119,7 @@ func main() {
 	if cmd.NeedsConfig {
 		err = g.LoadConfig()
 		if err != nil {
+			log.Error("Failed to load config")
 			os.Exit(1)
 		}
 	}

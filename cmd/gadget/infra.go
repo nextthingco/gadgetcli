@@ -19,6 +19,7 @@ import (
 	"time"
 	"strings"
 	"path/filepath"
+	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -139,8 +140,14 @@ func RequiredSsh() error {
 	}
 
 	if !pathExists {
-		fmt.Println("[SETUP]  Unable to locate default gadget ssh key, generating..")
-		fmt.Printf("[SETUP]    default private key: ~/.ssh/gadget_default_rsa  ")
+		log.WithFields(log.Fields{
+			"function": "RequiredSsh",
+		}).Warn("Unable to locate default gadget ssh key, generating..")
+
+		log.WithFields(log.Fields{
+			"function": "RequiredSsh",
+		}).Debug("default private key: ~/.ssh/gadget_default_rsa")
+
 		outBytes := []byte(defaultKey)
 		err = ioutil.WriteFile(defaultPrivKeyLocation, outBytes, 0600)
 		if err != nil {
@@ -156,14 +163,27 @@ func RequiredSsh() error {
 	}
 	gadgetPubExists, err := exists(gadgetPubKeyLocation)
 	if err != nil {
+		log.WithFields(log.Fields{
+			"function": "RequiredSsh",
+			"keyLocation": gadgetPubKeyLocation,
+			"error": err,
+		}).Error("something went wrong with gadgetPubExists")
 		return err
 	}
 
 	if !gadgetPrivExists && !gadgetPubExists {
-		fmt.Println("[SETUP]  Unable to locate personal gadget ssh keys, generating..")
+		log.WithFields(log.Fields{
+			"function": "RequiredSsh",
+			"keyLocation": gadgetPubKeyLocation,
+			"error": err,
+		}).Warn("Unable to locate personal gadget ssh keys, generating..")
 		
 		privkey, pubkey, err := GenGadgetKeys()
 		if err != nil {
+			log.WithFields(log.Fields{
+				"function": "RequiredSsh",
+				"error": err,
+			}).Error("something went wrong with genGadgetKeys")
 			return err
 		}
 		
@@ -251,11 +271,18 @@ func GadgetInstallKeys() error {
 	}
 	
 	dest := "/root/.ssh/authorized_keys"
-	fmt.Println("[COMMS]  Installing personal gadget ssh key..")
-	fmt.Printf("[COMMS]    gadget:%s ", dest)
+	log.WithFields(log.Fields{
+		"function": "RequiredSsh",
+		"gadget": dest,
+	}).Debug("Installing personal gadget ssh key..")
+
 	err = scp.CopyPath(gadgetPubKeyLocation, dest, session)
 	if _, err := os.Stat(gadgetPubKeyLocation); os.IsNotExist(err) {
-		fmt.Printf("[COMMS]    ERROR: no such file or directory: %s", gadgetPubKeyLocation)
+		log.WithFields(log.Fields{
+			"function": "RequiredSsh",
+			"gadget": dest,
+			"gadgetPubKeyLocation": gadgetPubKeyLocation,
+		}).Error("Public key file does not exist")
 	} else {
 		fmt.Printf("✔\n")
 	}
@@ -268,22 +295,35 @@ func EnsureKeys() error {
 
 	_, err := GadgetLogin(gadgetPrivKeyLocation)
 	if err != nil {
-		fmt.Println(gadgetPrivKeyLocation)
-		fmt.Println("[COMMS]  Private key login failed, trying default key")
-		fmt.Println(defaultPrivKeyLocation)
+		log.WithFields(log.Fields{
+			"function": "EnsureKeys",
+			"gadgetPrivKeyLocation": gadgetPrivKeyLocation,
+			"defaultPrivKeyLocation": defaultPrivKeyLocation,
+		}).Error("Private key login failed, trying default key")
+
 		_, err = GadgetLogin(defaultPrivKeyLocation)
 		if err != nil {
-			fmt.Println("[COMMS]  Default key login also failed, did you leave your keys at home?")
+			log.Error("Default key login also failed, did you leave your keys at home?")
 			return err
 		} else {
-			fmt.Println("[COMMS]  Default key login success")
+			log.WithFields(log.Fields{
+				"function": "EnsureKeys",
+			}).Debug("Default key login success")
+
+			log.WithFields(log.Fields{
+				"function": "EnsureKeys",
+				"gadgetPubKeyLocation": gadgetPubKeyLocation,
+			}).Debug("Public key file does not exist")
+
 			GadgetInstallKeys()
 			if err != nil {
 				return err
 			}
 		}
 	} else {
-		fmt.Println("[COMMS]  Private key login success")
+		log.WithFields(log.Fields{
+			"function": "EnsureKeys",
+		}).Debug("Private key login success")
 	}
 
 	return err

@@ -4,7 +4,7 @@ import (
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/terminal"
 	"os"
-	"fmt"
+	log "github.com/sirupsen/logrus"
 )
 
 // Process the build arguments and execute build
@@ -41,7 +41,10 @@ func GadgetShell(args []string, g *GadgetContext) error {
 		return err
 	}
 	
-	fmt.Println("[COMMS]  Entering shell..")
+	log.WithFields(log.Fields{
+		"function": "GadgetShell",
+	}).Debug("Entering shell..")
+
 	
 	oldState, err := terminal.MakeRaw(0)
 	if err != nil {
@@ -51,7 +54,8 @@ func GadgetShell(args []string, g *GadgetContext) error {
 
 	session.Wait()
 	
-	fmt.Println("[COMMS]  Closed shell.")
-	
+	log.WithFields(log.Fields{
+		"function": "GadgetShell",
+	}).Debug("Closed shell.")
 	return nil	
 }
