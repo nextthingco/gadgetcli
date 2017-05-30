@@ -10,7 +10,7 @@ DEPENDS=\
 	github.com/satori/go.uuid\
 	golang.org/x/crypto/ssh\
 	golang.org/x/crypto/ssh/terminal\
-    github.com/sirupsen/logrus\
+	github.com/sirupsen/logrus\
 
 gadget: $(SOURCES)
 	@echo "Building Gadget"

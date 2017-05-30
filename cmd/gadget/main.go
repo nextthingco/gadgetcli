@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"errors"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -54,7 +55,7 @@ func findCommand(name string) (*GadgetCommand, error) {
 			return &cmd,nil
 		}
 	}
-	return nil, nil
+	return nil, errors.New("ERROR: failed to find command")
 }
 func main() {
 	g := GadgetContext{}
