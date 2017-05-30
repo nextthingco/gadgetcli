@@ -13,13 +13,48 @@ var (
 	GitCommit = "unknown"
 )
 
-func GadgetVersion() {
+type GadgetCommandFunc func([]string, *GadgetContext) error
+
+type GadgetCommand struct {
+	Name        string
+	Function    GadgetCommandFunc
+	NeedsConfig bool
+}
+
+var Commands = []GadgetCommand {
+	{ Name: "init",    Function: GadgetInit,    NeedsConfig: false },
+	{ Name: "add",     Function: GadgetAdd,     NeedsConfig: true },
+	{ Name: "build",   Function: GadgetBuild,   NeedsConfig: true },
+	{ Name: "deploy",  Function: GadgetDeploy,  NeedsConfig: true },
+	{ Name: "start",   Function: GadgetStart,   NeedsConfig: true },
+	{ Name: "stop",    Function: GadgetStop,    NeedsConfig: true },
+	{ Name: "status",  Function: GadgetStatus,  NeedsConfig: true },
+	{ Name: "delete",  Function: GadgetDelete,  NeedsConfig: true },
+	{ Name: "shell",   Function: GadgetShell,   NeedsConfig: false },
+	{ Name: "logs",    Function: GadgetLogs,    NeedsConfig: true },
+	{ Name: "version", Function: GadgetVersion, NeedsConfig: false },
+	{ Name: "help",    Function: GadgetHelp,    NeedsConfig: false },
+}
+
+func GadgetVersion(args []string, g *GadgetContext) error {
 	fmt.Println(filepath.Base(os.Args[0]))
 	fmt.Printf("  version: %s\n", Version)
 	fmt.Printf("  commit: %s\n", GitCommit)
-	os.Exit(0)
+	return nil
 }
 
+func GadgetHelp(args []string, g *GadgetContext) error {
+	flag.Usage()
+	return nil
+}
+func findCommand(name string) (*GadgetCommand, error) {
+	for _,cmd := range Commands {
+		if cmd.Name == name {
+			return &cmd,nil
+		}
+	}
+	return nil, nil
+}
 func main() {
 	g := GadgetContext{}
 
@@ -62,41 +97,27 @@ func main() {
 		os.Exit(1)
 	}
 
-	// parse arguments
-	switch args[0] {
-	case "init":
-		GadgetInit(args[1:], &g)
-	case "add":
-		err = GadgetAdd(args[1:], &g)
-	case "build":
-		GadgetBuild(args[1:], &g)
-	case "deploy":
-		GadgetDeploy(args[1:], &g)
-	case "start":
-		GadgetStart(args[1:], &g)
-	case "stop":
-		GadgetStop(args[1:], &g)
-	case "status":
-		GadgetStatus(args[1:], &g)
-	case "delete":
-		GadgetDelete(args[1:], &g)
-	case "shell":
-		GadgetShell(args[1:])
-	case "logs":
-		GadgetLogs(args[1:], &g)
-	case "version":
-		GadgetVersion()
-	case "help":
-		flag.Usage()
-	case "run":
-		GadgetRun(args[1:], &g)
-	default:
+	// file command 
+	cmd,err := findCommand(args[0])
+	if err != nil {
 		fmt.Printf("%q is not valid command.\n\n", args[0])
 		flag.Usage()
 		err = errors.New("ERROR: incorrect usage")
+		os.Exit(1)
 	}
+
+	// if command needs to use the config file, load it
+	if cmd.NeedsConfig {
+		err = g.LoadConfig()
+		if err != nil {
+			os.Exit(1)
+		}
+	}
+
+	err = cmd.Function(args[1:], &g)
 	
 	if err != nil {
 		os.Exit(1)
 	}
+	os.Exit(0)
 }

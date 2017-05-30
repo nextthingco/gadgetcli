@@ -129,7 +129,7 @@ func WalkUp(bottom_dir string) (string, error) {
 	return bottom_dir, rc
 }
 
-func (g *GadgetContext) LoadConfig() {
+func (g *GadgetContext) LoadConfig() error {
 
 	g.WorkingDirectory, _ = filepath.Abs(g.WorkingDirectory)
 
@@ -152,7 +152,7 @@ func (g *GadgetContext) LoadConfig() {
 			fmt.Printf("[SETUP]  Cannot open config file: %v\n", parseerr)
 		}
 	} else {
-		panic(cwderr)
+		return cwderr
 	}
 
 	// create new config class from gadget.yml output
@@ -169,6 +169,7 @@ func (g *GadgetContext) LoadConfig() {
 		service.ImageAlias = fmt.Sprintf("%s-img", service.Alias)
 		g.Config.Services[index] = service
 	}
+	return nil
 }
 type GadgetContainers []GadgetContainer
 

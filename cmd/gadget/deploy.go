@@ -9,10 +9,10 @@ import (
 	"strings"
 )
 
-func DeployContainer( client *ssh.Client, container * GadgetContainer, autostart bool) {
+func DeployContainer( client *ssh.Client, container * GadgetContainer, autostart bool) error {
 	binary, err := exec.LookPath("docker")
 	if err != nil {
-		panic(err)
+		return err
 	}
 	
 	fmt.Printf("[GADGT]  Deploying: %s\n", container.ImageAlias)
@@ -21,7 +21,7 @@ func DeployContainer( client *ssh.Client, container * GadgetContainer, autostart
 	session, err := client.NewSession()
 	if err != nil {
 		client.Close()
-		panic(err)
+		return err
 	}
 
 	// create pipe for local -> remote file transmission
@@ -34,21 +34,23 @@ func DeployContainer( client *ssh.Client, container * GadgetContainer, autostart
 	
 	fmt.Println("[GADGT]    Starting session")
 	if err := session.Start(`docker load`); err != nil {
-		panic(err)
+		return err
 	}
 
 	fmt.Println("[GADGT]    Starting docker")
 	if err := docker.Start(); err != nil {
-		panic(err)
+		return err
 	}
 
 
-	go func() {
+	go func() error {
 		defer pw.Close()
 		fmt.Println("[GADGT]    Waiting on docker")
 		if err := docker.Wait(); err != nil {
-			panic(err)
+			// TODO: we should handle this error or report to the log
+			return err
 		}
+		return nil
 	}()
 	
 	session.Wait()
@@ -63,9 +65,10 @@ func DeployContainer( client *ssh.Client, container * GadgetContainer, autostart
 			container.ImageAlias,
 			strings.Join(container.Command[:]," "))
 	}
+	return nil
 }
 // Process the build arguments and execute build
-func GadgetDeploy(args []string, g *GadgetContext) {
+func GadgetDeploy(args []string, g *GadgetContext) error {
 
 	g.LoadConfig()
 	EnsureKeys()
@@ -73,7 +76,7 @@ func GadgetDeploy(args []string, g *GadgetContext) {
 	client, err := GadgetLogin(gadgetPrivKeyLocation)
 
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	stagedContainers,_ := FindStagedContainers(args, append(g.Config.Onboot, g.Config.Services...))
@@ -81,4 +84,5 @@ func GadgetDeploy(args []string, g *GadgetContext) {
 	for _, container := range stagedContainers {
 		DeployContainer(client, &container, false)
 	}
+	return nil
 }

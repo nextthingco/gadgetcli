@@ -6,14 +6,14 @@ import (
 )
 
 // Process the build arguments and execute build
-func GadgetBuild(args []string, g *GadgetContext) {
+func GadgetBuild(args []string, g *GadgetContext) error {
 
 	g.LoadConfig()
 
 	// find docker binary in path
 	binary, err := exec.LookPath("docker")
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	fmt.Println("[BUILD]  Building:")
@@ -43,4 +43,5 @@ func GadgetBuild(args []string, g *GadgetContext) {
 		
 		fmt.Printf("✔\n")
 	}
+	return nil
 }

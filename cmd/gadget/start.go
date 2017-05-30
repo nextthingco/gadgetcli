@@ -6,14 +6,14 @@ import (
 )
 
 // Process the build arguments and execute build
-func GadgetStart(args []string, g *GadgetContext) {
+func GadgetStart(args []string, g *GadgetContext) error {
 	g.LoadConfig()
 	EnsureKeys()
 
 	client, err := GadgetLogin(gadgetPrivKeyLocation)
 
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	fmt.Println("[GADGT]  Starting:")
@@ -29,7 +29,7 @@ func GadgetStart(args []string, g *GadgetContext) {
 		fmt.Println(stderr)
 		if err != nil {
 			fmt.Printf("✘\n")
-			panic(err)
+			return err
 		}
 
 		stdout, stderr, err = RunRemoteCommand(client, "docker start", container.Alias)
@@ -37,9 +37,10 @@ func GadgetStart(args []string, g *GadgetContext) {
 		fmt.Println(stderr)
 		if err != nil {
 			fmt.Printf("✘\n")
-			panic(err)
+			return err
 		}
 
 		fmt.Printf("✔\n")
 	}
+	return nil
 }

@@ -78,7 +78,7 @@ func GenGadgetKeys() (string, string, error) {
 
 	privateKey, err := rsa.GenerateKey(randSeed, 2048)
 	if err != nil {
-		panic(err)
+		return "", "", err
 	}
 
 	privateKeyDer := x509.MarshalPKCS1PrivateKey(privateKey)
@@ -93,7 +93,7 @@ func GenGadgetKeys() (string, string, error) {
 
 	pub, err := ssh.NewPublicKey(&publicKey)
 	if err != nil {
-		panic(err)
+		return privateKeyPem, "", err
 	}
 
 	pubString := string(ssh.MarshalAuthorizedKey(pub))
@@ -105,7 +105,7 @@ func RequiredSsh() error {
 
 	usr, err := user.Current()
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	// get proper homedir locations
@@ -122,20 +122,20 @@ func RequiredSsh() error {
 	// check/create ~/.ssh
 	pathExists, err := exists(sshLocation)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	if !pathExists {
 		err = os.Mkdir(sshLocation, 0644)
 		if err != nil {
-			panic(err)
+			return err
 		}
 	}
 
 	// check/create ~/.ssh/gadget_default_rsa
 	pathExists, err = exists(defaultPrivKeyLocation)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	if !pathExists {
@@ -144,7 +144,7 @@ func RequiredSsh() error {
 		outBytes := []byte(defaultKey)
 		err = ioutil.WriteFile(defaultPrivKeyLocation, outBytes, 0600)
 		if err != nil {
-			panic(err)
+			return err
 		}
 		fmt.Printf("✔\n")
 	}
@@ -152,12 +152,11 @@ func RequiredSsh() error {
 	// check/create ~/.ssh/gadget_rsa[.pub]
 	gadgetPrivExists, err := exists(gadgetPrivKeyLocation)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	gadgetPubExists, err := exists(gadgetPubKeyLocation)
 	if err != nil {
-		fmt.Println("[SETUP]  something went wrong with gadgetPubExists `%s`: %s", gadgetPubKeyLocation, err)
-		os.Exit(1)
+		return err
 	}
 
 	if !gadgetPrivExists && !gadgetPubExists {
@@ -165,8 +164,7 @@ func RequiredSsh() error {
 		
 		privkey, pubkey, err := GenGadgetKeys()
 		if err != nil {
-			fmt.Println("[SETUP]  something went wrong with genGadgetKeys: %s", err)
-			os.Exit(1)
+			return err
 		}
 		
 		fmt.Printf("[SETUP]    private key: ~/.ssh/gadget_rsa  ")
@@ -174,7 +172,7 @@ func RequiredSsh() error {
 		err = ioutil.WriteFile(gadgetPrivKeyLocation, outBytes, 0600)
 		if err != nil {
 			fmt.Println("[SETUP]  something went wrong with gadgetPrivKey `%s`: %s", gadgetPrivKeyLocation, err)
-			os.Exit(1)
+			return err
 		}
 		fmt.Printf("✔\n")
 		
@@ -183,7 +181,7 @@ func RequiredSsh() error {
 		err = ioutil.WriteFile(gadgetPubKeyLocation, outBytes, 0600)
 		if err != nil {
 			fmt.Println("[SETUP]  something went wrong with gadgetPrivKey `%s`: %s", gadgetPubKeyLocation, err)
-			os.Exit(1)
+			return err
 		}
 		fmt.Printf("✔\n")
 	}
@@ -194,13 +192,13 @@ func RequiredSsh() error {
 func GadgetLogin(keyLocation string) (*ssh.Client, error) {
 	key, err := ioutil.ReadFile(keyLocation)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	// Create the Signer for this private key.
 	signer, err := ssh.ParsePrivateKey(key)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	config := &ssh.ClientConfig{
@@ -218,20 +216,18 @@ func GadgetLogin(keyLocation string) (*ssh.Client, error) {
 		return nil, err
 	}
 
-	//defer client.Close()
-
 	return client, err
 }
 
-func GadgetInstallKeys() {
+func GadgetInstallKeys() error {
 	key, err := ioutil.ReadFile(defaultPrivKeyLocation)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	signer, err := ssh.ParsePrivateKey(key)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	config := &ssh.ClientConfig{
@@ -245,13 +241,13 @@ func GadgetInstallKeys() {
 
 	client, err := ssh.Dial("tcp", ip, config)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	session, err := client.NewSession()
 	if err != nil {
 		client.Close()
-		panic(err)
+		return err
 	}
 	
 	dest := "/root/.ssh/authorized_keys"
@@ -265,6 +261,7 @@ func GadgetInstallKeys() {
 	}
 
 	defer client.Close()
+	return nil
 }
 
 func EnsureKeys() error {
@@ -282,7 +279,7 @@ func EnsureKeys() error {
 			fmt.Println("[COMMS]  Default key login success")
 			GadgetInstallKeys()
 			if err != nil {
-				panic(err)
+				return err
 			}
 		}
 	} else {
@@ -296,12 +293,12 @@ func RunRemoteCommand(client *ssh.Client, cmd ...string) (*bytes.Buffer, *bytes.
 	session, err := client.NewSession()
 	if err != nil {
 		client.Close()
-		panic(err)
+		return nil, nil, err
 	}
 
 	err = session.Start(strings.Join(cmd[:], " "))
 	if err != nil {
-		panic(err)
+		return nil, nil, err
 	}
 	var outBuffer bytes.Buffer
 	var errBuffer bytes.Buffer
@@ -312,7 +309,7 @@ func RunRemoteCommand(client *ssh.Client, cmd ...string) (*bytes.Buffer, *bytes.
 	return &outBuffer, &errBuffer, err
 }
 
-func RunLocalCommand(binary string, arguments ...string) {
+func RunLocalCommand(binary string, arguments ...string) (*bytes.Buffer, *bytes.Buffer, error) {
 	cmd := exec.Command(binary, arguments...)
 	
 	cmd.Env = os.Environ()
@@ -339,12 +336,13 @@ func RunLocalCommand(binary string, arguments ...string) {
 
 	execErr = cmd.Start()
 	if execErr != nil {
-		panic(execErr)
+		return nil, nil, execErr
 	}
 	execErr = cmd.Wait()
 	if execErr != nil {
-		panic(execErr)
+		return nil, nil, execErr
 	}
+	return nil, nil, nil
 }
 
 

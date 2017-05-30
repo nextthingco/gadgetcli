@@ -10,7 +10,7 @@ import (
 )
 
 // Process the build arguments and execute build
-func GadgetInit(args []string, g *GadgetContext) {
+func GadgetInit(args []string, g *GadgetContext) error {
 
 	initUu1 := uuid.NewV4()
 	initUu2 := uuid.NewV4()
@@ -39,5 +39,5 @@ func GadgetInit(args []string, g *GadgetContext) {
 	}
 	
 	fmt.Printf("✔\n")
-	
+	return nil	
 }

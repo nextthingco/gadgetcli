@@ -5,14 +5,14 @@ import (
 )
 
 // Process the build arguments and execute build
-func GadgetStop(args []string, g *GadgetContext) {
+func GadgetStop(args []string, g *GadgetContext) error {
 	g.LoadConfig()
 	EnsureKeys()
 
 	client, err := GadgetLogin(gadgetPrivKeyLocation)
 
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	fmt.Println("[GADGT]  Stopping:")
@@ -26,7 +26,7 @@ func GadgetStop(args []string, g *GadgetContext) {
 		fmt.Println(stderr)
 		if err != nil {
 			fmt.Printf("✘\n")
-			panic(err)
+			return err
 		}
 
 		stdout, stderr, err = RunRemoteCommand(client, "docker rm", container.Alias)
@@ -34,9 +34,10 @@ func GadgetStop(args []string, g *GadgetContext) {
 		fmt.Println(stderr)
 		if err != nil {
 			fmt.Printf("✘\n")
-			panic(err)
+			return err
 		}
 
 		fmt.Printf("✔\n")
 	}
+	return nil
 }

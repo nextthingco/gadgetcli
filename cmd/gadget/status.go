@@ -5,14 +5,14 @@ import (
 )
 
 // Process the build arguments and execute build
-func GadgetStatus(args []string, g *GadgetContext) {
+func GadgetStatus(args []string, g *GadgetContext) error {
 	g.LoadConfig()
 	EnsureKeys()
 
 	client, err := GadgetLogin(gadgetPrivKeyLocation)
 
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	fmt.Println("[GADGT]  Retrieving status:")
@@ -24,7 +24,8 @@ func GadgetStatus(args []string, g *GadgetContext) {
 		cmd := fmt.Sprintf(commandFormat, container.ImageAlias)
 		RunRemoteCommand(client, cmd)
 		if err != nil {
-			panic(err)
+			return err
 		}
 	}
+	return nil
 }
