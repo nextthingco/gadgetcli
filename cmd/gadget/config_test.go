@@ -160,6 +160,33 @@ func TestLoadConfig(t *testing.T){
 
 func TestFind(t *testing.T){
 	
+	testGadCont := GadgetContainers{
+		{
+			Name: "test0",
+		},
+		{
+			Name: "test1",
+		},
+		{
+			Name: "test2",
+		},
+	}
+	
+	returnContainer, err := testGadCont.Find("test0")
+	if err != nil {
+		t.Error("Failed to testGadCont.Find(\"test0\")")
+	}
+	if ! reflect.DeepEqual(returnContainer, testGadCont[0]) {
+		t.Error("isn't deeply equal, but should have been")
+		fmt.Println("%+v", returnContainer)
+		fmt.Println("%+v", testGadCont[0])
+	}
+	
+	returnContainer, err = testGadCont.Find("shouldfail")
+	if err == nil {
+		t.Error("Should have failed to testGadCont.Find(\"shouldfail\"), but didn't")
+	}
+	
 }
 
 
