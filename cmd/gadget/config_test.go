@@ -144,6 +144,17 @@ func TestWalkUp(t *testing.T){
 
 func TestLoadConfig(t *testing.T){
 	
+	TestGadgetInit(t)
+	
+	initContext := GadgetContext{
+		WorkingDirectory: "/tmp",
+	}
+	
+	err := initContext.LoadConfig()
+	if err != nil {
+		t.Error("Failed to TestLoadConfig /tmp/gadget.yml")
+	}
+	
 }
 
 
