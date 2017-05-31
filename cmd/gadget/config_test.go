@@ -74,3 +74,19 @@ func TestCleanConfig(t *testing.T){
 	}
 	
 }
+
+func TestWalkUp(t *testing.T){
+	
+	TestGadgetAdd(t)
+	
+	base, err := WalkUp("/tmp/some/fake/set/of/directories")
+	if err != nil {
+		t.Error(err)
+	}
+	
+	if base != "/tmp" {
+		fmt.Println(base)
+		t.Error("failed to clean config")
+	}
+	
+}
