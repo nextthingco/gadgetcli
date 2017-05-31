@@ -9,32 +9,34 @@ import (
 )
 
 func TestTemplateConfig(t *testing.T){
-
+	
+	fmt.Println("TestTemplateConfig")
+	
 	initUu1 := uuid.NewV4()
 	initUu2 := uuid.NewV4()
 
 	// TEST 0
 	
-	expectedContext := GadgetContext {
-		Config: GadgetConfig{
-			Spec: Version,
-			Name: "thisisthename",
-			UUID: fmt.Sprintf("%s", initUu1),
-			Type: "docker",
-			Onboot: []GadgetContainer{
-				{
-					Name:    "hello-world",
-					Image:   "armhf/hello-world",
-					UUID:    fmt.Sprintf("%s", initUu2),
-				},
+	expectedConfig := GadgetConfig{
+		Spec: Version,
+		Name: "thisisthename",
+		UUID: fmt.Sprintf("%s", initUu1),
+		Type: "docker",
+		Onboot: []GadgetContainer{
+			{
+				Name:    "hello-world",
+				Image:   "armhf/hello-world",
+				UUID:    fmt.Sprintf("%s", initUu2),
 			},
 		},
 	}
 		
-	testContext := TemplateConfig("thisisthename", fmt.Sprintf("%s", initUu1), fmt.Sprintf("%s", initUu2))
+	testConfig := TemplateConfig("thisisthename", fmt.Sprintf("%s", initUu1), fmt.Sprintf("%s", initUu2))
 	
-	if reflect.DeepEqual(testContext, expectedContext) {
-		t.Error("is deeply equal, but shouldn't have been, is there a gadget.yml above me?")
+	if ! reflect.DeepEqual(testConfig, expectedConfig) {
+		t.Error("isn't deeply equal, but should have been")
+		fmt.Println("%+v", expectedConfig)
+		fmt.Println("%+v", testConfig)
 	}
 	
 }
