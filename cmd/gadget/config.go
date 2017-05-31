@@ -39,7 +39,7 @@ type GadgetContainer struct {
 	ImageAlias   string   "imagealias,omitempty"
 }
 
-func TemplateConfig(gName, gUu1, gUu2, gUu3 string) GadgetConfig {
+func TemplateConfig(gName, gUu1, gUu2 string) GadgetConfig {
 	return GadgetConfig{
 		Spec: Version,
 		Name: gName,

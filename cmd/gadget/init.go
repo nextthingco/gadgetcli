@@ -14,7 +14,6 @@ func GadgetInit(args []string, g *GadgetContext) error {
 
 	initUu1 := uuid.NewV4()
 	initUu2 := uuid.NewV4()
-	initUu3 := uuid.NewV4()
 
 
 	fmt.Println("[INIT ]  Creating new project:")
@@ -24,7 +23,7 @@ func GadgetInit(args []string, g *GadgetContext) error {
 	
 	fmt.Printf("[INIT ]    in %s ", g.WorkingDirectory)
 
-	initConfig := TemplateConfig(initName, fmt.Sprintf("%s", initUu1), fmt.Sprintf("%s", initUu2), fmt.Sprintf("%s", initUu3))
+	initConfig := TemplateConfig(initName, fmt.Sprintf("%s", initUu1), fmt.Sprintf("%s", initUu2))
 
 	outBytes, err := yaml.Marshal(initConfig)
 	if err != nil {
