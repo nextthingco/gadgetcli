@@ -44,6 +44,46 @@ func TestTemplateConfig(t *testing.T) {
 
 func TestParseConfig(t *testing.T) {
 	
+	in := []byte(`spec: unknown
+name: tmp
+uuid: ee0212c1-6880-433e-994b-795dfc71000
+type: docker
+onboot:
+- name: hello-world
+  uuid: 1e885632-c518-475b-b405-31ca23bd001
+  image: armhf/hello-world
+  directory: ""
+  net: ""
+  pid: ""
+  readonly: false
+  command: []
+  binds: []
+  capabilities: []
+services:
+- name: bello-world
+  uuid: 1e885632-c518-475b-b405-31ca23bd5002
+  image: armhf/bello-world
+  directory: ""
+  net: ""
+  pid: ""
+  readonly: false
+  command: []
+  binds: []
+  capabilities: []`)
+	
+	config, err := ParseConfig(in)
+	if err != nil {
+		t.Error("Parse Config failed")
+	}
+	
+	if config.Name != "tmp" {
+		t.Error("Name should have been tmp")
+	}
+	
+	if config.Services[0].Image != "armhf/bello-world" {
+		t.Error("Services[0].Image should have been armhf/bello-world")
+	}
+	
 }
 
 func TestCleanConfig(t *testing.T){
