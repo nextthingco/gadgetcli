@@ -174,7 +174,7 @@ func (g *GadgetContext) LoadConfig() error {
 type GadgetContainers []GadgetContainer
 
 func (containers GadgetContainers) Find(name string) (GadgetContainer, error) {
-for _,container := range containers {
+	for _,container := range containers {
 		if container.Name == name {
 			return container, nil
 		}

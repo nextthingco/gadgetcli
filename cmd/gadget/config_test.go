@@ -41,6 +41,11 @@ func TestTemplateConfig(t *testing.T) {
 	
 }
 
+
+func TestParseConfig(t *testing.T) {
+	
+}
+
 func TestCleanConfig(t *testing.T){
 	
 	fmt.Println("TestCleanConfig")
@@ -95,3 +100,15 @@ func TestWalkUp(t *testing.T){
 	}
 	
 }
+
+
+func TestLoadConfig(t *testing.T){
+	
+}
+
+
+func TestFind(t *testing.T){
+	
+}
+
+
