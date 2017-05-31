@@ -19,18 +19,10 @@ gadget: $(SOURCES)
 tidy:
 	@echo "Tidying up sources"
 	@go fmt ./cmd/gadget
-test: gadget
-	@echo "Beginning tests"
-	mkdir test-project
-	./gadget -C test-project init
-	./gadget -C test-project build
-	./gadget -C test-project deploy
-	./gadget -C test-project start
-	./gadget -C test-project status
-	./gadget -C test-project logs
-	./gadget -C test-project stop
-	./gadget -C test-project status
-	./gadget -C test-project delete
+
+test: $(SOURCES)
+	@echo "Testing Gadget"
+	@go test -ldflags="-s -w -X main.Version=$(VERSION) -X main.GitCommit=$(GIT_COMMIT)" -v ./cmd/gadget
 
 get:
 	@echo "Downloading external dependencies"
