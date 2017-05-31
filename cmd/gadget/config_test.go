@@ -17,6 +17,7 @@ func TestTemplateConfig(t *testing.T) {
 
 	// TEST 0
 	
+	// create the default programatically
 	expectedConfig := GadgetConfig{
 		Spec: Version,
 		Name: "thisisthename",
@@ -33,6 +34,7 @@ func TestTemplateConfig(t *testing.T) {
 		
 	testConfig := TemplateConfig("thisisthename", fmt.Sprintf("%s", initUu1), fmt.Sprintf("%s", initUu2))
 	
+	// check for deep equality
 	if ! reflect.DeepEqual(testConfig, expectedConfig) {
 		t.Error("isn't deeply equal, but should have been")
 		fmt.Println("%+v", expectedConfig)
@@ -76,6 +78,7 @@ services:
 		t.Error("Parse Config failed")
 	}
 	
+	// spot check some values
 	if config.Name != "tmp" {
 		t.Error("Name should have been tmp")
 	}
@@ -101,8 +104,11 @@ func TestCleanConfig(t *testing.T){
 	
 	args := []string{ "onboot", "newonboot" }
 	
+	// do some post-load processing, should add alias and imagealias values
 	GadgetAdd(args, &testContext)
+	// manually add values to be sure
 	testContext.Config.Onboot[0].Alias = "justtobesureit'spopulated"
+	// now clean
 	CleanConfig(testContext.Config)
 	
 	if testContext.Config.Onboot[0].Alias != "" {
@@ -122,18 +128,22 @@ func TestCleanConfig(t *testing.T){
 
 func TestWalkUp(t *testing.T){
 	
+	// just because TestGadgetAdd creates the /tmp/gadget.yml
 	TestGadgetAdd(t)
 	
+	// should walk up nonexistant directories too
 	base, err := WalkUp("/tmp/some/fake/set/of/directories")
 	if err != nil {
 		t.Error(err)
 	}
 	
+	// check return value
 	if base != "/tmp" {
 		fmt.Println(base)
-		t.Error("failed to clean config")
+		t.Error("failed to find /tmp/gadget.yml")
 	}
 	
+	// test the failure case
 	_, err = WalkUp("/nonexistant")
 	if err == nil {
 		t.Error("Should have failed to find /nonexistant/gadget.yml")
@@ -144,12 +154,14 @@ func TestWalkUp(t *testing.T){
 
 func TestLoadConfig(t *testing.T){
 	
+	// run the init test
 	TestGadgetInit(t)
 	
 	initContext := GadgetContext{
 		WorkingDirectory: "/tmp",
 	}
 	
+	// just run through the LoadConfig for now
 	err := initContext.LoadConfig()
 	if err != nil {
 		t.Error("Failed to TestLoadConfig /tmp/gadget.yml")
@@ -160,6 +172,7 @@ func TestLoadConfig(t *testing.T){
 
 func TestFind(t *testing.T){
 	
+	// all that Find checks is the Name entry
 	testGadCont := GadgetContainers{
 		{
 			Name: "test0",
@@ -172,6 +185,7 @@ func TestFind(t *testing.T){
 		},
 	}
 	
+	// this should find test0 at testGadCont[0], check for DeepEquality
 	returnContainer, err := testGadCont.Find("test0")
 	if err != nil {
 		t.Error("Failed to testGadCont.Find(\"test0\")")
@@ -182,6 +196,7 @@ func TestFind(t *testing.T){
 		fmt.Println("%+v", testGadCont[0])
 	}
 	
+	// test the fail case
 	returnContainer, err = testGadCont.Find("shouldfail")
 	if err == nil {
 		t.Error("Should have failed to testGadCont.Find(\"shouldfail\"), but didn't")
