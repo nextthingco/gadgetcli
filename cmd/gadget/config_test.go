@@ -89,4 +89,9 @@ func TestWalkUp(t *testing.T){
 		t.Error("failed to clean config")
 	}
 	
+	_, err = WalkUp("/nonexistant")
+	if err == nil {
+		t.Error("Should have failed to find /nonexistant/gadget.yml")
+	}
+	
 }
