@@ -61,7 +61,7 @@ FwRYLLbqbGByhykSn5ybp/DuSQpH4blitu/fEYOg6QX/I/6zayd+
 	gadgetPubKeyLocation   = ""
 )
 
-func exists(path string) (bool, error) {
+func PathExists(path string) (bool, error) {
 	_, err := os.Stat(path)
 	if err == nil {
 		return true, nil
@@ -121,12 +121,12 @@ func RequiredSsh() error {
 	}
 
 	// check/create ~/.ssh
-	pathExists, err := exists(sshLocation)
+	sshDirExists, err := PathExists(sshLocation)
 	if err != nil {
 		return err
 	}
 
-	if !pathExists {
+	if !sshDirExists {
 		err = os.Mkdir(sshLocation, 0644)
 		if err != nil {
 			return err
@@ -134,12 +134,12 @@ func RequiredSsh() error {
 	}
 
 	// check/create ~/.ssh/gadget_default_rsa
-	pathExists, err = exists(defaultPrivKeyLocation)
+	defaultPrivExists, err := PathExists(defaultPrivKeyLocation)
 	if err != nil {
 		return err
 	}
 
-	if !pathExists {
+	if !defaultPrivExists {
 		log.Warn("Unable to locate default gadget ssh key, generating..")
 
 		log.WithFields(log.Fields{
@@ -154,11 +154,11 @@ func RequiredSsh() error {
 	}
 
 	// check/create ~/.ssh/gadget_rsa[.pub]
-	gadgetPrivExists, err := exists(gadgetPrivKeyLocation)
+	gadgetPrivExists, err := PathExists(gadgetPrivKeyLocation)
 	if err != nil {
 		return err
 	}
-	gadgetPubExists, err := exists(gadgetPubKeyLocation)
+	gadgetPubExists, err := PathExists(gadgetPubKeyLocation)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"function": "RequiredSsh",
