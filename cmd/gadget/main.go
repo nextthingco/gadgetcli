@@ -86,6 +86,7 @@ func main() {
 		fmt.Printf("\n")
 		fmt.Printf("Options:\n")
 		flag.PrintDefaults()
+		fmt.Printf("\n")
 	}
 	flag.BoolVar(&g.Verbose, "v", false, "Verbose execution")
 	flag.StringVar(&g.WorkingDirectory, "C", ".", "Run in directory")
@@ -99,13 +100,12 @@ func main() {
 
 	args := flag.Args()
 	if len(args) < 1 {
-		fmt.Printf("Please specify a command.\n\n")
 		flag.Usage()
 		log.Error("No Command Specified")
 		os.Exit(1)
 	}
 
-	// file command 
+	// file command
 	cmd,err := findCommand(args[0])
 	if err != nil {
 		fmt.Printf("%q is not valid command.\n\n", args[0])

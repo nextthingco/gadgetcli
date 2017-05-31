@@ -140,9 +140,7 @@ func RequiredSsh() error {
 	}
 
 	if !pathExists {
-		log.WithFields(log.Fields{
-			"function": "RequiredSsh",
-		}).Warn("Unable to locate default gadget ssh key, generating..")
+		log.Warn("Unable to locate default gadget ssh key, generating..")
 
 		log.WithFields(log.Fields{
 			"function": "RequiredSsh",
@@ -153,7 +151,6 @@ func RequiredSsh() error {
 		if err != nil {
 			return err
 		}
-		fmt.Printf("✔\n")
 	}
 
 	// check/create ~/.ssh/gadget_rsa[.pub]
@@ -172,11 +169,13 @@ func RequiredSsh() error {
 	}
 
 	if !gadgetPrivExists && !gadgetPubExists {
+		log.Warn("Unable to locate personal gadget ssh keys, generating..")
+		
 		log.WithFields(log.Fields{
 			"function": "RequiredSsh",
 			"keyLocation": gadgetPubKeyLocation,
 			"error": err,
-		}).Warn("Unable to locate personal gadget ssh keys, generating..")
+		}).Debug("private key: ~/.ssh/gadget_rsa[.pub]")
 		
 		privkey, pubkey, err := GenGadgetKeys()
 		if err != nil {

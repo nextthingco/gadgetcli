@@ -44,7 +44,7 @@ func GadgetAdd(args []string, g *GadgetContext) error {
 		g.Config.Onboot = append(g.Config.Onboot, addGadgetContainer)
 	default:
 		fmt.Printf("%q is not valid command.\n\n", args[0])
-		addUsage()
+		return addUsage()
 	}
 	
 	g.Config = CleanConfig(g.Config)
