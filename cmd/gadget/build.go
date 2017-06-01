@@ -3,12 +3,13 @@ package main
 import (
 	"fmt"
 	"os/exec"
+	log "github.com/sirupsen/logrus"
 )
 
 // Process the build arguments and execute build
 func GadgetBuild(args []string, g *GadgetContext) error {
 
-	g.LoadConfig()
+	//~ g.LoadConfig()
 
 	// find docker binary in path
 	binary, err := exec.LookPath("docker")
@@ -16,12 +17,12 @@ func GadgetBuild(args []string, g *GadgetContext) error {
 		return err
 	}
 
-	fmt.Println("[BUILD]  Building:")
+	log.Info("  Building:")
 
 	stagedContainers,_ := FindStagedContainers(args, append(g.Config.Onboot, g.Config.Services...))
 
 	for _, container := range stagedContainers {
-		fmt.Printf("[BUILD]    %s ", container.ImageAlias)
+		log.Info(fmt.Sprintf("    %s ", container.ImageAlias))
 
 		// use local directory for build
 		if container.Directory != "" {
@@ -41,7 +42,7 @@ func GadgetBuild(args []string, g *GadgetContext) error {
 				container.ImageAlias)
 		}
 		
-		fmt.Printf("✔\n")
+		//~ fmt.Printf("✔\n")
 	}
 	return nil
 }

@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	log "github.com/sirupsen/logrus"
 )
 
 // Process the build arguments and execute build
@@ -16,12 +17,12 @@ func GadgetInit(args []string, g *GadgetContext) error {
 	initUu2 := uuid.NewV4()
 
 
-	fmt.Println("[INIT ]  Creating new project:")
+	log.Info(fmt.Sprintf("[INIT ]  Creating new project:"))
 
 	g.WorkingDirectory, _ = filepath.Abs(g.WorkingDirectory)
 	initName := filepath.Base(g.WorkingDirectory)
 	
-	fmt.Printf("[INIT ]    in %s ", g.WorkingDirectory)
+	log.Info(fmt.Sprintf("[INIT ]    in %s", g.WorkingDirectory))
 
 	initConfig := TemplateConfig(initName, fmt.Sprintf("%s", initUu1), fmt.Sprintf("%s", initUu2))
 
@@ -37,6 +38,6 @@ func GadgetInit(args []string, g *GadgetContext) error {
 		os.Exit(1)
 	}
 	
-	fmt.Printf("✔\n")
+	//~ fmt.Printf("✔\n")
 	return nil	
 }

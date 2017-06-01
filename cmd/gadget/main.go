@@ -25,15 +25,16 @@ type GadgetCommand struct {
 
 var Commands = []GadgetCommand {
 	{ Name: "init",    Function: GadgetInit,    NeedsConfig: false },
-	{ Name: "add",     Function: GadgetAdd,     NeedsConfig: true },
-	{ Name: "build",   Function: GadgetBuild,   NeedsConfig: true },
-	{ Name: "deploy",  Function: GadgetDeploy,  NeedsConfig: true },
-	{ Name: "start",   Function: GadgetStart,   NeedsConfig: true },
-	{ Name: "stop",    Function: GadgetStop,    NeedsConfig: true },
-	{ Name: "status",  Function: GadgetStatus,  NeedsConfig: true },
-	{ Name: "delete",  Function: GadgetDelete,  NeedsConfig: true },
+	{ Name: "add",     Function: GadgetAdd,     NeedsConfig: true  },
+	{ Name: "build",   Function: GadgetBuild,   NeedsConfig: true  },
+	{ Name: "deploy",  Function: GadgetDeploy,  NeedsConfig: true  },
+	{ Name: "start",   Function: GadgetStart,   NeedsConfig: true  },
+	{ Name: "stop",    Function: GadgetStop,    NeedsConfig: true  },
+	{ Name: "status",  Function: GadgetStatus,  NeedsConfig: true  },
+	{ Name: "delete",  Function: GadgetDelete,  NeedsConfig: true  },
 	{ Name: "shell",   Function: GadgetShell,   NeedsConfig: false },
-	{ Name: "logs",    Function: GadgetLogs,    NeedsConfig: true },
+	{ Name: "logs",    Function: GadgetLogs,    NeedsConfig: true  },
+	{ Name: "run",     Function: GadgetRun,     NeedsConfig: false },
 	{ Name: "version", Function: GadgetVersion, NeedsConfig: false },
 	{ Name: "help",    Function: GadgetHelp,    NeedsConfig: false },
 }
@@ -94,7 +95,7 @@ func main() {
 	if g.Verbose {
 		log.SetLevel(log.DebugLevel)
 	} else {
-		log.SetLevel(log.WarnLevel)
+		log.SetLevel(log.InfoLevel)
 	}
 	
 	// Hey, Listen! 
@@ -113,11 +114,10 @@ func main() {
 		log.Error("No Command Specified")
 		os.Exit(1)
 	}
-
+		
 	// file command
 	cmd,err := findCommand(args[0])
 	if err != nil {
-		fmt.Printf("%q is not valid command.\n\n", args[0])
 		flag.Usage()
 		log.WithFields(log.Fields{
 			"command": strings.Join(args[0:], " "),

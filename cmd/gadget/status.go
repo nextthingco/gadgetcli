@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
+	log "github.com/sirupsen/logrus"
 )
 
 // Process the build arguments and execute build
 func GadgetStatus(args []string, g *GadgetContext) error {
-	g.LoadConfig()
+	//~ g.LoadConfig()
 	EnsureKeys()
 
 	client, err := GadgetLogin(gadgetPrivKeyLocation)
@@ -15,7 +16,7 @@ func GadgetStatus(args []string, g *GadgetContext) error {
 		return err
 	}
 
-	fmt.Println("[GADGT]  Retrieving status:")
+	log.Info(fmt.Sprintf("[GADGT]  Retrieving status:"))
 	
 	stagedContainers,_ := FindStagedContainers(args, append(g.Config.Onboot, g.Config.Services...))
 	

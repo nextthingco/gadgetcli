@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
+	log "github.com/sirupsen/logrus"
 )
 
 // Process the build arguments and execute build
 func GadgetLogs(args []string, g *GadgetContext) error {
-	g.LoadConfig()
+	//~ g.LoadConfig()
 	EnsureKeys()
 
 	client, err := GadgetLogin(gadgetPrivKeyLocation)
@@ -15,7 +16,7 @@ func GadgetLogs(args []string, g *GadgetContext) error {
 		return err
 	}
 
-	fmt.Println("[GADGT]  Retrieving logs:")
+	log.Info(fmt.Sprintf("[GADGT]  Retrieving logs:"))
 	
 	for _, onboot := range g.Config.Onboot {
 		commandFormat := `docker logs %s`

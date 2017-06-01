@@ -23,8 +23,5 @@ func GadgetRun(args []string, g *GadgetContext) error {
 		"stderr": stderr.String(),
 	}).Info("Ran remote command")
 
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }

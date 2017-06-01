@@ -191,7 +191,7 @@ func RequiredSsh() error {
 			return err
 		}
 		
-		fmt.Printf("[SETUP]    private key: ~/.ssh/gadget_rsa  ")
+		log.Info(fmt.Sprintf("[SETUP]    private key: ~/.ssh/gadget_rsa  "))
 		outBytes := []byte(privkey)
 		err = ioutil.WriteFile(gadgetPrivKeyLocation, outBytes, 0600)
 		if err != nil {
@@ -202,9 +202,9 @@ func RequiredSsh() error {
 			}).Error("something went wrong with gadgetPrivKey")
 			return err
 		}
-		fmt.Printf("✔\n")
+		//~ fmt.Printf("✔\n")
 		
-		fmt.Printf("[SETUP]    public key: ~/.ssh/gadget_rsa.pub  ")
+		log.Info(fmt.Sprintf("[SETUP]    public key: ~/.ssh/gadget_rsa.pub  "))
 		outBytes = []byte(pubkey)
 		err = ioutil.WriteFile(gadgetPubKeyLocation, outBytes, 0600)
 		if err != nil {
@@ -215,7 +215,7 @@ func RequiredSsh() error {
 			}).Error("something went wrong with gadgetPrivKey")
 			return err
 		}
-		fmt.Printf("✔\n")
+		//~ fmt.Printf("✔\n")
 	}
 
 	return nil
@@ -316,7 +316,7 @@ func GadgetInstallKeys() error {
 			"gadgetPubKeyLocation": gadgetPubKeyLocation,
 		}).Error("Public key file does not exist")
 	} else {
-		fmt.Printf("✔\n")
+		//~ fmt.Printf("✔\n")
 	}
 
 	defer client.Close()
@@ -405,7 +405,7 @@ func RunLocalCommand(binary string, arguments ...string) (*bytes.Buffer, *bytes.
 			}*/
 			_ = outScanner.Scan()
 			if errScanner.Scan() {
-				fmt.Println(string(errScanner.Text()))
+				log.Warn(fmt.Sprintf(string(errScanner.Text())))
 			}
 		}
 	}()

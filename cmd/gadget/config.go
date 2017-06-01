@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	log "github.com/sirupsen/logrus"
 )
 
 type GadgetContext struct {
@@ -143,13 +144,13 @@ func (g *GadgetContext) LoadConfig() error {
 	g.WorkingDirectory, cwderr = WalkUp(g.WorkingDirectory)
 	if cwderr == nil {
 		// found the config
-		fmt.Printf("[SETUP]  Running in directory:\n")
-		fmt.Printf("[SETUP]    %s\n", g.WorkingDirectory)
+		log.Info(fmt.Sprintf("  Running in directory:"))
+		log.Info(fmt.Sprintf("    %s", g.WorkingDirectory))
 
 		config, parseerr = ioutil.ReadFile(fmt.Sprintf("%s/gadget.yml", g.WorkingDirectory))
 		if parseerr != nil {
 			// couldn't read it
-			fmt.Printf("[SETUP]  Cannot open config file: %v\n", parseerr)
+			log.Info(fmt.Sprintf("[SETUP]  Cannot open config file: %v", parseerr))
 		}
 	} else {
 		return cwderr

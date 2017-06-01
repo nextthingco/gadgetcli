@@ -9,7 +9,7 @@ import (
 
 // Process the build arguments and execute build
 func GadgetStart(args []string, g *GadgetContext) error {
-	g.LoadConfig()
+	//~ g.LoadConfig()
 	EnsureKeys()
 
 	client, err := GadgetLogin(gadgetPrivKeyLocation)
@@ -20,11 +20,11 @@ func GadgetStart(args []string, g *GadgetContext) error {
 	
 	var startFailed bool = false
 	
-	fmt.Println("[GADGT]  Starting:")
+	log.Info(fmt.Sprintf("[GADGT]  Starting:"))
 	stagedContainers,_ := FindStagedContainers(args, append(g.Config.Onboot, g.Config.Services...))
 	for _, container := range stagedContainers {
 		
-		fmt.Printf("[GADGT]    %s ", container.Alias)
+		log.Info(fmt.Sprintf("[GADGT]    %s", container.Alias))
 		binds := strings.Join( PrependToStrings(container.Binds[:],"-v "), " ")
 		commands := strings.Join(container.Command[:]," ")
 		
@@ -42,7 +42,7 @@ func GadgetStart(args []string, g *GadgetContext) error {
 		}).Debug(stderr)
 		
 		if err != nil {
-			fmt.Printf("✘ ")
+			//~ fmt.Printf("✘ ")
 			
 			// fail loudly, but continue
 			
@@ -60,7 +60,7 @@ func GadgetStart(args []string, g *GadgetContext) error {
 			startFailed = true
 			//return err
 		} else {
-			fmt.Printf("✔ ")
+			//~ fmt.Printf("✔ ")
 		}
 
 		stdout, stderr, err = RunRemoteCommand(client, "docker start", container.Alias)
@@ -77,7 +77,7 @@ func GadgetStart(args []string, g *GadgetContext) error {
 		}).Debug(stderr)
 		
 		if err != nil {
-			fmt.Printf("✘\n")
+			//~ fmt.Printf("✘\n")
 			
 			// fail loudly, but continue
 			
@@ -94,7 +94,7 @@ func GadgetStart(args []string, g *GadgetContext) error {
 			// return err
 			startFailed = true
 		} else {
-			fmt.Printf("✔\n")
+			//~ fmt.Printf("✔\n")
 		}
 
 	}

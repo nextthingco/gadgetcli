@@ -7,6 +7,7 @@ import (
 	"io"
 	"golang.org/x/crypto/ssh"
 	"strings"
+	log "github.com/sirupsen/logrus"
 )
 
 func DeployContainer( client *ssh.Client, container * GadgetContainer, autostart bool) error {
@@ -15,7 +16,7 @@ func DeployContainer( client *ssh.Client, container * GadgetContainer, autostart
 		return err
 	}
 	
-	fmt.Printf("[GADGT]  Deploying: %s\n", container.ImageAlias)
+	log.Info(fmt.Sprintf("[GADGT]  Deploying: %s", container.ImageAlias))
 	docker := exec.Command(binary, "save", container.ImageAlias)
 
 	session, err := client.NewSession()
@@ -32,12 +33,12 @@ func DeployContainer( client *ssh.Client, container * GadgetContainer, autostart
 	session.Stdout = os.Stdout
 	session.Stderr = os.Stderr
 	
-	fmt.Println("[GADGT]    Starting session")
+	log.Info(fmt.Sprintf("[GADGT]    Starting session"))
 	if err := session.Start(`docker load`); err != nil {
 		return err
 	}
 
-	fmt.Println("[GADGT]    Starting docker")
+	log.Info(fmt.Sprintf("[GADGT]    Starting docker"))
 	if err := docker.Start(); err != nil {
 		return err
 	}
@@ -45,7 +46,7 @@ func DeployContainer( client *ssh.Client, container * GadgetContainer, autostart
 
 	go func() error {
 		defer pw.Close()
-		fmt.Println("[GADGT]    Waiting on docker")
+		log.Info(fmt.Sprintf("[GADGT]    Waiting on docker"))
 		if err := docker.Wait(); err != nil {
 			// TODO: we should handle this error or report to the log
 			return err
@@ -54,7 +55,7 @@ func DeployContainer( client *ssh.Client, container * GadgetContainer, autostart
 	}()
 	
 	session.Wait()
-	fmt.Println("[GADGT]    Closing session")
+	log.Info(fmt.Sprintf("[GADGT]    Closing session"))
 	session.Close()
 
 	if autostart {
@@ -70,7 +71,7 @@ func DeployContainer( client *ssh.Client, container * GadgetContainer, autostart
 // Process the build arguments and execute build
 func GadgetDeploy(args []string, g *GadgetContext) error {
 
-	g.LoadConfig()
+	//~ g.LoadConfig()
 	EnsureKeys()
 
 	client, err := GadgetLogin(gadgetPrivKeyLocation)

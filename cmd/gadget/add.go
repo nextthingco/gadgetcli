@@ -6,13 +6,14 @@ import (
 	"github.com/satori/go.uuid"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
+	log "github.com/sirupsen/logrus"
 )
 
 func addUsage() error {
-	fmt.Println("Usage: gadget [flags] add [type] [name]")
-	fmt.Println("               *opt        *req   *req ")
-	fmt.Println("Type: service | onboot                 ")
-	fmt.Println("Name: friendly name for container      ")
+	log.Info("Usage: gadget [flags] add [type] [name]")
+	log.Info("               *opt        *req   *req ")
+	log.Info("Type: service | onboot                 ")
+	log.Info("Name: friendly name for container      ")
 	
 	return errors.New("Incorrect add usage")
 }
@@ -20,7 +21,7 @@ func addUsage() error {
 // Process the build arguments and execute build
 func GadgetAdd(args []string, g *GadgetContext) error {
 
-	g.LoadConfig()
+	//~ g.LoadConfig()
 
 	addUu := uuid.NewV4()
 	
@@ -28,7 +29,7 @@ func GadgetAdd(args []string, g *GadgetContext) error {
 		return addUsage()
 	}
 	
-	fmt.Printf("[SETUP]  Adding new %s: \"%s\" ", args[0], args[1])
+	log.Info(fmt.Sprintf("Adding new %s: \"%s\" ", args[0], args[1]))
 	
 	addGadgetContainer := GadgetContainer {	
 		Name: 	args[1], 
@@ -43,7 +44,7 @@ func GadgetAdd(args []string, g *GadgetContext) error {
 	case "onboot":
 		g.Config.Onboot = append(g.Config.Onboot, addGadgetContainer)
 	default:
-		fmt.Printf("%q is not valid command.\n\n", args[0])
+		log.Error(fmt.Sprintf("%q is not valid command.\n", args[0]))
 		return addUsage()
 	}
 	
@@ -59,7 +60,7 @@ func GadgetAdd(args []string, g *GadgetContext) error {
 		return err
 	}
 	
-	fmt.Printf("✔\n")
+	//~ fmt.Printf("✔\n")
 	
 	return err
 }

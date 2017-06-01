@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
+	log "github.com/sirupsen/logrus"
 )
 
 // Process the build arguments and execute build
 func GadgetStop(args []string, g *GadgetContext) error {
-	g.LoadConfig()
+	//~ g.LoadConfig()
 	EnsureKeys()
 
 	client, err := GadgetLogin(gadgetPrivKeyLocation)
@@ -15,17 +16,17 @@ func GadgetStop(args []string, g *GadgetContext) error {
 		return err
 	}
 
-	fmt.Println("[GADGT]  Stopping:")
+	log.Info(fmt.Sprintf("[GADGT]  Stopping:"))
 	stagedContainers,_ := FindStagedContainers(args, append(g.Config.Onboot, g.Config.Services...))
 	
 	for _, container := range stagedContainers {
-		fmt.Printf("[GADGT]    %s ", container.Alias)
+		log.Info(fmt.Sprintf("[GADGT]    %s", container.Alias))
 		
 		stdout, stderr, err := RunRemoteCommand(client, "docker stop", container.Alias)
 		fmt.Println(stdout)
 		fmt.Println(stderr)
 		if err != nil {
-			fmt.Printf("✘\n")
+			//~ fmt.Printf("✘\n")
 			return err
 		}
 
@@ -33,11 +34,11 @@ func GadgetStop(args []string, g *GadgetContext) error {
 		fmt.Println(stdout)
 		fmt.Println(stderr)
 		if err != nil {
-			fmt.Printf("✘\n")
+			//~ fmt.Printf("✘\n")
 			return err
 		}
 
-		fmt.Printf("✔\n")
+		//~ fmt.Printf("✔\n")
 	}
 	return nil
 }
