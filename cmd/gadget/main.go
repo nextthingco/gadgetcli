@@ -49,6 +49,7 @@ func GadgetHelp(args []string, g *GadgetContext) error {
 	flag.Usage()
 	return nil
 }
+
 func findCommand(name string) (*GadgetCommand, error) {
 	for _,cmd := range Commands {
 		if cmd.Name == name {
@@ -57,15 +58,10 @@ func findCommand(name string) (*GadgetCommand, error) {
 	}
 	return nil, errors.New("ERROR: failed to find command")
 }
+
 func main() {
-	g := GadgetContext{}
-
-	err := RequiredSsh()
-	if err != nil {
-		fmt.Printf("ERROR: failed at RequiredSsh in main()")
-		os.Exit(1)
-	}
-
+	// Hey, Listen! 
+	// Everything that outputs needs to come after g.Verbose check!
 	flag.Usage = func() {
 		fmt.Printf("USAGE: %s [options] COMMAND\n\n", filepath.Base(os.Args[0]))
 		fmt.Printf("Commands:\n")
@@ -88,6 +84,9 @@ func main() {
 		flag.PrintDefaults()
 		fmt.Printf("\n")
 	}
+
+	g := GadgetContext{}
+	
 	flag.BoolVar(&g.Verbose, "v", false, "Verbose execution")
 	flag.StringVar(&g.WorkingDirectory, "C", ".", "Run in directory")
 	flag.Parse()
@@ -96,6 +95,16 @@ func main() {
 		log.SetLevel(log.DebugLevel)
 	} else {
 		log.SetLevel(log.WarnLevel)
+	}
+	
+	// Hey, Listen! 
+	// Everything that outputs needs to come after g.Verbose check!
+	
+
+	err := RequiredSsh()
+	if err != nil {
+		fmt.Printf("ERROR: failed at RequiredSsh in main()")
+		os.Exit(1)
 	}
 
 	args := flag.Args()

@@ -145,7 +145,7 @@ func RequiredSsh() error {
 		log.WithFields(log.Fields{
 			"function": "RequiredSsh",
 		}).Debug("default private key: ~/.ssh/gadget_default_rsa")
-
+		
 		outBytes := []byte(defaultKey)
 		err = ioutil.WriteFile(defaultPrivKeyLocation, outBytes, 0600)
 		if err != nil {
@@ -156,6 +156,11 @@ func RequiredSsh() error {
 	// check/create ~/.ssh/gadget_rsa[.pub]
 	gadgetPrivExists, err := PathExists(gadgetPrivKeyLocation)
 	if err != nil {
+		log.WithFields(log.Fields{
+			"function": "RequiredSsh",
+			"keyLocation": gadgetPrivKeyLocation,
+			"error": err,
+		}).Error("something went wrong with gadgetPubExists")
 		return err
 	}
 	gadgetPubExists, err := PathExists(gadgetPubKeyLocation)
@@ -190,7 +195,11 @@ func RequiredSsh() error {
 		outBytes := []byte(privkey)
 		err = ioutil.WriteFile(gadgetPrivKeyLocation, outBytes, 0600)
 		if err != nil {
-			fmt.Println("[SETUP]  something went wrong with gadgetPrivKey `%s`: %s", gadgetPrivKeyLocation, err)
+			log.WithFields(log.Fields{
+				"function": "RequiredSsh",
+				"keyLocation": gadgetPrivKeyLocation,
+				"error": err,
+			}).Error("something went wrong with gadgetPrivKey")
 			return err
 		}
 		fmt.Printf("✔\n")
@@ -199,7 +208,11 @@ func RequiredSsh() error {
 		outBytes = []byte(pubkey)
 		err = ioutil.WriteFile(gadgetPubKeyLocation, outBytes, 0600)
 		if err != nil {
-			fmt.Println("[SETUP]  something went wrong with gadgetPrivKey `%s`: %s", gadgetPubKeyLocation, err)
+			log.WithFields(log.Fields{
+				"function": "RequiredSsh",
+				"keyLocation": gadgetPrivKeyLocation,
+				"error": err,
+			}).Error("something went wrong with gadgetPrivKey")
 			return err
 		}
 		fmt.Printf("✔\n")
