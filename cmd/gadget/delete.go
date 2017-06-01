@@ -3,6 +3,7 @@ package main
 
 import (
 	"fmt"
+	"errors"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -21,17 +22,46 @@ func GadgetDelete(args []string, g *GadgetContext) error {
 
 	stagedContainers,_ := FindStagedContainers(args, append(g.Config.Onboot, g.Config.Services...))
 	
+	deleteFailed := false
+	
 	for _, container := range stagedContainers {
 		log.Info(fmt.Sprintf("    %s ", container.ImageAlias))
+		
 		stdout, stderr, err := RunRemoteCommand(client, "docker", "rmi", container.ImageAlias)
+		
+		log.WithFields(log.Fields{
+			"function": "GadgetDelete",
+			"name": container.Alias,
+			"delete-stage": "rmi",
+		}).Debug(stdout)
+		log.WithFields(log.Fields{
+			"function": "GadgetDelete",
+			"name": container.Alias,
+			"delete-stage": "rmi",
+		}).Debug(stderr)
+		
 		if err != nil {
 			//~ fmt.Printf("✘\n")
-			return err
+			//~ return err
+			log.WithFields(log.Fields{
+				"function": "GadgetDelete",
+				"name": container.Alias,
+				"delete-stage": "rmi",
+			}).Debug("This is likely due to specifying containers for a previous stage, but trying to delete all")
+
+
+			log.Error("Failed to delete container on Gadget")
+			log.Warn("Was the container ever deployed?")
+			
+			deleteFailed = true
 		}
-		fmt.Println(stdout)
-		fmt.Println(stderr)
 		
 		//~ fmt.Printf("✔\n")
 	}
-	return nil
+	
+	if deleteFailed {
+		err = errors.New("Failed to delete one or more containers")
+	}
+	
+	return err
 }

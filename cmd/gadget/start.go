@@ -84,7 +84,7 @@ func GadgetStart(args []string, g *GadgetContext) error {
 			log.WithFields(log.Fields{
 				"function": "GadgetStart",
 				"name": container.Alias,
-				"start-stage": "start",
+				"start-stage": "create",
 			}).Debug("This is likely due to specifying containers for deploying, but trying to start all")
 
 

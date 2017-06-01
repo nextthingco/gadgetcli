@@ -327,29 +327,29 @@ func EnsureKeys() error {
 
 	_, err := GadgetLogin(gadgetPrivKeyLocation)
 	if err != nil {
-		log.Warn("Private key login failed, trying default key")
+		log.Warn("  Private key login failed, trying default key")
 		
 		log.WithFields(log.Fields{
 			"function": "EnsureKeys",
 			"gadgetPrivKeyLocation": gadgetPrivKeyLocation,
 			"defaultPrivKeyLocation": defaultPrivKeyLocation,
-		}).Debug("Private key login failed, trying default key")
+		}).Debug("  Private key login failed, trying default key")
 
 		_, err = GadgetLogin(defaultPrivKeyLocation)
 		if err != nil {
-			log.Error("Default key login also failed")
-			log.Warn("Is the gadget connected and powered on?")
-			log.Warn("Was the gadget first used on another computer/account?")
+			log.Error("  Default key login also failed")
+			log.Warn("  Is the gadget connected and powered on?")
+			log.Warn("  Was the gadget first used on another computer/account?")
 			return err
 		} else {
 			log.WithFields(log.Fields{
 				"function": "EnsureKeys",
-			}).Debug("Default key login success")
+			}).Debug("  Default key login success")
 
 			log.WithFields(log.Fields{
 				"function": "EnsureKeys",
 				"gadgetPubKeyLocation": gadgetPubKeyLocation,
-			}).Debug("Public key file does not exist")
+			}).Debug("  Public key file does not exist")
 
 			err = GadgetInstallKeys()
 			if err != nil {
@@ -359,7 +359,7 @@ func EnsureKeys() error {
 	} else {
 		log.WithFields(log.Fields{
 			"function": "EnsureKeys",
-		}).Debug("Private key login success")
+		}).Debug("  Private key login success")
 	}
 
 	return err
@@ -449,6 +449,6 @@ func FindStagedContainers(args []string, containers GadgetContainers) (GadgetCon
 	if len(stagedContainers) == 0 {
 		stagedContainers = containers
 	}
-	err := errors.New(fmt.Sprintf("Could not find containers: %s", strings.Join(unavailableContainers, ", ")))
+	err := errors.New(fmt.Sprintf("  Could not find containers: %s", strings.Join(unavailableContainers, ", ")))
 	return stagedContainers, err
 }

@@ -33,12 +33,12 @@ func DeployContainer( client *ssh.Client, container * GadgetContainer, autostart
 	session.Stdout = os.Stdout
 	session.Stderr = os.Stderr
 	
-	log.Info(fmt.Sprintf("[GADGT]    Starting session"))
+	log.Debug(fmt.Sprintf("[GADGT]    Starting session"))
 	if err := session.Start(`docker load`); err != nil {
 		return err
 	}
 
-	log.Info(fmt.Sprintf("[GADGT]    Starting docker"))
+	log.Debug(fmt.Sprintf("[GADGT]    Starting docker"))
 	if err := docker.Start(); err != nil {
 		return err
 	}
@@ -46,16 +46,18 @@ func DeployContainer( client *ssh.Client, container * GadgetContainer, autostart
 
 	go func() error {
 		defer pw.Close()
-		log.Info(fmt.Sprintf("[GADGT]    Waiting on docker"))
+		log.Info(fmt.Sprintf("[GADGT]    Starting transfer.."))
+		log.Debug(fmt.Sprintf("[GADGT]    Waiting on docker"))
 		if err := docker.Wait(); err != nil {
 			// TODO: we should handle this error or report to the log
 			return err
 		}
-		return nil
+		return err
 	}()
 	
 	session.Wait()
-	log.Info(fmt.Sprintf("[GADGT]    Closing session"))
+	log.Info(fmt.Sprintf("[GADGT]    Done!"))
+	log.Debug(fmt.Sprintf("[GADGT]    Closing session"))
 	session.Close()
 
 	if autostart {
@@ -66,7 +68,8 @@ func DeployContainer( client *ssh.Client, container * GadgetContainer, autostart
 			container.ImageAlias,
 			strings.Join(container.Command[:]," "))
 	}
-	return nil
+	
+	return err
 }
 // Process the build arguments and execute build
 func GadgetDeploy(args []string, g *GadgetContext) error {
@@ -85,5 +88,6 @@ func GadgetDeploy(args []string, g *GadgetContext) error {
 	for _, container := range stagedContainers {
 		DeployContainer(client, &container, false)
 	}
-	return nil
+	
+	return err
 }

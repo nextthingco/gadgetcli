@@ -29,7 +29,7 @@ func GadgetAdd(args []string, g *GadgetContext) error {
 		return addUsage()
 	}
 	
-	log.Info(fmt.Sprintf("Adding new %s: \"%s\" ", args[0], args[1]))
+	log.Info(fmt.Sprintf("  Adding new %s: \"%s\" ", args[0], args[1]))
 	
 	addGadgetContainer := GadgetContainer {	
 		Name: 	args[1], 
