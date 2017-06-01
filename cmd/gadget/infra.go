@@ -327,11 +327,13 @@ func EnsureKeys() error {
 
 	_, err := GadgetLogin(gadgetPrivKeyLocation)
 	if err != nil {
+		log.Warn("Private key login failed, trying default key")
+		
 		log.WithFields(log.Fields{
 			"function": "EnsureKeys",
 			"gadgetPrivKeyLocation": gadgetPrivKeyLocation,
 			"defaultPrivKeyLocation": defaultPrivKeyLocation,
-		}).Error("Private key login failed, trying default key")
+		}).Debug("Private key login failed, trying default key")
 
 		_, err = GadgetLogin(defaultPrivKeyLocation)
 		if err != nil {
