@@ -224,6 +224,11 @@ func RequiredSsh() error {
 func GadgetLogin(keyLocation string) (*ssh.Client, error) {
 	key, err := ioutil.ReadFile(keyLocation)
 	if err != nil {
+		log.WithFields(log.Fields{
+			"function": "RequiredSsh",
+			"keyLocation": gadgetPrivKeyLocation,
+			"error": err,
+		}).Error("something went wrong with gadgetPrivKey")
 		return nil, err
 	}
 
@@ -254,11 +259,19 @@ func GadgetLogin(keyLocation string) (*ssh.Client, error) {
 func GadgetInstallKeys() error {
 	key, err := ioutil.ReadFile(defaultPrivKeyLocation)
 	if err != nil {
+		log.WithFields(log.Fields{
+			"function": "GadgetInstallKeys",
+			"file": defaultPrivKeyLocation,
+		}).Error("Failed to read private key")
 		return err
 	}
 
 	signer, err := ssh.ParsePrivateKey(key)
 	if err != nil {
+		log.WithFields(log.Fields{
+			"function": "GadgetInstallKeys",
+			"file": defaultPrivKeyLocation,
+		}).Error("Failed parse private key")
 		return err
 	}
 
@@ -273,11 +286,18 @@ func GadgetInstallKeys() error {
 
 	client, err := ssh.Dial("tcp", ip, config)
 	if err != nil {
+		log.WithFields(log.Fields{
+			"function": "GadgetInstallKeys",
+			"tcp": ip,
+		}).Error("Failed to dial ssh")
 		return err
 	}
 
 	session, err := client.NewSession()
 	if err != nil {
+		log.WithFields(log.Fields{
+			"function": "GadgetInstallKeys",
+		}).Error("Failed to create new ssh client session")
 		client.Close()
 		return err
 	}
@@ -315,7 +335,9 @@ func EnsureKeys() error {
 
 		_, err = GadgetLogin(defaultPrivKeyLocation)
 		if err != nil {
-			log.Error("Default key login also failed, did you leave your keys at home?")
+			log.Error("Default key login also failed")
+			log.Warn("Is the gadget connected and powered on?")
+			log.Warn("Was the gadget first used on another computer/account?")
 			return err
 		} else {
 			log.WithFields(log.Fields{
@@ -327,7 +349,7 @@ func EnsureKeys() error {
 				"gadgetPubKeyLocation": gadgetPubKeyLocation,
 			}).Debug("Public key file does not exist")
 
-			GadgetInstallKeys()
+			err = GadgetInstallKeys()
 			if err != nil {
 				return err
 			}

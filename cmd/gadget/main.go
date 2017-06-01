@@ -135,7 +135,6 @@ func main() {
 	}
 
 	err = cmd.Function(args[1:], &g)
-	
 	if err != nil {
 		os.Exit(1)
 	}
