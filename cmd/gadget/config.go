@@ -121,7 +121,7 @@ func WalkUp(bottom_dir string) (string, error) {
 
 		// haven't found it
 		if isRoot(bottom_dir) || isDriveLetter(bottom_dir) {
-			return "", errors.New("[SETUP]  could not find configuration file")
+			return "", errors.New("  Could not find configuration file")
 		} else {
 			bottom_dir, rc = WalkUp(filepath.Dir(bottom_dir))
 		}

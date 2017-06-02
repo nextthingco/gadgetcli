@@ -27,7 +27,7 @@ func GadgetAdd(args []string, g *GadgetContext) error {
 		return addUsage()
 	}
 	
-	log.Infof("  Adding new %s: \"%s\" ", args[0], args[1])
+	log.Infof("Adding new %s: \"%s\" ", args[0], args[1])
 	
 	addGadgetContainer := GadgetContainer {	
 		Name: 	args[1], 
@@ -42,7 +42,7 @@ func GadgetAdd(args []string, g *GadgetContext) error {
 	case "onboot":
 		g.Config.Onboot = append(g.Config.Onboot, addGadgetContainer)
 	default:
-		log.Errorf("%q is not valid command.", args[0])
+		log.Errorf("  %q is not valid command.", args[0])
 		return addUsage()
 	}
 	

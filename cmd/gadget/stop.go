@@ -79,8 +79,8 @@ func GadgetStop(args []string, g *GadgetContext) error {
 			}).Debug("This is likely due to specifying containers for a previous operation, but trying to stop all")
 
 
-			log.Error("Failed to stop container on Gadget")
-			log.Warn("Was the container ever deployed?")
+			log.Errorf("Failed to stop '%s' on Gadget", container.Name)
+			log.Warn("Was it ever deployed?")
 			
 		}
 	}

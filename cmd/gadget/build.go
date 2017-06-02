@@ -15,12 +15,12 @@ func GadgetBuild(args []string, g *GadgetContext) error {
 		return err
 	}
 
-	log.Info("  Building:")
+	log.Info("Building:")
 
 	stagedContainers,_ := FindStagedContainers(args, append(g.Config.Onboot, g.Config.Services...))
 
 	for _, container := range stagedContainers {
-		log.Infof("    %s", container.ImageAlias)
+		log.Infof("  %s", container.ImageAlias)
 
 		// use local directory for build
 		if container.Directory != "" {

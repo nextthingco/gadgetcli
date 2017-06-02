@@ -19,11 +19,11 @@ func GadgetStart(args []string, g *GadgetContext) error {
 	
 	var startFailed bool = false
 	
-	log.Info("[GADGT]  Starting:")
+	log.Info("Starting:")
 	stagedContainers,_ := FindStagedContainers(args, append(g.Config.Onboot, g.Config.Services...))
 	for _, container := range stagedContainers {
 		
-		log.Infof("[GADGT]    %s", container.Alias)
+		log.Infof("  %s", container.Alias)
 		binds := strings.Join( PrependToStrings(container.Binds[:],"-v "), " ")
 		commands := strings.Join(container.Command[:]," ")
 		
@@ -71,8 +71,7 @@ func GadgetStart(args []string, g *GadgetContext) error {
 			"start-stage": "create",
 		}).Debug(stderr)
 		
-		if err != nil {
-			
+		if err != nil {			
 			// fail loudly, but continue
 			
 			log.WithFields(log.Fields{
@@ -82,8 +81,8 @@ func GadgetStart(args []string, g *GadgetContext) error {
 			}).Debug("This is likely due to specifying containers for deploying, but trying to start all")
 
 
-			log.Error("Failed to start container on Gadget")
-			log.Warn("Was the container ever deployed?")
+			log.Errorf("Failed to start '%s' on Gadget", container.Name)
+			log.Warn("Was it ever deployed?")
 			
 			startFailed = true
 		}
