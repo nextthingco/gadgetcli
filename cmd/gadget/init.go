@@ -5,7 +5,7 @@ import (
 	"github.com/satori/go.uuid"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
-	"os"
+	//~ "os"
 	"path/filepath"
 	log "github.com/sirupsen/logrus"
 )
@@ -17,27 +17,22 @@ func GadgetInit(args []string, g *GadgetContext) error {
 	initUu2 := uuid.NewV4()
 
 
-	log.Info(fmt.Sprintf("[INIT ]  Creating new project:"))
+	log.Info("[INIT ]  Creating new project:")
 
 	g.WorkingDirectory, _ = filepath.Abs(g.WorkingDirectory)
 	initName := filepath.Base(g.WorkingDirectory)
 	
-	log.Info(fmt.Sprintf("[INIT ]    in %s", g.WorkingDirectory))
+	log.Infof("[INIT ]    in %s", g.WorkingDirectory)
 
 	initConfig := TemplateConfig(initName, fmt.Sprintf("%s", initUu1), fmt.Sprintf("%s", initUu2))
 
 	outBytes, err := yaml.Marshal(initConfig)
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		return err
 	}
 
 	err = ioutil.WriteFile(fmt.Sprintf("%s/gadget.yml", g.WorkingDirectory), outBytes, 0644)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
 	
 	//~ fmt.Printf("✔\n")
-	return nil	
+	return err
 }

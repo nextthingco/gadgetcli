@@ -2,7 +2,7 @@ package main
 
 
 import (
-	"fmt"
+	//~ "fmt"
 	"errors"
 	log "github.com/sirupsen/logrus"
 )
@@ -18,14 +18,14 @@ func GadgetDelete(args []string, g *GadgetContext) error {
 		return err
 	}
 
-	log.Info(fmt.Sprintf("  Deleting:"))
+	log.Info("  Deleting:")
 
 	stagedContainers,_ := FindStagedContainers(args, append(g.Config.Onboot, g.Config.Services...))
 	
 	deleteFailed := false
 	
 	for _, container := range stagedContainers {
-		log.Info(fmt.Sprintf("    %s ", container.ImageAlias))
+		log.Infof("    %s", container.ImageAlias)
 		
 		stdout, stderr, err := RunRemoteCommand(client, "docker", "rmi", container.ImageAlias)
 		

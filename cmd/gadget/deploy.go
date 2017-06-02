@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	//~ "fmt"
 	"os/exec"
 	"io"
 	"golang.org/x/crypto/ssh"
@@ -15,8 +15,8 @@ func DeployContainer( client *ssh.Client, container * GadgetContainer,g *GadgetC
 		return err
 	}
 	
-	log.Info(fmt.Sprintf("[GADGT]  Deploying:"))
-	log.Info(fmt.Sprintf("[GADGT]    %s", container.ImageAlias))
+	log.Info("[GADGT]  Deploying:")
+	log.Infof("[GADGT]    %s", container.ImageAlias)
 	docker := exec.Command(binary, "save", container.ImageAlias)
 
 	session, err := client.NewSession()
@@ -35,12 +35,12 @@ func DeployContainer( client *ssh.Client, container * GadgetContainer,g *GadgetC
 	session.Stdout = sessionLogger.WriterLevel(log.DebugLevel)
 	session.Stderr = sessionLogger.WriterLevel(log.DebugLevel)
 	
-	log.Debug(fmt.Sprintf("[GADGT]    Starting session"))
+	log.Debug("[GADGT]    Starting session")
 	if err := session.Start(`docker load`); err != nil {
 		return err
 	}
 
-	log.Debug(fmt.Sprintf("[GADGT]    Starting docker"))
+	log.Debug("[GADGT]    Starting docker")
 	if err := docker.Start(); err != nil {
 		return err
 	}
@@ -48,8 +48,8 @@ func DeployContainer( client *ssh.Client, container * GadgetContainer,g *GadgetC
 
 	go func() error {
 		defer pw.Close()
-		log.Info(fmt.Sprintf("[GADGT]    Starting transfer.."))
-		log.Debug(fmt.Sprintf("[GADGT]    Waiting on docker"))
+		log.Info("[GADGT]    Starting transfer..")
+		log.Debug("[GADGT]    Waiting on docker")
 		if err := docker.Wait(); err != nil {
 			// TODO: we should handle this error or report to the log
 			return err
@@ -58,17 +58,34 @@ func DeployContainer( client *ssh.Client, container * GadgetContainer,g *GadgetC
 	}()
 	
 	session.Wait()
-	log.Info(fmt.Sprintf("[GADGT]    Done!"))
-	log.Debug(fmt.Sprintf("[GADGT]    Closing session"))
+	log.Info("[GADGT]    Done!")
+	log.Debug("[GADGT]    Closing session")
 	session.Close()
 		
 	if autostart {
-		RunRemoteCommand(client, "docker",
+		stdout, stderr, err := RunRemoteCommand(client, "docker",
 			"create",
 			"--name", container.Alias,
 			"--restart=always",
 			container.ImageAlias,
 			strings.Join(container.Command[:]," "))
+		
+		if err != nil {
+			log.Errorf("Failed to set %s to always restart on Gadget", container.Alias)
+			return err
+		}
+		
+		log.WithFields(log.Fields{
+			"function": "DeployContainer",
+			"name": container.Alias,
+			"deploy-stage": "create restarting",
+		}).Debug(stdout)
+		log.WithFields(log.Fields{
+			"function": "DeployContainer",
+			"name": container.Alias,
+			"deploy-stage": "create restarting",
+		}).Debug(stderr)
+		
 	}
 	
 	return err
@@ -86,7 +103,7 @@ func GadgetDeploy(args []string, g *GadgetContext) error {
 		return err
 	}
 
-	stagedContainers,_ := FindStagedContainers(args, append(g.Config.Onboot, g.Config.Services...))
+	stagedContainers, err := FindStagedContainers(args, append(g.Config.Onboot, g.Config.Services...))
 
 	for _, container := range stagedContainers {
 		DeployContainer(client, &container, g, false)

@@ -2,7 +2,7 @@ package main
 
 import (
 	"flag"
-	"fmt"
+	//~ "fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -40,9 +40,9 @@ var Commands = []GadgetCommand {
 }
 
 func GadgetVersion(args []string, g *GadgetContext) error {
-	fmt.Println(filepath.Base(os.Args[0]))
-	fmt.Printf("  version: %s\n", Version)
-	fmt.Printf("  commit: %s\n", GitCommit)
+	log.Infoln(filepath.Base(os.Args[0]))
+	log.Infof("  version: %s\n", Version)
+	log.Infof("  commit: %s\n", GitCommit)
 	return nil
 }
 
@@ -64,26 +64,30 @@ func main() {
 	// Hey, Listen! 
 	// Everything that outputs needs to come after g.Verbose check!
 	flag.Usage = func() {
-		fmt.Printf("USAGE: %s [options] COMMAND\n\n", filepath.Base(os.Args[0]))
-		fmt.Printf("Commands:\n")
-		fmt.Printf("  init        Initialize gadget project\n")
-		fmt.Printf("  add         Initialize gadget project\n")
-		fmt.Printf("  build       Build gadget config file\n")
-		fmt.Printf("  deploy      Build gadget config file\n")
-		fmt.Printf("  start       Build gadget config file\n")
-		fmt.Printf("  stop        Build gadget config file\n")
-		fmt.Printf("  status      Build gadget config file\n")
-		fmt.Printf("  delete      Build gadget config file\n")
-		fmt.Printf("  shell       Connect to remote device running GadgetOS\n")
-		fmt.Printf("  logs        Build gadget config file\n")
-		fmt.Printf("  version     Print version information\n")
-		fmt.Printf("  help        Print this message\n")
-		fmt.Printf("\n")
-		fmt.Printf("Run '%s COMMAND --help' for more information on the command\n", filepath.Base(os.Args[0]))
-		fmt.Printf("\n")
-		fmt.Printf("Options:\n")
-		flag.PrintDefaults()
-		fmt.Printf("\n")
+		log.Info ("")
+		log.Infof("USAGE: %s [options] COMMAND", filepath.Base(os.Args[0]))
+		log.Info ("")
+		log.Info ("Commands:")
+		log.Info ("  init        Initialize gadget project")
+		log.Info ("  add         Initialize gadget project")
+		log.Info ("  build       Build gadget config file")
+		log.Info ("  deploy      Build gadget config file")
+		log.Info ("  start       Build gadget config file")
+		log.Info ("  stop        Build gadget config file")
+		log.Info ("  status      Build gadget config file")
+		log.Info ("  delete      Build gadget config file")
+		log.Info ("  shell       Connect to remote device running GadgetOS")
+		log.Info ("  logs        Build gadget config file")
+		log.Info ("  version     Print version information")
+		log.Info ("  help        Print this message")
+		log.Info ("")
+		log.Infof("Run '%s COMMAND --help' for more information on the command", filepath.Base(os.Args[0]))
+		log.Info ("")
+		log.Infof("Options:")
+		log.Info ("  -C string                             ")
+		log.Info ("    	Run in directory (default \".\")  ")
+		log.Info ("  -v	Verbose execution                 ")
+		log.Info ("")
 	}
 
 	g := GadgetContext{}
@@ -104,7 +108,7 @@ func main() {
 
 	err := RequiredSsh()
 	if err != nil {
-		fmt.Printf("ERROR: failed at RequiredSsh in main()")
+		log.Error("  Failed at RequiredSsh in main()")
 		os.Exit(1)
 	}
 

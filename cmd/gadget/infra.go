@@ -191,7 +191,7 @@ func RequiredSsh() error {
 			return err
 		}
 		
-		log.Info(fmt.Sprintf("[SETUP]    private key: ~/.ssh/gadget_rsa  "))
+		log.Info("[SETUP]    private key: ~/.ssh/gadget_rsa")
 		outBytes := []byte(privkey)
 		err = ioutil.WriteFile(gadgetPrivKeyLocation, outBytes, 0600)
 		if err != nil {
@@ -204,7 +204,7 @@ func RequiredSsh() error {
 		}
 		//~ fmt.Printf("✔\n")
 		
-		log.Info(fmt.Sprintf("[SETUP]    public key: ~/.ssh/gadget_rsa.pub  "))
+		log.Info("[SETUP]    public key: ~/.ssh/gadget_rsa.pub")
 		outBytes = []byte(pubkey)
 		err = ioutil.WriteFile(gadgetPubKeyLocation, outBytes, 0600)
 		if err != nil {

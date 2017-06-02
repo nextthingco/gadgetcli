@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	//~ "fmt"
 	"errors"
 	log "github.com/sirupsen/logrus"
 )
@@ -17,13 +17,13 @@ func GadgetStop(args []string, g *GadgetContext) error {
 		return err
 	}
 
-	log.Info(fmt.Sprintf("[GADGT]  Stopping:"))
+	log.Info("[GADGT]  Stopping:")
 	stagedContainers,_ := FindStagedContainers(args, append(g.Config.Onboot, g.Config.Services...))
 	
 	var stopFailed bool = false
 	
 	for _, container := range stagedContainers {
-		log.Info(fmt.Sprintf("[GADGT]    %s", container.Alias))
+		log.Infof("[GADGT]    %s", container.Alias)
 		
 		stdout, stderr, err := RunRemoteCommand(client, "docker stop", container.Alias)
 		

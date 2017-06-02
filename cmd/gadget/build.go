@@ -22,7 +22,7 @@ func GadgetBuild(args []string, g *GadgetContext) error {
 	stagedContainers,_ := FindStagedContainers(args, append(g.Config.Onboot, g.Config.Services...))
 
 	for _, container := range stagedContainers {
-		log.Info(fmt.Sprintf("    %s ", container.ImageAlias))
+		log.Infof("    %s", container.ImageAlias)
 
 		// use local directory for build
 		if container.Directory != "" {

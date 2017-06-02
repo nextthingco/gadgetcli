@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	//~ "fmt"
 	"errors"
 	"strings"
 	log "github.com/sirupsen/logrus"
@@ -20,11 +20,11 @@ func GadgetStart(args []string, g *GadgetContext) error {
 	
 	var startFailed bool = false
 	
-	log.Info(fmt.Sprintf("[GADGT]  Starting:"))
+	log.Info("[GADGT]  Starting:")
 	stagedContainers,_ := FindStagedContainers(args, append(g.Config.Onboot, g.Config.Services...))
 	for _, container := range stagedContainers {
 		
-		log.Info(fmt.Sprintf("[GADGT]    %s", container.Alias))
+		log.Infof("[GADGT]    %s", container.Alias)
 		binds := strings.Join( PrependToStrings(container.Binds[:],"-v "), " ")
 		commands := strings.Join(container.Command[:]," ")
 		
