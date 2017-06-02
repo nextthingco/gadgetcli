@@ -51,7 +51,7 @@ func GadgetStart(args []string, g *GadgetContext) error {
 			}).Debug("This is likely due to specifying containers for deploying, but trying to start all")
 
 
-			log.Debug("Failed to create container on Gadget,")
+			log.Debugf("Failed to create %s on Gadget,", container.Alias)
 			log.Debug("it might have already been deployed,")
 			log.Debug("Or creation otherwise failed")
 			

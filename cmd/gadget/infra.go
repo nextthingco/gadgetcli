@@ -410,11 +410,10 @@ func RunLocalCommand(binary string, arguments ...string) (*bytes.Buffer, *bytes.
 	if execErr != nil {
 		return nil, nil, execErr
 	}
+
 	execErr = cmd.Wait()
-	if execErr != nil {
-		return nil, nil, execErr
-	}
-	return nil, nil, nil
+	
+	return nil, nil, execErr
 }
 
 

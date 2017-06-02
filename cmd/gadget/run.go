@@ -15,12 +15,15 @@ func GadgetRun(args []string, g *GadgetContext) error {
 	}
 
 	stdout, stderr, err := RunRemoteCommand(client, strings.Join(args, " "))
-
-	log.WithFields(log.Fields{
-		"command": strings.Join(args, " "),
-		"stdout": stdout.String(),
-		"stderr": stderr.String(),
-	}).Info("Ran remote command")
-
+	
+	if err != nil {
+		log.Errorf("\n%s", stdout)
+		log.Errorf("\n%s", stderr)
+		return err
+	}
+	
+	log.Infof("\n%s", stdout)
+	log.Debugf("\n%s", stderr)
+	
 	return err
 }
