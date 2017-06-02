@@ -9,8 +9,6 @@ import (
 // Process the build arguments and execute build
 func GadgetBuild(args []string, g *GadgetContext) error {
 
-	//~ g.LoadConfig()
-
 	// find docker binary in path
 	binary, err := exec.LookPath("docker")
 	if err != nil {
@@ -42,7 +40,7 @@ func GadgetBuild(args []string, g *GadgetContext) error {
 				container.ImageAlias)
 		}
 		
-		//~ fmt.Printf("✔\n")
 	}
-	return nil
+	
+	return err
 }

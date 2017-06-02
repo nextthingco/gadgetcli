@@ -1,13 +1,12 @@
 package main
 
 import (
-	//"fmt"
 	"strings"
 	log "github.com/sirupsen/logrus"
 )
 
 func GadgetRun(args []string, g *GadgetContext) error {
-	//g.LoadConfig()
+	
 	EnsureKeys()
 
 	client, err := GadgetLogin(gadgetPrivKeyLocation)

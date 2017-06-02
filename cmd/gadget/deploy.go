@@ -1,7 +1,6 @@
 package main
 
 import (
-	//~ "fmt"
 	"os/exec"
 	"io"
 	"golang.org/x/crypto/ssh"
@@ -93,8 +92,7 @@ func DeployContainer( client *ssh.Client, container * GadgetContainer,g *GadgetC
 
 // Process the build arguments and execute build
 func GadgetDeploy(args []string, g *GadgetContext) error {
-
-	//~ g.LoadConfig()
+	
 	EnsureKeys()
 
 	client, err := GadgetLogin(gadgetPrivKeyLocation)

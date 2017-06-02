@@ -1,7 +1,6 @@
 package main
 
 import (
-	//~ "fmt"
 	"errors"
 	"strings"
 	log "github.com/sirupsen/logrus"
@@ -9,7 +8,7 @@ import (
 
 // Process the build arguments and execute build
 func GadgetStart(args []string, g *GadgetContext) error {
-	//~ g.LoadConfig()
+	
 	EnsureKeys()
 
 	client, err := GadgetLogin(gadgetPrivKeyLocation)
@@ -42,7 +41,6 @@ func GadgetStart(args []string, g *GadgetContext) error {
 		}).Debug(stderr)
 		
 		if err != nil {
-			//~ fmt.Printf("✘ ")
 			
 			// fail loudly, but continue
 			
@@ -58,9 +56,6 @@ func GadgetStart(args []string, g *GadgetContext) error {
 			log.Debug("Or creation otherwise failed")
 			
 			startFailed = true
-			//return err
-		} else {
-			//~ fmt.Printf("✔ ")
 		}
 
 		stdout, stderr, err = RunRemoteCommand(client, "docker start", container.Alias)
@@ -77,7 +72,6 @@ func GadgetStart(args []string, g *GadgetContext) error {
 		}).Debug(stderr)
 		
 		if err != nil {
-			//~ fmt.Printf("✘\n")
 			
 			// fail loudly, but continue
 			
@@ -91,10 +85,7 @@ func GadgetStart(args []string, g *GadgetContext) error {
 			log.Error("Failed to start container on Gadget")
 			log.Warn("Was the container ever deployed?")
 			
-			// return err
 			startFailed = true
-		} else {
-			//~ fmt.Printf("✔\n")
 		}
 
 	}

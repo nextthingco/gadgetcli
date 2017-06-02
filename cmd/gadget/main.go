@@ -51,7 +51,7 @@ func GadgetHelp(args []string, g *GadgetContext) error {
 	return nil
 }
 
-func findCommand(name string) (*GadgetCommand, error) {
+func FindCommand(name string) (*GadgetCommand, error) {
 	for _,cmd := range Commands {
 		if cmd.Name == name {
 			return &cmd,nil
@@ -108,7 +108,7 @@ func main() {
 
 	err := RequiredSsh()
 	if err != nil {
-		log.Error("  Failed at RequiredSsh in main()")
+		log.Error("  Failed to verify ssh requirements")
 		os.Exit(1)
 	}
 
@@ -120,7 +120,7 @@ func main() {
 	}
 		
 	// file command
-	cmd,err := findCommand(args[0])
+	cmd,err := FindCommand(args[0])
 	if err != nil {
 		flag.Usage()
 		log.WithFields(log.Fields{

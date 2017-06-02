@@ -33,6 +33,5 @@ func GadgetInit(args []string, g *GadgetContext) error {
 
 	err = ioutil.WriteFile(fmt.Sprintf("%s/gadget.yml", g.WorkingDirectory), outBytes, 0644)
 	
-	//~ fmt.Printf("✔\n")
 	return err
 }

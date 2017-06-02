@@ -8,7 +8,7 @@ import (
 
 // Process the build arguments and execute build
 func GadgetStop(args []string, g *GadgetContext) error {
-	//~ g.LoadConfig()
+	
 	EnsureKeys()
 
 	client, err := GadgetLogin(gadgetPrivKeyLocation)
@@ -39,8 +39,7 @@ func GadgetStop(args []string, g *GadgetContext) error {
 		}).Debug(stderr)
 		
 		if err != nil {
-			//~ fmt.Printf("✘\n")
-			//~ return err
+			
 			stopFailed = true
 			
 			log.WithFields(log.Fields{
@@ -70,8 +69,7 @@ func GadgetStop(args []string, g *GadgetContext) error {
 		}).Debug(stderr)
 		
 		if err != nil {
-			//~ fmt.Printf("✘\n")
-			//~ return err
+			
 			stopFailed = true
 			
 			log.WithFields(log.Fields{
@@ -85,8 +83,6 @@ func GadgetStop(args []string, g *GadgetContext) error {
 			log.Warn("Was the container ever deployed?")
 			
 		}
-
-		//~ fmt.Printf("✔\n")
 	}
 	
 	if stopFailed {

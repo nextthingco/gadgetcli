@@ -202,7 +202,6 @@ func RequiredSsh() error {
 			}).Error("something went wrong with gadgetPrivKey")
 			return err
 		}
-		//~ fmt.Printf("✔\n")
 		
 		log.Info("[SETUP]    public key: ~/.ssh/gadget_rsa.pub")
 		outBytes = []byte(pubkey)
@@ -215,7 +214,6 @@ func RequiredSsh() error {
 			}).Error("something went wrong with gadgetPrivKey")
 			return err
 		}
-		//~ fmt.Printf("✔\n")
 	}
 
 	return nil
@@ -315,10 +313,8 @@ func GadgetInstallKeys() error {
 			"gadget": dest,
 			"gadgetPubKeyLocation": gadgetPubKeyLocation,
 		}).Error("Public key file does not exist")
-	} else {
-		//~ fmt.Printf("✔\n")
 	}
-
+	
 	defer client.Close()
 	return nil
 }

@@ -21,8 +21,6 @@ func addUsage() error {
 // Process the build arguments and execute build
 func GadgetAdd(args []string, g *GadgetContext) error {
 
-	//~ g.LoadConfig()
-
 	addUu := uuid.NewV4()
 	
 	if len(args) != 2 {
@@ -59,8 +57,6 @@ func GadgetAdd(args []string, g *GadgetContext) error {
 	if err != nil {
 		return err
 	}
-	
-	//~ fmt.Printf("✔\n")
 	
 	return err
 }

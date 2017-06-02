@@ -2,14 +2,13 @@ package main
 
 
 import (
-	//~ "fmt"
 	"errors"
 	log "github.com/sirupsen/logrus"
 )
 
 // Process the build arguments and execute build
 func GadgetDelete(args []string, g *GadgetContext) error {
-	//~ g.LoadConfig()
+	
 	EnsureKeys()
 
 	client, err := GadgetLogin(gadgetPrivKeyLocation)
@@ -41,8 +40,7 @@ func GadgetDelete(args []string, g *GadgetContext) error {
 		}).Debug(stderr)
 		
 		if err != nil {
-			//~ fmt.Printf("✘\n")
-			//~ return err
+			
 			log.WithFields(log.Fields{
 				"function": "GadgetDelete",
 				"name": container.Alias,
@@ -56,7 +54,6 @@ func GadgetDelete(args []string, g *GadgetContext) error {
 			deleteFailed = true
 		}
 		
-		//~ fmt.Printf("✔\n")
 	}
 	
 	if deleteFailed {
