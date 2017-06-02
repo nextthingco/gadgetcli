@@ -405,7 +405,7 @@ func RunLocalCommand(binary string, arguments ...string) (*bytes.Buffer, *bytes.
 			}*/
 			_ = outScanner.Scan()
 			if errScanner.Scan() {
-				log.Warn(fmt.Sprintf(string(errScanner.Text())))
+				log.Error(fmt.Sprintf(string(errScanner.Text())))
 			}
 		}
 	}()

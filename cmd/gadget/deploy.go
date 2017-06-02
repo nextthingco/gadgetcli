@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"os/exec"
 	"io"
 	"golang.org/x/crypto/ssh"
@@ -10,13 +9,14 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func DeployContainer( client *ssh.Client, container * GadgetContainer, autostart bool) error {
+func DeployContainer( client *ssh.Client, container * GadgetContainer,g *GadgetContext, autostart bool) error {
 	binary, err := exec.LookPath("docker")
 	if err != nil {
 		return err
 	}
 	
-	log.Info(fmt.Sprintf("[GADGT]  Deploying: %s", container.ImageAlias))
+	log.Info(fmt.Sprintf("[GADGT]  Deploying:"))
+	log.Info(fmt.Sprintf("[GADGT]    %s", container.ImageAlias))
 	docker := exec.Command(binary, "save", container.ImageAlias)
 
 	session, err := client.NewSession()
@@ -27,11 +27,13 @@ func DeployContainer( client *ssh.Client, container * GadgetContainer, autostart
 
 	// create pipe for local -> remote file transmission
 	pr, pw := io.Pipe()
-
+	sessionLogger := log.New()
+	if g.Verbose { sessionLogger.Level = log.DebugLevel }
+	
 	docker.Stdout =  pw
 	session.Stdin = pr
-	session.Stdout = os.Stdout
-	session.Stderr = os.Stderr
+	session.Stdout = sessionLogger.WriterLevel(log.DebugLevel)
+	session.Stderr = sessionLogger.WriterLevel(log.DebugLevel)
 	
 	log.Debug(fmt.Sprintf("[GADGT]    Starting session"))
 	if err := session.Start(`docker load`); err != nil {
@@ -59,7 +61,7 @@ func DeployContainer( client *ssh.Client, container * GadgetContainer, autostart
 	log.Info(fmt.Sprintf("[GADGT]    Done!"))
 	log.Debug(fmt.Sprintf("[GADGT]    Closing session"))
 	session.Close()
-
+		
 	if autostart {
 		RunRemoteCommand(client, "docker",
 			"create",
@@ -71,6 +73,7 @@ func DeployContainer( client *ssh.Client, container * GadgetContainer, autostart
 	
 	return err
 }
+
 // Process the build arguments and execute build
 func GadgetDeploy(args []string, g *GadgetContext) error {
 
@@ -86,7 +89,7 @@ func GadgetDeploy(args []string, g *GadgetContext) error {
 	stagedContainers,_ := FindStagedContainers(args, append(g.Config.Onboot, g.Config.Services...))
 
 	for _, container := range stagedContainers {
-		DeployContainer(client, &container, false)
+		DeployContainer(client, &container, g, false)
 	}
 	
 	return err
