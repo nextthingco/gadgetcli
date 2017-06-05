@@ -381,7 +381,7 @@ func RunRemoteCommand(client *ssh.Client, cmd ...string) (*bytes.Buffer, *bytes.
 	return &outBuffer, &errBuffer, err
 }
 
-func RunLocalCommand(binary string, arguments ...string) (*bytes.Buffer, *bytes.Buffer, error) {
+func RunLocalCommand(binary string, g *GadgetContext, arguments ...string) (string, string, error) {
 	cmd := exec.Command(binary, arguments...)
 	
 	cmd.Env = os.Environ()
@@ -396,24 +396,24 @@ func RunLocalCommand(binary string, arguments ...string) (*bytes.Buffer, *bytes.
 		// TODO: goroutine gets launched and never exits.
 		for {
 			// TODO: add a check here to only print stdout if verbose
-			/*if outScanner.Scan() {
-				fmt.Println(string(outScanner.Text()))
-			}*/
+			if g.Verbose && outScanner.Scan() {
+				log.Debugf(string(outScanner.Text()))
+			}
 			_ = outScanner.Scan()
 			if errScanner.Scan() {
-				log.Error(fmt.Sprintf(string(errScanner.Text())))
+				log.Errorf(string(errScanner.Text()))
 			}
 		}
 	}()
 
 	execErr = cmd.Start()
 	if execErr != nil {
-		return nil, nil, execErr
+		return outScanner.Text(), errScanner.Text(), execErr
 	}
 
 	execErr = cmd.Wait()
 	
-	return nil, nil, execErr
+	return outScanner.Text(), errScanner.Text(), execErr
 }
 
 

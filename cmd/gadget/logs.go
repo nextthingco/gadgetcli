@@ -32,23 +32,25 @@ func GadgetLogs(args []string, g *GadgetContext) error {
 			
 			// fail loudly, but continue
 			
+			logsFailed = true
+
+			log.Errorf("Failed to fetch '%s' logs on Gadget", container.Name)
+			log.Warn("Was the container ever deployed?")
+			
 			log.WithFields(log.Fields{
 				"function": "GadgetLogs",
 				"name": container.Alias,
 				"start-stage": "docker logs",
 			}).Debug("This is likely due to specifying containers for deploying, but trying to fetch all logs")
-
-			log.Error("Failed to fetch container logs on Gadget")
-			log.Warn("Was the container ever deployed?")
 			
-			logsFailed = true
+		} else {
+			
+			log.Infof("  Begin: %s", container.Name)
+			log.Infof("\n%s\n", stdout)
+			log.Debugf("\n%s\n", stderr)
+			log.Infof("  End: %s", container.Name)
+		
 		}
-		
-		log.Infof("  Begin: %s", container.Name)
-		log.Infof("\n%s\n", stdout)
-		log.Debugf("\n%s\n", stderr)
-		log.Infof("  End: %s", container.Name)
-		
 	}
 	
 	if logsFailed {
