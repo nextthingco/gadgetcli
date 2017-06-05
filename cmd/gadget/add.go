@@ -47,14 +47,37 @@ func GadgetAdd(args []string, g *GadgetContext) error {
 	}
 	
 	g.Config = CleanConfig(g.Config)
-
+	
+	fileLocation := fmt.Sprintf("%s/gadget.yml", g.WorkingDirectory)
+	
 	outBytes, err := yaml.Marshal(g.Config)
 	if err != nil {
+			
+		log.WithFields(log.Fields{
+			"function": "GadgetAdd",
+			"location": fileLocation,
+			"init-stage": "parsing",
+		}).Debug("The config file is probably malformed")
+
+
+		log.Errorf("Failed to parse config file [%s]", fileLocation)
+		log.Warn("Is this a valid gadget.yaml?")
 		return err
 	}
 
 	err = ioutil.WriteFile(fmt.Sprintf("%s/gadget.yml", g.WorkingDirectory), outBytes, 0644)
 	if err != nil {
+			
+		log.WithFields(log.Fields{
+			"function": "GadgetAdd",
+			"location": fileLocation,
+			"init-stage": "writing file",
+		}).Debug("This is likely due to a problem with permissions")
+
+
+		log.Errorf("Failed to edit config file [%s]", fileLocation)
+		log.Warn("Do you have permission to modify this file?")
+		
 		return err
 	}
 	

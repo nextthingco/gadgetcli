@@ -144,13 +144,14 @@ func (g *GadgetContext) LoadConfig() error {
 	g.WorkingDirectory, cwderr = WalkUp(g.WorkingDirectory)
 	if cwderr == nil {
 		// found the config
-		log.Info("  Running in directory:")
-		log.Infof("    %s", g.WorkingDirectory)
+		log.Info("Running in directory:")
+		log.Infof("  %s", g.WorkingDirectory)
 
 		config, parseerr = ioutil.ReadFile(fmt.Sprintf("%s/gadget.yml", g.WorkingDirectory))
 		if parseerr != nil {
 			// couldn't read it
-			log.Infof("  Cannot open config file: %v", parseerr)
+			log.Errorf("  Cannot open config file: %v", parseerr)
+			return parseerr
 		}
 	} else {
 		return cwderr
@@ -170,7 +171,14 @@ func (g *GadgetContext) LoadConfig() error {
 		service.ImageAlias = fmt.Sprintf("%s-img", service.Alias)
 		g.Config.Services[index] = service
 	}
-	return nil
+	
+	
+	if parseerr != nil || cwderr != nil {
+		parseerr = errors.New("Failed to load config")
+		log.Errorf("  Cannot open config file: %v", parseerr)
+	}
+	
+	return parseerr
 }
 type GadgetContainers []GadgetContainer
 
