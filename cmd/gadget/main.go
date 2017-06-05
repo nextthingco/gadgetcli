@@ -108,7 +108,7 @@ func main() {
 
 	err := RequiredSsh()
 	if err != nil {
-		log.Error("  Failed to verify ssh requirements")
+		log.Error("Failed to verify ssh requirements")
 		os.Exit(1)
 	}
 

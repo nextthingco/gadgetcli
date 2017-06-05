@@ -5,7 +5,6 @@ import (
 	"github.com/satori/go.uuid"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
-	//~ "os"
 	"path/filepath"
 	log "github.com/sirupsen/logrus"
 )
@@ -30,8 +29,24 @@ func GadgetInit(args []string, g *GadgetContext) error {
 	if err != nil {
 		return err
 	}
+	
+	fileLocation := fmt.Sprintf("%s/gadget.yml", g.WorkingDirectory)
+	
+	err = ioutil.WriteFile(fileLocation, outBytes, 0644)
+	if err != nil {
+			
+		log.WithFields(log.Fields{
+			"function": "GadgetInit",
+			"location": fileLocation,
+			"init-stage": "writing file",
+		}).Debug("This is likely due to a problem with permissions")
 
-	err = ioutil.WriteFile(fmt.Sprintf("%s/gadget.yml", g.WorkingDirectory), outBytes, 0644)
+
+		log.Errorf("Failed to create config file [%s]", fileLocation)
+		log.Warn("Do you have permission to create a file here?")
+		
+		return err
+	}
 	
 	return err
 }
