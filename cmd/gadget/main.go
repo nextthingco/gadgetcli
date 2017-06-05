@@ -57,7 +57,7 @@ func FindCommand(name string) (*GadgetCommand, error) {
 			return &cmd,nil
 		}
 	}
-	return nil, errors.New("ERROR: failed to find command")
+	return nil, errors.New("Failed to find command")
 }
 
 func main() {

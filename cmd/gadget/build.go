@@ -30,7 +30,7 @@ func GadgetBuild(args []string, g *GadgetContext) error {
 	buildFailed := false
 	
 	for _, container := range stagedContainers {
-		log.Infof("  %s", container.ImageAlias)
+		log.Infof("  '%s'", container.Name)
 
 		// use local directory for build
 		if container.Directory != "" {
