@@ -134,6 +134,8 @@ func main() {
 		err = g.LoadConfig()
 		if err != nil {
 			log.Error("Failed to load config")
+			log.Warn("Be sure to run gadget in the same directory as 'gadget.yml'")
+			log.Warn("Or specify a directory e.g. 'gadget -C ../projects/gpio/ [command]'")
 			os.Exit(1)
 		}
 	}
