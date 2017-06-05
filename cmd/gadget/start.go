@@ -85,6 +85,8 @@ func GadgetStart(args []string, g *GadgetContext) error {
 			log.Warn("Was it ever deployed?")
 			
 			startFailed = true
+		} else {
+			log.Info("    - started")
 		}
 
 	}

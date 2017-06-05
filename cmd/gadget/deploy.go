@@ -101,7 +101,7 @@ func GadgetDeploy(args []string, g *GadgetContext) error {
 	
 	err := EnsureKeys()
 	if err != nil {
-		log.Errorf("Failed to verify ssh keys")
+		log.Errorf("Failed to connect to Gadget")
 		return err
 	}
 

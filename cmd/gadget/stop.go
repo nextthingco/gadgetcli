@@ -80,8 +80,10 @@ func GadgetStop(args []string, g *GadgetContext) error {
 
 
 			log.Errorf("Failed to stop '%s' on Gadget", container.Name)
-			log.Warn("Was it ever deployed?")
+			log.Warn("Was it ever started?")
 			
+		} else {
+			log.Info("    - stopped")
 		}
 	}
 	
