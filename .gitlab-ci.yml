@@ -1,0 +1,37 @@
+image: docker:latest
+
+services:
+  - docker:dind
+
+stages:
+  - build
+  - upload
+
+variables:
+  BUILD_CONTAINER_IMAGE: computermouth/sudeb:stretch
+  UPLOAD_CONTAINER: $CI_REGISTRY/nextthingco/ci-tools:stable
+  ARTIFACT_0: /upload/build.zip
+
+build:
+  stage: build
+  script:
+    - docker pull $BUILD_CONTAINER_IMAGE
+    - docker run --privileged -v $PWD:/opt/builddir -w /opt/builddir --rm $BUILD_CONTAINER_IMAGE /bin/bash -c "sudo apt-get update && sudo apt-get install -yqq build-essential zip wget tar gunzip && wget https://storage.googleapis.com/golang/go1.8.3.linux-amd64.tar.gz && tar -C /usr/local -xzf go1.8.3.linux-amd64.tar.gz && export PATH=$PATH:/usr/local/go/bin && make get && make test && make release && pushd build && zip -r ../build.zip ."
+
+upload:
+  stage: upload
+  script:
+    - echo "UPLOAD!!!"
+    - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
+    - docker pull $UPLOAD_CONTAINER
+    - docker run
+      -e GHVAR_AWS_ID=${GHVAR_AWS_ID}
+      -e GHVAR_AWS_PW=${GHVAR_AWS_PW}
+      -e GHVAR_AWS_REGION=${GHVAR_AWS_REGION}
+      -e CI_PROJECT_NAME=${CI_PROJECT_NAME}
+      -e CI_BUILD_REF_NAME=${CI_BUILD_REF_SLUG}
+      -e CI_BUILD_ID=${CI_BUILD_ID}
+      -e ARTIFACT_0=${ARTIFACT_0}
+      --rm -v $PWD:/upload -w /upload
+      $UPLOAD_CONTAINER ci-s3-upload
+      ${ARTIFACT_0}
