@@ -1,4 +1,5 @@
 cmd/gadget/gadget
 /gadget
+/build/
 gadget.yml
 test-project
