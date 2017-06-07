@@ -20,9 +20,13 @@ gadget: $(SOURCES)
 release: $(SOURCES)
 	@echo "Building Gadget Release"
 	@mkdir -p build/linux
+	@mkdir -p build/linux_arm
+	@mkdir -p build/linux_arm64
 	@mkdir -p build/windows
 	@mkdir -p build/darwin
 	@GOOS=linux GOARCH=amd64 go build -o build/linux/gadget -ldflags="-s -w -X main.Version=$(VERSION) -X main.GitCommit=$(GIT_COMMIT)" -v ./cmd/gadget
+	@GOOS=linux GOARCH=arm go build -o build/linux_arm/gadget -ldflags="-s -w -X main.Version=$(VERSION) -X main.GitCommit=$(GIT_COMMIT)" -v ./cmd/gadget
+	@GOOS=linux GOARCH=arm64 go build -o build/linux_arm64/gadget -ldflags="-s -w -X main.Version=$(VERSION) -X main.GitCommit=$(GIT_COMMIT)" -v ./cmd/gadget
 	@GOOS=windows GOARCH=amd64 go build -o build/windows/gadget.exe -ldflags="-s -w -X main.Version=$(VERSION) -X main.GitCommit=$(GIT_COMMIT)" -v ./cmd/gadget
 	@GOOS=darwin GOARCH=amd64 go build -o build/darwin/gadget -ldflags="-s -w -X main.Version=$(VERSION) -X main.GitCommit=$(GIT_COMMIT)" -v ./cmd/gadget
 
