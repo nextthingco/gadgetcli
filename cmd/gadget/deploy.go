@@ -3,8 +3,10 @@ package main
 import (
 	"os/exec"
 	"io"
+	"fmt"
 	"errors"
 	"golang.org/x/crypto/ssh"
+	"gopkg.in/cheggaaa/pb.v1"
 	"strings"
 	log "github.com/sirupsen/logrus"
 )
@@ -16,6 +18,16 @@ func DeployContainer( client *ssh.Client, container * GadgetContainer,g *GadgetC
 	}
 	
 	log.Infof("  Deploying: '%s'", container.Name)
+	log.Infof(fmt.Sprintf("%s images --format {{.Size}} %s", binary, container.ImageAlias))
+	imageSize, err := exec.Command(binary, "images", "--format", "{{.Size}}", container.ImageAlias).Output()
+    if err != nil {
+		log.Errorf("Failed to get image size for '%s'", container.Name)
+		log.Errorf("'%v'", err)
+        return err
+    }
+    log.Debugf("The image size is %s", imageSize)
+	
+	log.Infof("  Deploying: '%s'", container.Name)
 	docker := exec.Command(binary, "save", container.ImageAlias)
 
 	session, err := client.NewSession()
@@ -23,14 +35,22 @@ func DeployContainer( client *ssh.Client, container * GadgetContainer,g *GadgetC
 		client.Close()
 		return err
 	}
-
+		
 	// create pipe for local -> remote file transmission
 	pr, pw := io.Pipe()
 	sessionLogger := log.New()
 	if g.Verbose { sessionLogger.Level = log.DebugLevel }
 	
-	docker.Stdout =  pw
-	session.Stdin = pr
+	bar := pb.New(0)
+	bar.SetUnits(pb.U_BYTES)
+	bar.ShowSpeed = true
+	bar.ShowPercent = false
+	bar.ShowTimeLeft = false
+	bar.ShowBar = false
+	
+	docker.Stdout = pw
+	reader := bar.NewProxyReader(pr)
+	session.Stdin = reader
 	session.Stdout = sessionLogger.WriterLevel(log.DebugLevel)
 	session.Stderr = sessionLogger.WriterLevel(log.DebugLevel)
 	
@@ -50,6 +70,8 @@ func DeployContainer( client *ssh.Client, container * GadgetContainer,g *GadgetC
 		defer pw.Close()
 		log.Info("    Starting transfer..")
 		log.Debug("    Waiting on docker")
+		bar.Start()
+		
 		if err := docker.Wait(); err != nil {
 			deployFailed = true
 			// TODO: we should handle this error or report to the log
@@ -61,6 +83,7 @@ func DeployContainer( client *ssh.Client, container * GadgetContainer,g *GadgetC
 	}()
 	
 	session.Wait()
+	bar.Finish()
 	if ! deployFailed {
 		log.Info("    Done!")
 		log.Debug("    Closing session")

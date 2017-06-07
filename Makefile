@@ -11,6 +11,7 @@ DEPENDS=\
 	golang.org/x/crypto/ssh\
 	golang.org/x/crypto/ssh/terminal\
 	github.com/sirupsen/logrus\
+	gopkg.in/cheggaaa/pb.v1\
 
 gadget: $(SOURCES)
 	@echo "Building Gadget"
