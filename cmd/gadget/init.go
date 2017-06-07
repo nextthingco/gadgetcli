@@ -6,6 +6,7 @@ import (
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"path/filepath"
+	"errors"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -31,6 +32,24 @@ func GadgetInit(args []string, g *GadgetContext) error {
 	}
 	
 	fileLocation := fmt.Sprintf("%s/gadget.yml", g.WorkingDirectory)
+	
+	gadgetFileExists, err := PathExists(fileLocation)
+	
+	if gadgetFileExists {
+			
+		log.WithFields(log.Fields{
+			"function": "GadgetInit",
+			"location": fileLocation,
+			"init-stage": "overwriting file",
+		}).Debug("gadget.yml already exists in this location")
+
+
+		log.Errorf("There's already a config file here [%s]", fileLocation)
+		log.Warnf("Remove %s if you'd like to init again", fileLocation)
+		
+		err = errors.New("Tried to overwrite pre-existing configuration file")
+		return err		
+	}
 	
 	err = ioutil.WriteFile(fileLocation, outBytes, 0644)
 	if err != nil {
