@@ -17,13 +17,13 @@ func GadgetStop(args []string, g *GadgetContext) error {
 		return err
 	}
 
-	log.Info("  Stopping:")
+	log.Info("Stopping:")
 	stagedContainers,_ := FindStagedContainers(args, append(g.Config.Onboot, g.Config.Services...))
 	
 	var stopFailed bool = false
 	
 	for _, container := range stagedContainers {
-		log.Infof("    %s", container.Alias)
+		log.Infof("  %s", container.Alias)
 		
 		stdout, stderr, err := RunRemoteCommand(client, "docker stop", container.Alias)
 		
@@ -83,7 +83,7 @@ func GadgetStop(args []string, g *GadgetContext) error {
 			log.Warn("Was it ever started?")
 			
 		} else {
-			log.Info("    - stopped")
+			log.Info("  - stopped")
 		}
 	}
 	

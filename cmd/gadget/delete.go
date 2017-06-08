@@ -17,14 +17,14 @@ func GadgetDelete(args []string, g *GadgetContext) error {
 		return err
 	}
 
-	log.Info("  Deleting:")
+	log.Info("Deleting:")
 
 	stagedContainers,_ := FindStagedContainers(args, append(g.Config.Onboot, g.Config.Services...))
 	
 	deleteFailed := false
 	
 	for _, container := range stagedContainers {
-		log.Infof("    %s", container.ImageAlias)
+		log.Infof("  %s", container.ImageAlias)
 		
 		stdout, stderr, err := RunRemoteCommand(client, "docker", "rmi", container.ImageAlias)
 		

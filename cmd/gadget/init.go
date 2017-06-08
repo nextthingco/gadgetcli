@@ -17,12 +17,12 @@ func GadgetInit(args []string, g *GadgetContext) error {
 	initUu2 := uuid.NewV4()
 
 
-	log.Info("[INIT ]  Creating new project:")
+	log.Info("Creating new project:")
 
 	g.WorkingDirectory, _ = filepath.Abs(g.WorkingDirectory)
 	initName := filepath.Base(g.WorkingDirectory)
 	
-	log.Infof("[INIT ]    in %s", g.WorkingDirectory)
+	log.Infof("  in %s", g.WorkingDirectory)
 
 	initConfig := TemplateConfig(initName, fmt.Sprintf("%s", initUu1), fmt.Sprintf("%s", initUu2))
 

@@ -17,7 +17,7 @@ func GadgetLogs(args []string, g *GadgetContext) error {
 		return err
 	}
 
-	log.Info("  Retrieving logs:")
+	log.Info("Retrieving logs:")
 	
 	logsFailed := false
 	

@@ -17,7 +17,7 @@ func GadgetStatus(args []string, g *GadgetContext) error {
 		return err
 	}
 
-	log.Info("  Retrieving status:")
+	log.Info("Retrieving status:")
 	
 	stagedContainers,_ := FindStagedContainers(args, append(g.Config.Onboot, g.Config.Services...))
 	

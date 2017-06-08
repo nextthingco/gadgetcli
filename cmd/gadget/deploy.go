@@ -3,7 +3,6 @@ package main
 import (
 	"os/exec"
 	"io"
-	"fmt"
 	"errors"
 	"golang.org/x/crypto/ssh"
 	"gopkg.in/cheggaaa/pb.v1"
@@ -16,18 +15,8 @@ func DeployContainer( client *ssh.Client, container * GadgetContainer,g *GadgetC
 	if err != nil {
 		return err
 	}
-	
-	log.Infof("  Deploying: '%s'", container.Name)
-	log.Infof(fmt.Sprintf("%s images --format {{.Size}} %s", binary, container.ImageAlias))
-	imageSize, err := exec.Command(binary, "images", "--format", "{{.Size}}", container.ImageAlias).Output()
-    if err != nil {
-		log.Errorf("Failed to get image size for '%s'", container.Name)
-		log.Errorf("'%v'", err)
-        return err
-    }
-    log.Debugf("The image size is %s", imageSize)
-	
-	log.Infof("  Deploying: '%s'", container.Name)
+		
+	log.Infof("Deploying: '%s'", container.Name)
 	docker := exec.Command(binary, "save", container.ImageAlias)
 
 	session, err := client.NewSession()
@@ -54,12 +43,12 @@ func DeployContainer( client *ssh.Client, container * GadgetContainer,g *GadgetC
 	session.Stdout = sessionLogger.WriterLevel(log.DebugLevel)
 	session.Stderr = sessionLogger.WriterLevel(log.DebugLevel)
 	
-	log.Debug("    Starting session")
+	log.Debug("  Starting session")
 	if err := session.Start(`docker load`); err != nil {
 		return err
 	}
 
-	log.Debug("    Starting docker")
+	log.Debug("  Starting docker")
 	if err := docker.Start(); err != nil {
 		return err
 	}
@@ -68,8 +57,8 @@ func DeployContainer( client *ssh.Client, container * GadgetContainer,g *GadgetC
 	
 	go func() error {
 		defer pw.Close()
-		log.Info("    Starting transfer..")
-		log.Debug("    Waiting on docker")
+		log.Info("  Starting transfer..")
+		log.Debug("  Waiting on docker")
 		bar.Start()
 		
 		if err := docker.Wait(); err != nil {
@@ -85,8 +74,8 @@ func DeployContainer( client *ssh.Client, container * GadgetContainer,g *GadgetC
 	session.Wait()
 	bar.Finish()
 	if ! deployFailed {
-		log.Info("    Done!")
-		log.Debug("    Closing session")
+		log.Info("Done!")
+		log.Debug("Closing session")
 	}
 	session.Close()
 		

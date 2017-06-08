@@ -2,12 +2,12 @@ package main
 
 import (
 	"flag"
-	//~ "fmt"
 	"os"
 	"path/filepath"
 	"strings"
 	"errors"
 	log "github.com/sirupsen/logrus"
+	prefixed "github.com/nextthingco/logrus-prefixed-formatter"
 )
 
 var (
@@ -41,8 +41,8 @@ var Commands = []GadgetCommand {
 
 func GadgetVersion(args []string, g *GadgetContext) error {
 	log.Infoln(filepath.Base(os.Args[0]))
-	log.Infof("  version: %s\n", Version)
-	log.Infof("  commit: %s\n", GitCommit)
+	log.Infof("version: %s\n", Version)
+	log.Infof("commit: %s\n", GitCommit)
 	return nil
 }
 
@@ -95,16 +95,30 @@ func main() {
 	flag.BoolVar(&g.Verbose, "v", false, "Verbose execution")
 	flag.StringVar(&g.WorkingDirectory, "C", ".", "Run in directory")
 	flag.Parse()
-
+	
+	var gadgetFormatter *prefixed.TextFormatter
+	
 	if g.Verbose {
+		gadgetFormatter = new(prefixed.TextFormatter)
+		gadgetFormatter.DisableColors = true
+		
 		log.SetLevel(log.DebugLevel)
 	} else {
+		gadgetFormatter = new(prefixed.TextFormatter)
+		gadgetFormatter.DisableColors = true
+		gadgetFormatter.DisableTimestamp = true
+		gadgetFormatter.DisableSorting = true
+		gadgetFormatter.EntryString.InfoLevelString = "I:"
+		gadgetFormatter.EntryString.WarnLevelString = "W:"
+		gadgetFormatter.EntryString.ErrorLevelString = "E:"
+		
 		log.SetLevel(log.InfoLevel)
 	}
 	
+	log.SetFormatter(gadgetFormatter)
+	
 	// Hey, Listen! 
 	// Everything that outputs needs to come after g.Verbose check!
-	
 
 	err := RequiredSsh()
 	if err != nil {
