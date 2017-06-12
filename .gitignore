@@ -1,4 +1,5 @@
-cmd/gadget/gadget
+gadgetcli/gadget
+gadgetcli/gadgetcli
 /gadget
 /build/
 gadget.yml

@@ -1,7 +1,7 @@
 VERSION="0.0"
 GIT_COMMIT=$(shell git rev-list -1 HEAD)
 
-SOURCES=$(shell ls cmd/gadget/*.go)
+SOURCES=$(shell ls gadgetcli/*.go)
 
 DEPENDS=\
 	golang.org/x/crypto/ssh\
@@ -16,7 +16,7 @@ DEPENDS=\
 
 gadget: $(SOURCES)
 	@echo "Building Gadget"
-	@go build -ldflags="-s -w -X main.Version=$(VERSION) -X main.GitCommit=$(GIT_COMMIT)" -v ./cmd/gadget
+	@go build -o gadget -ldflags="-s -w -X main.Version=$(VERSION) -X main.GitCommit=$(GIT_COMMIT)" -v ./gadgetcli
 
 release: $(SOURCES)
 	@echo "Building Gadget Release"
@@ -25,19 +25,19 @@ release: $(SOURCES)
 	@mkdir -p build/linux_arm64
 	@mkdir -p build/windows
 	@mkdir -p build/darwin
-	@GOOS=linux GOARCH=amd64 go build -o build/linux/gadget -ldflags="-s -w -X main.Version=$(VERSION) -X main.GitCommit=$(GIT_COMMIT)" -v ./cmd/gadget
-	@GOOS=linux GOARCH=arm go build -o build/linux_arm/gadget -ldflags="-s -w -X main.Version=$(VERSION) -X main.GitCommit=$(GIT_COMMIT)" -v ./cmd/gadget
-	@GOOS=linux GOARCH=arm64 go build -o build/linux_arm64/gadget -ldflags="-s -w -X main.Version=$(VERSION) -X main.GitCommit=$(GIT_COMMIT)" -v ./cmd/gadget
-	@GOOS=windows GOARCH=amd64 go build -o build/windows/gadget.exe -ldflags="-s -w -X main.Version=$(VERSION) -X main.GitCommit=$(GIT_COMMIT)" -v ./cmd/gadget
-	@GOOS=darwin GOARCH=amd64 go build -o build/darwin/gadget -ldflags="-s -w -X main.Version=$(VERSION) -X main.GitCommit=$(GIT_COMMIT)" -v ./cmd/gadget
+	@GOOS=linux GOARCH=amd64 go build -o build/linux/gadget -ldflags="-s -w -X main.Version=$(VERSION) -X main.GitCommit=$(GIT_COMMIT)" -v ./gadgetcli
+	@GOOS=linux GOARCH=arm go build -o build/linux_arm/gadget -ldflags="-s -w -X main.Version=$(VERSION) -X main.GitCommit=$(GIT_COMMIT)" -v ./gadgetcli
+	@GOOS=linux GOARCH=arm64 go build -o build/linux_arm64/gadget -ldflags="-s -w -X main.Version=$(VERSION) -X main.GitCommit=$(GIT_COMMIT)" -v ./gadgetcli
+	@GOOS=windows GOARCH=amd64 go build -o build/windows/gadget.exe -ldflags="-s -w -X main.Version=$(VERSION) -X main.GitCommit=$(GIT_COMMIT)" -v ./gadgetcli
+	@GOOS=darwin GOARCH=amd64 go build -o build/darwin/gadget -ldflags="-s -w -X main.Version=$(VERSION) -X main.GitCommit=$(GIT_COMMIT)" -v ./gadgetcli
 
 tidy:
 	@echo "Tidying up sources"
-	@go fmt ./cmd/gadget
+	@go fmt ./gadgetcli
 
 test: $(SOURCES)
 	@echo "Testing Gadget"
-	@go test -ldflags="-s -w -X main.Version=$(VERSION) -X main.GitCommit=$(GIT_COMMIT)" -v ./cmd/gadget
+	@go test -ldflags="-s -w -X main.Version=$(VERSION) -X main.GitCommit=$(GIT_COMMIT)" -v ./gadgetcli
 
 get:
 	@echo "Downloading external dependencies"
