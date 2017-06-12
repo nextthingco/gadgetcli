@@ -2,5 +2,6 @@ gadgetcli/gadget
 gadgetcli/gadgetcli
 /gadget
 /build/
+libgadget/version.go
 gadget.yml
 test-project

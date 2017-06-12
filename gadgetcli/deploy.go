@@ -7,7 +7,7 @@ import (
 	"golang.org/x/crypto/ssh"
 	"gopkg.in/cheggaaa/pb.v1"
 	"strings"
-	"../libgadget"
+	"github.com/nextthingco/libgadget"
 	log "github.com/sirupsen/logrus"
 )
 

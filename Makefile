@@ -1,5 +1,7 @@
 VERSION="0.0"
 GIT_COMMIT=$(shell git rev-list -1 HEAD)
+BUILD_DATE=$(shell date --iso-8601)
+VERSION_FILE=libgadget/version.go
 
 GADGET_SOURCES=$(shell ls gadgetcli/*.go)
 LIBGADGET_SOURCES=$(shell ls libgadget/*.go)
@@ -15,10 +17,20 @@ DEPENDS=\
 	gopkg.in/cheggaaa/pb.v1\
 	github.com/nextthingco/logrus-gadget-formatter\
 
-gadget: $(GADGET_SOURCES) $(LIBGADGET_SOURCES)
+gadget: genversion $(GADGET_SOURCES) $(VERSION_FILE) $(LIBGADGET_SOURCES)
 	@echo "Building Gadget"
-	@go build -ldflags="-X libgadget.Version=$(VERSION) -X libgadget.GitCommit=$(GIT_COMMIT)" -v ./libgadget
-	@go build -o gadget -ldflags="-s -w -X libgadget.Version=$(VERSION) -X libgadget.GitCommit=$(GIT_COMMIT)" -v ./gadgetcli
+	@rm -rf ${GOPATH}/src/github.com/nextthingco/libgadget
+	@cp -r libgadget ${GOPATH}/src/github.com/nextthingco/
+	@go install -ldflags="-X libgadget.Version=$(VERSION) -X libgadget.GitCommit=$(GIT_COMMIT)" -v github.com/nextthingco/libgadget
+	@go build -o gadget -ldflags="-s -w" -v ./gadgetcli
+
+genversion:
+	@echo "package libgadget" > $(VERSION_FILE)
+	@echo "const (" >> $(VERSION_FILE)
+	@echo "	Version = \"${VERSION}\"" >> $(VERSION_FILE)
+	@echo "	GitCommit = \"${GIT_COMMIT}\"" >> $(VERSION_FILE)
+	@echo "	BuildDate = \"${BUILD_DATE}\"" >> $(VERSION_FILE)
+	@echo ")" >> $(VERSION_FILE)
 
 release: $(GADGET_SOURCES) $(LIBGADGET_SOURCES)
 	@echo "Building Gadget Release"

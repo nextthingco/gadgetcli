@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 	"errors"
-	"../libgadget"
+	"github.com/nextthingco/libgadget"
 	log "github.com/sirupsen/logrus"
 	gadgetFormatter "github.com/nextthingco/logrus-gadget-formatter"
 )
@@ -38,7 +38,8 @@ var Commands = []GadgetCommand {
 func GadgetVersion(args []string, g *libgadget.GadgetContext) error {
 	log.Infoln(filepath.Base(os.Args[0]))
 	log.Infof("version: %s", libgadget.Version)
-	log.Infof("commit: %s", libgadget.GitCommit)
+	log.Infof("built:   %s", libgadget.BuildDate)
+	log.Infof("commit:  %s", libgadget.GitCommit)
 	return nil
 }
 

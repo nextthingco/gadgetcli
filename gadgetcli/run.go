@@ -2,7 +2,7 @@ package main
 
 import (
 	"strings"
-	"../libgadget"
+	"github.com/nextthingco/libgadget"
 	log "github.com/sirupsen/logrus"
 )
 

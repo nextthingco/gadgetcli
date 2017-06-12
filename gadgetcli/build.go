@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"errors"
 	"os/exec"
-	"../libgadget"
+	"github.com/nextthingco/libgadget"
 	log "github.com/sirupsen/logrus"
 )
 

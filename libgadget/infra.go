@@ -60,8 +60,6 @@ FwRYLLbqbGByhykSn5ybp/DuSQpH4blitu/fEYOg6QX/I/6zayd+
 	GadgetPrivKeyLocation  = ""
 	GadgetPubKeyLocation   = ""
 	
-	Version = ""
-	GitCommit = ""
 )
 
 func PathExists(path string) (bool, error) {
