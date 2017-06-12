@@ -2,19 +2,20 @@ package main
 
 import (
 	"strings"
+	"../libgadget"
 	log "github.com/sirupsen/logrus"
 )
 
-func GadgetRun(args []string, g *GadgetContext) error {
+func GadgetRun(args []string, g *libgadget.GadgetContext) error {
 	
-	EnsureKeys()
+	libgadget.EnsureKeys()
 
-	client, err := GadgetLogin(gadgetPrivKeyLocation)
+	client, err := libgadget.GadgetLogin(libgadget.GadgetPrivKeyLocation)
 	if err != nil {
 		return err
 	}
 
-	stdout, stderr, err := RunRemoteCommand(client, strings.Join(args, " "))
+	stdout, stderr, err := libgadget.RunRemoteCommand(client, strings.Join(args, " "))
 	
 	if err != nil {
 		log.Errorf("\n%s", stdout)

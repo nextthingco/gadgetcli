@@ -7,10 +7,11 @@ import (
 	"golang.org/x/crypto/ssh"
 	"gopkg.in/cheggaaa/pb.v1"
 	"strings"
+	"../libgadget"
 	log "github.com/sirupsen/logrus"
 )
 
-func DeployContainer( client *ssh.Client, container * GadgetContainer,g *GadgetContext, autostart bool) error {
+func DeployContainer( client *ssh.Client, container *libgadget.GadgetContainer,g *libgadget.GadgetContext, autostart bool) error {
 	binary, err := exec.LookPath("docker")
 	if err != nil {
 		return err
@@ -80,7 +81,7 @@ func DeployContainer( client *ssh.Client, container * GadgetContainer,g *GadgetC
 	session.Close()
 		
 	if autostart {
-		stdout, stderr, err := RunRemoteCommand(client, "docker",
+		stdout, stderr, err := libgadget.RunRemoteCommand(client, "docker",
 			"create",
 			"--name", container.Alias,
 			"--restart=always",
@@ -109,21 +110,21 @@ func DeployContainer( client *ssh.Client, container * GadgetContainer,g *GadgetC
 }
 
 // Process the build arguments and execute build
-func GadgetDeploy(args []string, g *GadgetContext) error {
+func GadgetDeploy(args []string, g *libgadget.GadgetContext) error {
 	
-	err := EnsureKeys()
+	err := libgadget.EnsureKeys()
 	if err != nil {
 		log.Errorf("Failed to connect to Gadget")
 		return err
 	}
 
-	client, err := GadgetLogin(gadgetPrivKeyLocation)
+	client, err := libgadget.GadgetLogin(libgadget.GadgetPrivKeyLocation)
 	if err != nil {
 		log.Errorf("Failed to connect to Gadget")
 		return err
 	}
 
-	stagedContainers, err := FindStagedContainers(args, append(g.Config.Onboot, g.Config.Services...))
+	stagedContainers, err := libgadget.FindStagedContainers(args, append(g.Config.Onboot, g.Config.Services...))
 	
 	deployFailed := false
 	

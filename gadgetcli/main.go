@@ -6,16 +6,12 @@ import (
 	"path/filepath"
 	"strings"
 	"errors"
+	"../libgadget"
 	log "github.com/sirupsen/logrus"
 	gadgetFormatter "github.com/nextthingco/logrus-gadget-formatter"
 )
 
-var (
-	Version   = "unknown"
-	GitCommit = "unknown"
-)
-
-type GadgetCommandFunc func([]string, *GadgetContext) error
+type GadgetCommandFunc func([]string, *libgadget.GadgetContext) error
 
 type GadgetCommand struct {
 	Name        string
@@ -39,14 +35,14 @@ var Commands = []GadgetCommand {
 	{ Name: "help",    Function: GadgetHelp,    NeedsConfig: false },
 }
 
-func GadgetVersion(args []string, g *GadgetContext) error {
+func GadgetVersion(args []string, g *libgadget.GadgetContext) error {
 	log.Infoln(filepath.Base(os.Args[0]))
-	log.Infof("version: %s\n", Version)
-	log.Infof("commit: %s\n", GitCommit)
+	log.Infof("version: %s", libgadget.Version)
+	log.Infof("commit: %s", libgadget.GitCommit)
 	return nil
 }
 
-func GadgetHelp(args []string, g *GadgetContext) error {
+func GadgetHelp(args []string, g *libgadget.GadgetContext) error {
 	flag.Usage()
 	return nil
 }
@@ -90,7 +86,7 @@ func main() {
 		log.Info ("")
 	}
 
-	g := GadgetContext{}
+	g := libgadget.GadgetContext{}
 	
 	flag.BoolVar(&g.Verbose, "v", false, "Verbose execution")
 	flag.StringVar(&g.WorkingDirectory, "C", ".", "Run in directory")
@@ -120,7 +116,7 @@ func main() {
 	// Hey, Listen! 
 	// Everything that outputs needs to come after g.Verbose check!
 
-	err := RequiredSsh()
+	err := libgadget.RequiredSsh()
 	if err != nil {
 		log.Error("Failed to verify ssh requirements")
 		os.Exit(1)
