@@ -1,5 +1,5 @@
 VERSION="0.0"
-GIT_COMMIT=$(shell git rev-list -1 HEAD)
+GIT_COMMIT=$(shell git rev-parse --short HEAD)
 BUILD_DATE=$(shell date --iso-8601)
 VERSION_FILE=libgadget/version.go
 
