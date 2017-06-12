@@ -7,7 +7,7 @@ import (
 	"strings"
 	"errors"
 	log "github.com/sirupsen/logrus"
-	prefixed "github.com/nextthingco/logrus-prefixed-formatter"
+	gadgetFormatter "github.com/nextthingco/logrus-gadget-formatter"
 )
 
 var (
@@ -84,7 +84,7 @@ func main() {
 		log.Infof("Run '%s COMMAND --help' for more information on the command", filepath.Base(os.Args[0]))
 		log.Info ("")
 		log.Infof("Options:")
-		log.Info ("  -C string                             ")
+		log.Info ("  -C <path>                            ")
 		log.Info ("    	Run in directory (default \".\")  ")
 		log.Info ("  -v	Verbose execution                 ")
 		log.Info ("")
@@ -96,26 +96,26 @@ func main() {
 	flag.StringVar(&g.WorkingDirectory, "C", ".", "Run in directory")
 	flag.Parse()
 	
-	var gadgetFormatter *prefixed.TextFormatter
+	var gFormatter *gadgetFormatter.TextFormatter
 	
 	if g.Verbose {
-		gadgetFormatter = new(prefixed.TextFormatter)
-		gadgetFormatter.DisableColors = true
+		gFormatter = new(gadgetFormatter.TextFormatter)
+		gFormatter.DisableColors = true
 		
 		log.SetLevel(log.DebugLevel)
 	} else {
-		gadgetFormatter = new(prefixed.TextFormatter)
-		gadgetFormatter.DisableColors = true
-		gadgetFormatter.DisableTimestamp = true
-		gadgetFormatter.DisableSorting = true
-		gadgetFormatter.EntryString.InfoLevelString = "I:"
-		gadgetFormatter.EntryString.WarnLevelString = "W:"
-		gadgetFormatter.EntryString.ErrorLevelString = "E:"
+		gFormatter = new(gadgetFormatter.TextFormatter)
+		gFormatter.DisableColors = true
+		gFormatter.DisableTimestamp = true
+		gFormatter.DisableSorting = true
+		gFormatter.EntryString.InfoLevelString = "I:"
+		gFormatter.EntryString.WarnLevelString = "W:"
+		gFormatter.EntryString.ErrorLevelString = "E:"
 		
 		log.SetLevel(log.InfoLevel)
 	}
 	
-	log.SetFormatter(gadgetFormatter)
+	log.SetFormatter(gFormatter)
 	
 	// Hey, Listen! 
 	// Everything that outputs needs to come after g.Verbose check!
@@ -139,7 +139,8 @@ func main() {
 		flag.Usage()
 		log.WithFields(log.Fields{
 			"command": strings.Join(args[0:], " "),
-		}).Error("Command is not valid")
+		}).Debug("Command is not valid")
+		log.Errorf("Command %s is not valid", args[0:])
 		os.Exit(1)
 	}
 

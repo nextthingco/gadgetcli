@@ -12,7 +12,7 @@ DEPENDS=\
 	golang.org/x/crypto/ssh/terminal\
 	github.com/sirupsen/logrus\
 	gopkg.in/cheggaaa/pb.v1\
-	github.com/nextthingco/logrus-prefixed-formatter\
+	github.com/nextthingco/logrus-gadget-formatter\
 
 gadget: $(SOURCES)
 	@echo "Building Gadget"
