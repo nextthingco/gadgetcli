@@ -16,7 +16,7 @@ build:
   stage: build
   script:
     - docker pull $BUILD_CONTAINER_IMAGE
-    - docker run --privileged -v $PWD:/opt/builddir -w /opt/builddir --rm $BUILD_CONTAINER_IMAGE /bin/bash -c "sudo apt-get update && sudo apt-get install -yqq git build-essential zip wget tar gzip && wget https://storage.googleapis.com/golang/go1.8.3.linux-amd64.tar.gz && sudo tar -C /usr/local -xzf go1.8.3.linux-amd64.tar.gz && sudo ln -s /usr/local/go/bin/* /usr/bin/ && make get && make test && make release && pushd build && zip -r ../build.zip ."
+    - docker run --privileged -v $PWD:/opt/builddir -w /opt/builddir --rm $BUILD_CONTAINER_IMAGE /bin/bash -c "sudo apt-get update && sudo apt-get install -yqq git build-essential zip wget tar gzip && wget https://storage.googleapis.com/golang/go1.8.3.linux-amd64.tar.gz && sudo tar -C /usr/local -xzf go1.8.3.linux-amd64.tar.gz && sudo ln -s /usr/local/go/bin/* /usr/bin/ && make get && make && make test && make release && pushd build && zip -r ../build.zip ."
     - ls
   artifacts:
     paths:
