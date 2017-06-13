@@ -1,5 +1,6 @@
 gadgetcli/gadget
 gadgetcli/gadgetcli
+gadgetosinit/gadgetosinit
 /gadget
 /build/
 libgadget/version.go
