@@ -1,9 +1,7 @@
-
-package main
+package libgadget
 
 import (
 	"testing"
-	//~ "reflect"
 )
 
 func TestPathExists(t *testing.T){

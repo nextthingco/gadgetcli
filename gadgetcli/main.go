@@ -2,20 +2,16 @@ package main
 
 import (
 	"flag"
-	//~ "fmt"
 	"os"
 	"path/filepath"
 	"strings"
 	"errors"
+	"github.com/nextthingco/libgadget"
 	log "github.com/sirupsen/logrus"
+	gadgetFormatter "github.com/nextthingco/logrus-gadget-formatter"
 )
 
-var (
-	Version   = "unknown"
-	GitCommit = "unknown"
-)
-
-type GadgetCommandFunc func([]string, *GadgetContext) error
+type GadgetCommandFunc func([]string, *libgadget.GadgetContext) error
 
 type GadgetCommand struct {
 	Name        string
@@ -39,14 +35,15 @@ var Commands = []GadgetCommand {
 	{ Name: "help",    Function: GadgetHelp,    NeedsConfig: false },
 }
 
-func GadgetVersion(args []string, g *GadgetContext) error {
+func GadgetVersion(args []string, g *libgadget.GadgetContext) error {
 	log.Infoln(filepath.Base(os.Args[0]))
-	log.Infof("  version: %s\n", Version)
-	log.Infof("  commit: %s\n", GitCommit)
+	log.Infof("version: %s", libgadget.Version)
+	log.Infof("built:   %s", libgadget.BuildDate)
+	log.Infof("commit:  %s", libgadget.GitCommit)
 	return nil
 }
 
-func GadgetHelp(args []string, g *GadgetContext) error {
+func GadgetHelp(args []string, g *libgadget.GadgetContext) error {
 	flag.Usage()
 	return nil
 }
@@ -84,29 +81,43 @@ func main() {
 		log.Infof("Run '%s COMMAND --help' for more information on the command", filepath.Base(os.Args[0]))
 		log.Info ("")
 		log.Infof("Options:")
-		log.Info ("  -C string                             ")
+		log.Info ("  -C <path>                            ")
 		log.Info ("    	Run in directory (default \".\")  ")
 		log.Info ("  -v	Verbose execution                 ")
 		log.Info ("")
 	}
 
-	g := GadgetContext{}
+	g := libgadget.GadgetContext{}
 	
 	flag.BoolVar(&g.Verbose, "v", false, "Verbose execution")
 	flag.StringVar(&g.WorkingDirectory, "C", ".", "Run in directory")
 	flag.Parse()
-
+	
+	var gFormatter *gadgetFormatter.TextFormatter
+	
 	if g.Verbose {
+		gFormatter = new(gadgetFormatter.TextFormatter)
+		gFormatter.DisableColors = true
+		
 		log.SetLevel(log.DebugLevel)
 	} else {
+		gFormatter = new(gadgetFormatter.TextFormatter)
+		gFormatter.DisableColors = true
+		gFormatter.DisableTimestamp = true
+		gFormatter.DisableSorting = true
+		gFormatter.EntryString.InfoLevelString = "I:"
+		gFormatter.EntryString.WarnLevelString = "W:"
+		gFormatter.EntryString.ErrorLevelString = "E:"
+		
 		log.SetLevel(log.InfoLevel)
 	}
 	
+	log.SetFormatter(gFormatter)
+	
 	// Hey, Listen! 
 	// Everything that outputs needs to come after g.Verbose check!
-	
 
-	err := RequiredSsh()
+	err := libgadget.RequiredSsh()
 	if err != nil {
 		log.Error("Failed to verify ssh requirements")
 		os.Exit(1)
@@ -125,7 +136,8 @@ func main() {
 		flag.Usage()
 		log.WithFields(log.Fields{
 			"command": strings.Join(args[0:], " "),
-		}).Error("Command is not valid")
+		}).Debug("Command is not valid")
+		log.Errorf("Command %s is not valid", args[0:])
 		os.Exit(1)
 	}
 

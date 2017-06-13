@@ -1,5 +1,4 @@
-
-package main
+package libgadget
 
 import (
 	"fmt"

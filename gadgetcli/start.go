@@ -3,15 +3,16 @@ package main
 import (
 	"errors"
 	"strings"
+	"github.com/nextthingco/libgadget"
 	log "github.com/sirupsen/logrus"
 )
 
 // Process the build arguments and execute build
-func GadgetStart(args []string, g *GadgetContext) error {
+func GadgetStart(args []string, g *libgadget.GadgetContext) error {
 	
-	EnsureKeys()
+	libgadget.EnsureKeys()
 
-	client, err := GadgetLogin(gadgetPrivKeyLocation)
+	client, err := libgadget.GadgetLogin(libgadget.GadgetPrivKeyLocation)
 
 	if err != nil {
 		return err
@@ -20,14 +21,14 @@ func GadgetStart(args []string, g *GadgetContext) error {
 	var startFailed bool = false
 	
 	log.Info("Starting:")
-	stagedContainers,_ := FindStagedContainers(args, append(g.Config.Onboot, g.Config.Services...))
+	stagedContainers,_ := libgadget.FindStagedContainers(args, append(g.Config.Onboot, g.Config.Services...))
 	for _, container := range stagedContainers {
 		
 		log.Infof("  %s", container.Alias)
-		binds := strings.Join( PrependToStrings(container.Binds[:],"-v "), " ")
+		binds := strings.Join( libgadget.PrependToStrings(container.Binds[:],"-v "), " ")
 		commands := strings.Join(container.Command[:]," ")
 		
-		stdout, stderr, err := RunRemoteCommand(client, "docker create --name", container.Alias, binds, container.ImageAlias, commands)
+		stdout, stderr, err := libgadget.RunRemoteCommand(client, "docker create --name", container.Alias, binds, container.ImageAlias, commands)
 		
 		log.WithFields(log.Fields{
 			"function": "GadgetStart",
@@ -58,7 +59,7 @@ func GadgetStart(args []string, g *GadgetContext) error {
 			startFailed = true
 		}
 
-		stdout, stderr, err = RunRemoteCommand(client, "docker start", container.Alias)
+		stdout, stderr, err = libgadget.RunRemoteCommand(client, "docker start", container.Alias)
 		
 		log.WithFields(log.Fields{
 			"function": "GadgetStart",

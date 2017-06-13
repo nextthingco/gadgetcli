@@ -1,31 +1,31 @@
 package main
 
 import (
-	//~ "fmt"
 	"errors"
+	"github.com/nextthingco/libgadget"
 	log "github.com/sirupsen/logrus"
 )
 
 // Process the build arguments and execute build
-func GadgetStop(args []string, g *GadgetContext) error {
+func GadgetStop(args []string, g *libgadget.GadgetContext) error {
 	
-	EnsureKeys()
+	libgadget.EnsureKeys()
 
-	client, err := GadgetLogin(gadgetPrivKeyLocation)
+	client, err := libgadget.GadgetLogin(libgadget.GadgetPrivKeyLocation)
 
 	if err != nil {
 		return err
 	}
 
-	log.Info("  Stopping:")
-	stagedContainers,_ := FindStagedContainers(args, append(g.Config.Onboot, g.Config.Services...))
+	log.Info("Stopping:")
+	stagedContainers,_ := libgadget.FindStagedContainers(args, append(g.Config.Onboot, g.Config.Services...))
 	
 	var stopFailed bool = false
 	
 	for _, container := range stagedContainers {
-		log.Infof("    %s", container.Alias)
+		log.Infof("  %s", container.Alias)
 		
-		stdout, stderr, err := RunRemoteCommand(client, "docker stop", container.Alias)
+		stdout, stderr, err := libgadget.RunRemoteCommand(client, "docker stop", container.Alias)
 		
 		log.WithFields(log.Fields{
 			"function": "GadgetStart",
@@ -55,7 +55,7 @@ func GadgetStop(args []string, g *GadgetContext) error {
 			
 		}
 
-		stdout, stderr, err = RunRemoteCommand(client, "docker rm", container.Alias)
+		stdout, stderr, err = libgadget.RunRemoteCommand(client, "docker rm", container.Alias)
 		
 		log.WithFields(log.Fields{
 			"function": "GadgetStart",
@@ -83,7 +83,7 @@ func GadgetStop(args []string, g *GadgetContext) error {
 			log.Warn("Was it ever started?")
 			
 		} else {
-			log.Info("    - stopped")
+			log.Info("  - stopped")
 		}
 	}
 	

@@ -6,6 +6,7 @@ import (
 	"github.com/satori/go.uuid"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
+	"github.com/nextthingco/libgadget"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -19,7 +20,7 @@ func addUsage() error {
 }
 
 // Process the build arguments and execute build
-func GadgetAdd(args []string, g *GadgetContext) error {
+func GadgetAdd(args []string, g *libgadget.GadgetContext) error {
 
 	addUu := uuid.NewV4()
 	
@@ -29,7 +30,7 @@ func GadgetAdd(args []string, g *GadgetContext) error {
 	
 	log.Infof("Adding new %s: \"%s\" ", args[0], args[1])
 	
-	addGadgetContainer := GadgetContainer {	
+	addGadgetContainer := libgadget.GadgetContainer {	
 		Name: 	args[1], 
 		Image: 	fmt.Sprintf("%s/%s", g.Config.Name, args[1]),
 		UUID: 	fmt.Sprintf("%s", addUu),
@@ -46,7 +47,7 @@ func GadgetAdd(args []string, g *GadgetContext) error {
 		return addUsage()
 	}
 	
-	g.Config = CleanConfig(g.Config)
+	g.Config = libgadget.CleanConfig(g.Config)
 	
 	fileLocation := fmt.Sprintf("%s/gadget.yml", g.WorkingDirectory)
 	

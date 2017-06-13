@@ -3,30 +3,31 @@ package main
 import (
 	"fmt"
 	"errors"
+	"github.com/nextthingco/libgadget"
 	log "github.com/sirupsen/logrus"
 )
 
 // Process the build arguments and execute build
-func GadgetLogs(args []string, g *GadgetContext) error {
+func GadgetLogs(args []string, g *libgadget.GadgetContext) error {
 	
-	EnsureKeys()
+	libgadget.EnsureKeys()
 
-	client, err := GadgetLogin(gadgetPrivKeyLocation)
+	client, err := libgadget.GadgetLogin(libgadget.GadgetPrivKeyLocation)
 
 	if err != nil {
 		return err
 	}
 
-	log.Info("  Retrieving logs:")
+	log.Info("Retrieving logs:")
 	
 	logsFailed := false
 	
-	stagedContainers,_ := FindStagedContainers(args, append(g.Config.Onboot, g.Config.Services...))
+	stagedContainers,_ := libgadget.FindStagedContainers(args, append(g.Config.Onboot, g.Config.Services...))
 	for _, container := range stagedContainers {
 		commandFormat := `docker logs %s`
 		cmd := fmt.Sprintf(commandFormat, container.Alias)
 		
-		stdout, stderr, err := RunRemoteCommand(client, cmd)
+		stdout, stderr, err := libgadget.RunRemoteCommand(client, cmd)
 		
 		if err != nil {
 			

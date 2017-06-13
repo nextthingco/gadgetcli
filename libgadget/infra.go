@@ -1,4 +1,4 @@
-package main
+package libgadget
 
 import (
 	"bufio"
@@ -57,8 +57,9 @@ FwRYLLbqbGByhykSn5ybp/DuSQpH4blitu/fEYOg6QX/I/6zayd+
 
 	sshLocation            = ""
 	defaultPrivKeyLocation = ""
-	gadgetPrivKeyLocation  = ""
-	gadgetPubKeyLocation   = ""
+	GadgetPrivKeyLocation  = ""
+	GadgetPubKeyLocation   = ""
+	
 )
 
 func PathExists(path string) (bool, error) {
@@ -112,8 +113,8 @@ func RequiredSsh() error {
 	// get proper homedir locations
 	sshLocation = filepath.Join(usr.HomeDir,".ssh")
 	defaultPrivKeyLocation = filepath.Join(sshLocation,"gadget_default_rsa")
-	gadgetPrivKeyLocation = filepath.Join(sshLocation,"gadget_rsa")
-	gadgetPubKeyLocation = filepath.Join(sshLocation,"gadget_rsa.pub")
+	GadgetPrivKeyLocation = filepath.Join(sshLocation,"gadget_rsa")
+	GadgetPubKeyLocation = filepath.Join(sshLocation,"gadget_rsa.pub")
 
 	// check OS for IP address
 	if runtime.GOOS == "windows" {
@@ -154,20 +155,20 @@ func RequiredSsh() error {
 	}
 
 	// check/create ~/.ssh/gadget_rsa[.pub]
-	gadgetPrivExists, err := PathExists(gadgetPrivKeyLocation)
+	gadgetPrivExists, err := PathExists(GadgetPrivKeyLocation)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"function": "RequiredSsh",
-			"keyLocation": gadgetPrivKeyLocation,
+			"keyLocation": GadgetPrivKeyLocation,
 			"error": err,
 		}).Error("something went wrong with gadgetPubExists")
 		return err
 	}
-	gadgetPubExists, err := PathExists(gadgetPubKeyLocation)
+	gadgetPubExists, err := PathExists(GadgetPubKeyLocation)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"function": "RequiredSsh",
-			"keyLocation": gadgetPubKeyLocation,
+			"keyLocation": GadgetPubKeyLocation,
 			"error": err,
 		}).Error("something went wrong with gadgetPubExists")
 		return err
@@ -178,7 +179,7 @@ func RequiredSsh() error {
 		
 		log.WithFields(log.Fields{
 			"function": "RequiredSsh",
-			"keyLocation": gadgetPubKeyLocation,
+			"keyLocation": GadgetPubKeyLocation,
 			"error": err,
 		}).Debug("private key: ~/.ssh/gadget_rsa[.pub]")
 		
@@ -193,11 +194,11 @@ func RequiredSsh() error {
 		
 		log.Info("    private key: ~/.ssh/gadget_rsa")
 		outBytes := []byte(privkey)
-		err = ioutil.WriteFile(gadgetPrivKeyLocation, outBytes, 0600)
+		err = ioutil.WriteFile(GadgetPrivKeyLocation, outBytes, 0600)
 		if err != nil {
 			log.WithFields(log.Fields{
 				"function": "RequiredSsh",
-				"keyLocation": gadgetPrivKeyLocation,
+				"keyLocation": GadgetPrivKeyLocation,
 				"error": err,
 			}).Error("something went wrong with gadgetPrivKey")
 			return err
@@ -205,11 +206,11 @@ func RequiredSsh() error {
 		
 		log.Info("    public key: ~/.ssh/gadget_rsa.pub")
 		outBytes = []byte(pubkey)
-		err = ioutil.WriteFile(gadgetPubKeyLocation, outBytes, 0600)
+		err = ioutil.WriteFile(GadgetPubKeyLocation, outBytes, 0600)
 		if err != nil {
 			log.WithFields(log.Fields{
 				"function": "RequiredSsh",
-				"keyLocation": gadgetPrivKeyLocation,
+				"keyLocation": GadgetPrivKeyLocation,
 				"error": err,
 			}).Error("something went wrong with gadgetPrivKey")
 			return err
@@ -224,7 +225,7 @@ func GadgetLogin(keyLocation string) (*ssh.Client, error) {
 	if err != nil {
 		log.WithFields(log.Fields{
 			"function": "RequiredSsh",
-			"keyLocation": gadgetPrivKeyLocation,
+			"keyLocation": GadgetPrivKeyLocation,
 			"error": err,
 		}).Error("something went wrong with gadgetPrivKey")
 		return nil, err
@@ -306,12 +307,12 @@ func GadgetInstallKeys() error {
 		"gadget": dest,
 	}).Debug("Installing personal gadget ssh key..")
 
-	err = scp.CopyPath(gadgetPubKeyLocation, dest, session)
-	if _, err := os.Stat(gadgetPubKeyLocation); os.IsNotExist(err) {
+	err = scp.CopyPath(GadgetPubKeyLocation, dest, session)
+	if _, err := os.Stat(GadgetPubKeyLocation); os.IsNotExist(err) {
 		log.WithFields(log.Fields{
 			"function": "RequiredSsh",
 			"gadget": dest,
-			"gadgetPubKeyLocation": gadgetPubKeyLocation,
+			"GadgetPubKeyLocation": GadgetPubKeyLocation,
 		}).Error("Public key file does not exist")
 	}
 	
@@ -321,13 +322,13 @@ func GadgetInstallKeys() error {
 
 func EnsureKeys() error {
 
-	_, err := GadgetLogin(gadgetPrivKeyLocation)
+	_, err := GadgetLogin(GadgetPrivKeyLocation)
 	if err != nil {
 		log.Warn("  Private key login failed, trying default key")
 		
 		log.WithFields(log.Fields{
 			"function": "EnsureKeys",
-			"gadgetPrivKeyLocation": gadgetPrivKeyLocation,
+			"GadgetPrivKeyLocation": GadgetPrivKeyLocation,
 			"defaultPrivKeyLocation": defaultPrivKeyLocation,
 		}).Debug("  Private key login failed, trying default key")
 
@@ -344,7 +345,7 @@ func EnsureKeys() error {
 
 			log.WithFields(log.Fields{
 				"function": "EnsureKeys",
-				"gadgetPubKeyLocation": gadgetPubKeyLocation,
+				"GadgetPubKeyLocation": GadgetPubKeyLocation,
 			}).Debug("  Public key file does not exist")
 
 			err = GadgetInstallKeys()

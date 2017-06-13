@@ -3,7 +3,6 @@ package main
 
 import (
 	"testing"
-	//~ "reflect"
 )
 
 func TestGadgetInit(t *testing.T){

@@ -4,11 +4,12 @@ import (
 	"fmt"
 	"errors"
 	"os/exec"
+	"github.com/nextthingco/libgadget"
 	log "github.com/sirupsen/logrus"
 )
 
 // Process the build arguments and execute build
-func GadgetBuild(args []string, g *GadgetContext) error {
+func GadgetBuild(args []string, g *libgadget.GadgetContext) error {
 
 	// find docker binary in path
 	binary, err := exec.LookPath("docker")
@@ -25,7 +26,7 @@ func GadgetBuild(args []string, g *GadgetContext) error {
 	
 	log.Info("Building:")
 	
-	stagedContainers,_ := FindStagedContainers(args, append(g.Config.Onboot, g.Config.Services...))
+	stagedContainers,_ := libgadget.FindStagedContainers(args, append(g.Config.Onboot, g.Config.Services...))
 	
 	buildFailed := false
 	
@@ -35,7 +36,7 @@ func GadgetBuild(args []string, g *GadgetContext) error {
 		// use local directory for build
 		if container.Directory != "" {
 			containerDirectory := fmt.Sprintf("%s/%s", g.WorkingDirectory, container.Directory)
-			stdout, stderr, err := RunLocalCommand(binary,
+			stdout, stderr, err := libgadget.RunLocalCommand(binary,
 				g,
 				"build",
 				"--tag",
@@ -68,7 +69,7 @@ func GadgetBuild(args []string, g *GadgetContext) error {
 			}
 		
 		} else {
-			stdout, stderr, err := RunLocalCommand(binary,
+			stdout, stderr, err := libgadget.RunLocalCommand(binary,
 				g,
 				"pull",
 				container.Image)
@@ -100,7 +101,7 @@ func GadgetBuild(args []string, g *GadgetContext) error {
 				
 			}
 			
-			stdout, stderr, err = RunLocalCommand(binary,
+			stdout, stderr, err = libgadget.RunLocalCommand(binary,
 				g,
 				"tag",
 				container.Image,

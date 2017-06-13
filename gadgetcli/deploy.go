@@ -5,17 +5,19 @@ import (
 	"io"
 	"errors"
 	"golang.org/x/crypto/ssh"
+	"gopkg.in/cheggaaa/pb.v1"
 	"strings"
+	"github.com/nextthingco/libgadget"
 	log "github.com/sirupsen/logrus"
 )
 
-func DeployContainer( client *ssh.Client, container * GadgetContainer,g *GadgetContext, autostart bool) error {
+func DeployContainer( client *ssh.Client, container *libgadget.GadgetContainer,g *libgadget.GadgetContext, autostart bool) error {
 	binary, err := exec.LookPath("docker")
 	if err != nil {
 		return err
 	}
-	
-	log.Infof("  Deploying: '%s'", container.Name)
+		
+	log.Infof("Deploying: '%s'", container.Name)
 	docker := exec.Command(binary, "save", container.ImageAlias)
 
 	session, err := client.NewSession()
@@ -23,23 +25,31 @@ func DeployContainer( client *ssh.Client, container * GadgetContainer,g *GadgetC
 		client.Close()
 		return err
 	}
-
+		
 	// create pipe for local -> remote file transmission
 	pr, pw := io.Pipe()
 	sessionLogger := log.New()
 	if g.Verbose { sessionLogger.Level = log.DebugLevel }
 	
-	docker.Stdout =  pw
-	session.Stdin = pr
+	bar := pb.New(0)
+	bar.SetUnits(pb.U_BYTES)
+	bar.ShowSpeed = true
+	bar.ShowPercent = false
+	bar.ShowTimeLeft = false
+	bar.ShowBar = false
+	
+	docker.Stdout = pw
+	reader := bar.NewProxyReader(pr)
+	session.Stdin = reader
 	session.Stdout = sessionLogger.WriterLevel(log.DebugLevel)
 	session.Stderr = sessionLogger.WriterLevel(log.DebugLevel)
 	
-	log.Debug("    Starting session")
+	log.Debug("  Starting session")
 	if err := session.Start(`docker load`); err != nil {
 		return err
 	}
 
-	log.Debug("    Starting docker")
+	log.Debug("  Starting docker")
 	if err := docker.Start(); err != nil {
 		return err
 	}
@@ -48,8 +58,10 @@ func DeployContainer( client *ssh.Client, container * GadgetContainer,g *GadgetC
 	
 	go func() error {
 		defer pw.Close()
-		log.Info("    Starting transfer..")
-		log.Debug("    Waiting on docker")
+		log.Info("  Starting transfer..")
+		log.Debug("  Waiting on docker")
+		bar.Start()
+		
 		if err := docker.Wait(); err != nil {
 			deployFailed = true
 			// TODO: we should handle this error or report to the log
@@ -61,14 +73,15 @@ func DeployContainer( client *ssh.Client, container * GadgetContainer,g *GadgetC
 	}()
 	
 	session.Wait()
+	bar.Finish()
 	if ! deployFailed {
-		log.Info("    Done!")
-		log.Debug("    Closing session")
+		log.Info("Done!")
+		log.Debug("Closing session")
 	}
 	session.Close()
 		
 	if autostart {
-		stdout, stderr, err := RunRemoteCommand(client, "docker",
+		stdout, stderr, err := libgadget.RunRemoteCommand(client, "docker",
 			"create",
 			"--name", container.Alias,
 			"--restart=always",
@@ -97,21 +110,21 @@ func DeployContainer( client *ssh.Client, container * GadgetContainer,g *GadgetC
 }
 
 // Process the build arguments and execute build
-func GadgetDeploy(args []string, g *GadgetContext) error {
+func GadgetDeploy(args []string, g *libgadget.GadgetContext) error {
 	
-	err := EnsureKeys()
+	err := libgadget.EnsureKeys()
 	if err != nil {
 		log.Errorf("Failed to connect to Gadget")
 		return err
 	}
 
-	client, err := GadgetLogin(gadgetPrivKeyLocation)
+	client, err := libgadget.GadgetLogin(libgadget.GadgetPrivKeyLocation)
 	if err != nil {
 		log.Errorf("Failed to connect to Gadget")
 		return err
 	}
 
-	stagedContainers, err := FindStagedContainers(args, append(g.Config.Onboot, g.Config.Services...))
+	stagedContainers, err := libgadget.FindStagedContainers(args, append(g.Config.Onboot, g.Config.Services...))
 	
 	deployFailed := false
 	

@@ -3,30 +3,31 @@ package main
 
 import (
 	"errors"
+	"github.com/nextthingco/libgadget"
 	log "github.com/sirupsen/logrus"
 )
 
 // Process the build arguments and execute build
-func GadgetDelete(args []string, g *GadgetContext) error {
+func GadgetDelete(args []string, g *libgadget.GadgetContext) error {
 	
-	EnsureKeys()
+	libgadget.EnsureKeys()
 
-	client, err := GadgetLogin(gadgetPrivKeyLocation)
+	client, err := libgadget.GadgetLogin(libgadget.GadgetPrivKeyLocation)
 
 	if err != nil {
 		return err
 	}
 
-	log.Info("  Deleting:")
+	log.Info("Deleting:")
 
-	stagedContainers,_ := FindStagedContainers(args, append(g.Config.Onboot, g.Config.Services...))
+	stagedContainers,_ := libgadget.FindStagedContainers(args, append(g.Config.Onboot, g.Config.Services...))
 	
 	deleteFailed := false
 	
 	for _, container := range stagedContainers {
-		log.Infof("    %s", container.ImageAlias)
+		log.Infof("  %s", container.ImageAlias)
 		
-		stdout, stderr, err := RunRemoteCommand(client, "docker", "rmi", container.ImageAlias)
+		stdout, stderr, err := libgadget.RunRemoteCommand(client, "docker", "rmi", container.ImageAlias)
 		
 		log.WithFields(log.Fields{
 			"function": "GadgetDelete",
