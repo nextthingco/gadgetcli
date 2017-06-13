@@ -5,6 +5,7 @@ import (
 	"testing"
 	"reflect"
 	"github.com/satori/go.uuid"
+	"github.com/nextthingco/libgadget"
 )
 
 func TestTemplateConfig(t *testing.T) {
@@ -17,12 +18,12 @@ func TestTemplateConfig(t *testing.T) {
 	// TEST 0
 	
 	// create the default programatically
-	expectedConfig := GadgetConfig{
+	expectedConfig := libgadget.GadgetConfig{
 		Spec: Version,
 		Name: "thisisthename",
 		UUID: fmt.Sprintf("%s", initUu1),
 		Type: "docker",
-		Onboot: []GadgetContainer{
+		Onboot: []libgadget.GadgetContainer{
 			{
 				Name:    "hello-world",
 				Image:   "armhf/hello-world",
@@ -31,7 +32,7 @@ func TestTemplateConfig(t *testing.T) {
 		},
 	}
 		
-	testConfig := TemplateConfig("thisisthename", fmt.Sprintf("%s", initUu1), fmt.Sprintf("%s", initUu2))
+	testConfig := libgadget.TemplateConfig("thisisthename", fmt.Sprintf("%s", initUu1), fmt.Sprintf("%s", initUu2))
 	
 	// check for deep equality
 	if ! reflect.DeepEqual(testConfig, expectedConfig) {
@@ -88,73 +89,10 @@ services:
 	
 }
 
-func TestCleanConfig(t *testing.T){
-	
-	fmt.Println("TestCleanConfig")
-	
-	initUu1 := uuid.NewV4()
-	initUu2 := uuid.NewV4()
-
-	// TEST 0
-	
-	testContext := GadgetContext {
-		Config : TemplateConfig("thisisthename", fmt.Sprintf("%s", initUu1), fmt.Sprintf("%s", initUu2)),
-	}
-	
-	args := []string{ "onboot", "newonboot" }
-	
-	// do some post-load processing, should add alias and imagealias values
-	GadgetAdd(args, &testContext)
-	// manually add values to be sure
-	testContext.Config.Onboot[0].Alias = "justtobesureit'spopulated"
-	// now clean
-	CleanConfig(testContext.Config)
-	
-	if testContext.Config.Onboot[0].Alias != "" {
-		t.Error("failed to clean config")
-	}
-	if testContext.Config.Onboot[0].ImageAlias != "" {
-		t.Error("failed to clean config")
-	}
-	if testContext.Config.Onboot[1].Alias != "" {
-		t.Error("failed to clean config")
-	}
-	if testContext.Config.Onboot[1].ImageAlias != "" {
-		t.Error("failed to clean config")
-	}
-	
-}
-
-func TestWalkUp(t *testing.T){
-	
-	// just because TestGadgetAdd creates the /tmp/gadget.yml
-	TestGadgetAdd(t)
-	
-	// should walk up nonexistant directories too
-	base, err := WalkUp("/tmp/some/fake/set/of/directories")
-	if err != nil {
-		t.Error(err)
-	}
-	
-	// check return value
-	if base != "/tmp" {
-		fmt.Println(base)
-		t.Error("failed to find /tmp/gadget.yml")
-	}
-	
-	// test the failure case
-	_, err = WalkUp("/nonexistant")
-	if err == nil {
-		t.Error("Should have failed to find /nonexistant/gadget.yml")
-	}
-	
-}
-
-
 func TestLoadConfig(t *testing.T){
 	
-	// run the init test
-	TestGadgetInit(t)
+	// run the init test [on pre-existing /tmp/gadget.yml]
+	//~ TestGadgetInit(t)
 	
 	initContext := GadgetContext{
 		WorkingDirectory: "/tmp",
@@ -168,11 +106,10 @@ func TestLoadConfig(t *testing.T){
 	
 }
 
-
 func TestFind(t *testing.T){
 	
 	// all that Find checks is the Name entry
-	testGadCont := GadgetContainers{
+	testGadCont := libgadget.GadgetContainers{
 		{
 			Name: "test0",
 		},

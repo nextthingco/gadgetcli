@@ -52,6 +52,7 @@ tidy:
 
 test: $(GADGET_SOURCES) $(GADGET_SOURCES)
 	@echo "Testing Gadget"
+	@rm -f /tmp/gadget.yml gadgetcli/gadget.yml
 	@go test -ldflags="-s -w -X libgadget.Version=$(VERSION) -X libgadget.GitCommit=$(GIT_COMMIT)" -v ./gadgetcli
 	@go test -ldflags="-s -w -X libgadget.Version=$(VERSION) -X libgadget.GitCommit=$(GIT_COMMIT)" -v ./libgadget
 

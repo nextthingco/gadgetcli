@@ -3,13 +3,16 @@ package main
 
 import (
 	"testing"
+	"fmt"
+	"github.com/satori/go.uuid"
+	"github.com/nextthingco/libgadget"
 	"reflect"
 )
 
 func TestGadgetAdd(t *testing.T){
 	
 	// USAGE TEST PREP
-	emptyContext := GadgetContext{
+	emptyContext := libgadget.GadgetContext{
 		WorkingDirectory: "/tmp",
 	}
 	initArgs := []string { "these", "aren't", "used" }
@@ -51,12 +54,12 @@ func TestGadgetAdd(t *testing.T){
 	
 	// TEST 0
 	
-	testContext := GadgetContext {
-		Config: GadgetConfig{
+	testContext := libgadget.GadgetContext {
+		Config: libgadget.GadgetConfig{
 			Name: "test",
 			UUID: "1234",
 			Type: "docker",
-			Onboot: []GadgetContainer{
+			Onboot: []libgadget.GadgetContainer{
 				{
 					Name:    "hello-world",
 					Image:   "armhf/hello-world",
@@ -65,12 +68,12 @@ func TestGadgetAdd(t *testing.T){
 		},
 	}
 	
-	expectedContext := GadgetContext {
-		Config: GadgetConfig{
+	expectedContext := libgadget.GadgetContext {
+		Config: libgadget.GadgetConfig{
 			Name: "test",
 			UUID: "1234",
 			Type: "docker",
-			Onboot: []GadgetContainer{
+			Onboot: []libgadget.GadgetContainer{
 				{
 					Name:    "hello-world",
 					Image:   "armhf/hello-world",
@@ -96,12 +99,12 @@ func TestGadgetAdd(t *testing.T){
 	
 	// TEST 1
 	
-	testContext = GadgetContext {
-		Config: GadgetConfig{
+	testContext = libgadget.GadgetContext {
+		Config: libgadget.GadgetConfig{
 			Name: "test",
 			UUID: "1234",
 			Type: "docker",
-			Onboot: []GadgetContainer{
+			Onboot: []libgadget.GadgetContainer{
 				{
 					Name:    "hello-world",
 					Image:   "armhf/hello-world",
@@ -119,6 +122,67 @@ func TestGadgetAdd(t *testing.T){
 	
 	if reflect.DeepEqual(testContext, expectedContext) {
 		t.Error("is deeply equal, but shouldn't have been, is there a gadget.yml above me?")
+	}
+	
+}
+
+func TestCleanConfig(t *testing.T){
+	
+	fmt.Println("TestCleanConfig")
+	
+	initUu1 := uuid.NewV4()
+	initUu2 := uuid.NewV4()
+
+	// TEST 0
+	
+	testContext := libgadget.GadgetContext {
+		Config : libgadget.TemplateConfig("thisisthename", fmt.Sprintf("%s", initUu1), fmt.Sprintf("%s", initUu2)),
+	}
+	
+	args := []string{ "onboot", "newonboot" }
+	
+	// do some post-load processing, should add alias and imagealias values
+	GadgetAdd(args, &testContext)
+	// manually add values to be sure
+	testContext.Config.Onboot[0].Alias = "justtobesureit'spopulated"
+	// now clean
+	libgadget.CleanConfig(testContext.Config)
+	
+	if testContext.Config.Onboot[0].Alias != "" {
+		t.Error("failed to clean config")
+	}
+	if testContext.Config.Onboot[0].ImageAlias != "" {
+		t.Error("failed to clean config")
+	}
+	if testContext.Config.Onboot[1].Alias != "" {
+		t.Error("failed to clean config")
+	}
+	if testContext.Config.Onboot[1].ImageAlias != "" {
+		t.Error("failed to clean config")
+	}
+	
+}
+
+func TestWalkUp(t *testing.T){
+	
+	// TestGadgetAdd will have created the /tmp/gadget.yml
+	
+	// should walk up nonexistant directories too
+	base, err := libgadget.WalkUp("/tmp/some/fake/set/of/directories")
+	if err != nil {
+		t.Error(err)
+	}
+	
+	// check return value
+	if base != "/tmp" {
+		fmt.Println(base)
+		t.Error("failed to find /tmp/gadget.yml")
+	}
+	
+	// test the failure case
+	_, err = libgadget.WalkUp("/nonexistant")
+	if err == nil {
+		t.Error("Should have failed to find /nonexistant/gadget.yml")
 	}
 	
 }
