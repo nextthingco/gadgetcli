@@ -20,7 +20,7 @@ type GadgetCommand struct {
 }
 
 var Commands = []GadgetCommand {
-	{ Name: "init",    Function: GadgetOsInit,    NeedsConfig: false },
+	{ Name: "init",    Function: GadgetOsInit,    NeedsConfig: true },
 	//~ { Name: "add",     Function: GadgetAdd,     NeedsConfig: true  },
 	//~ { Name: "build",   Function: GadgetBuild,   NeedsConfig: true  },
 	//~ { Name: "deploy",  Function: GadgetDeploy,  NeedsConfig: true  },
@@ -93,7 +93,7 @@ func main() {
 	
 	//~ flag.BoolVar(&g.Verbose, "v", false, "Verbose execution")
 	//~ flag.StringVar(&g.WorkingDirectory, "C", ".", "Run in directory")
-	//~ flag.Parse()
+	flag.Parse()
 	
 	var gFormatter *gadgetFormatter.TextFormatter
 	

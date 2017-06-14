@@ -383,6 +383,8 @@ func RunRemoteCommand(client *ssh.Client, cmd ...string) (*bytes.Buffer, *bytes.
 }
 
 func RunLocalCommand(binary string, g *GadgetContext, arguments ...string) (string, string, error) {
+	//~ log.Debugf(binary, arguments...)
+	
 	cmd := exec.Command(binary, arguments...)
 	
 	cmd.Env = os.Environ()

@@ -80,10 +80,13 @@ func GadgetStart(args []string, g *libgadget.GadgetContext) error {
 				"name": container.Alias,
 				"start-stage": "create",
 			}).Debug("This is likely due to specifying containers for deploying, but trying to start all")
-
-
+			
 			log.Errorf("Failed to start '%s' on Gadget", container.Name)
 			log.Warn("Was it ever deployed?")
+			if commands != "" {
+				log.Warnf("'%s' was also supplied with the commands '%s'..", container.Name, commands)
+				log.Warn("Consult the original Dockerfile to rule out conflicting CMD/ENTRYPOINT")
+			}
 			
 			startFailed = true
 		} else {

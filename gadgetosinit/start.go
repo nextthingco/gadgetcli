@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"os/exec"
 	"github.com/nextthingco/libgadget"
 	log "github.com/sirupsen/logrus"
 )
@@ -9,11 +10,24 @@ import (
 // Process the build arguments and execute build
 func GadgetOsInit(args []string, g *libgadget.GadgetContext) error {
 	
-	libgadget.EnsureKeys()
+	//~ libgadget.EnsureKeys()
 
-	client, err := libgadget.GadgetLogin(libgadget.GadgetPrivKeyLocation)
+	//~ client, err := libgadget.GadgetLogin(libgadget.GadgetPrivKeyLocation)
 
+	//~ if err != nil {
+		//~ return err
+	//~ }
+	
+	
+	binary, err := exec.LookPath("docker")
 	if err != nil {
+		log.Error("Failed to find local docker binary")
+		log.Warn("Is docker installed?")
+		
+		log.WithFields(log.Fields{
+			"function": "GadgetOsInit",
+			"stage" : "LookPath(docker)",
+		}).Debug("Couldn't find docker in the $PATH")
 		return err
 	}
 	
@@ -24,7 +38,7 @@ func GadgetOsInit(args []string, g *libgadget.GadgetContext) error {
 	for _, container := range g.Config.Onboot {
 		
 		log.Infof("  %s", container.Alias)
-		stdout, stderr, err := libgadget.RunRemoteCommand(client, "docker run --restart=onfailure:3", container.Alias)
+		stdout, stderr, err := libgadget.RunLocalCommand(binary, g, "run", "--restart=on-failure:3", "--rm", container.ImageAlias)
 		
 		log.WithFields(log.Fields{
 			"function": "GadgetStart",
@@ -60,7 +74,7 @@ func GadgetOsInit(args []string, g *libgadget.GadgetContext) error {
 	for _, container := range g.Config.Services {
 		
 		log.Infof("  %s", container.Alias)
-		stdout, stderr, err := libgadget.RunRemoteCommand(client, "docker run --restart=on-failure", container.Alias)
+		stdout, stderr, err := libgadget.RunLocalCommand(binary, g, "run", "--restart=on-failure:3", "--rm", container.ImageAlias)
 		
 		log.WithFields(log.Fields{
 			"function": "GadgetStart",
