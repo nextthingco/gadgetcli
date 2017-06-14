@@ -437,6 +437,7 @@ func FindStagedContainers(args []string, containers GadgetContainers) (GadgetCon
 		for _,arg := range args {
 			c,err := containers.Find(arg)
 			if err != nil {
+				log.Errorf("Could not find container: '%s'", arg)
 				unavailableContainers = append(unavailableContainers, arg)
 			} else {
 				stagedContainers = append(stagedContainers, c)
@@ -445,6 +446,10 @@ func FindStagedContainers(args []string, containers GadgetContainers) (GadgetCon
 	}
 
 	if len(stagedContainers) == 0 {
+		if len(args) > 0 {
+			log.Warn("Any/all argument[s] invalid")
+			log.Warn("Performing operation across all containers in gadget.yml")
+		}
 		stagedContainers = containers
 	}
 	err := errors.New(fmt.Sprintf("  Could not find containers: %s", strings.Join(unavailableContainers, ", ")))

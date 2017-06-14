@@ -48,7 +48,7 @@ func GadgetLogs(args []string, g *libgadget.GadgetContext) error {
 			
 			log.Infof("  Begin: %s\n", container.Name)
 			log.Infof("\n%s", stdout)
-			log.Debugf("\n%s", stderr)
+			log.Warnf("\n%s", stderr)
 			log.Infof("  End: %s", container.Name)
 		
 		}

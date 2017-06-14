@@ -55,36 +55,36 @@ func GadgetStop(args []string, g *libgadget.GadgetContext) error {
 			
 		}
 
-		stdout, stderr, err = libgadget.RunRemoteCommand(client, "docker rm", container.Alias)
+		//~ stdout, stderr, err = libgadget.RunRemoteCommand(client, "docker rm", container.Alias)
 		
-		log.WithFields(log.Fields{
-			"function": "GadgetStart",
-			"name": container.Alias,
-			"stop-stage": "rm",
-		}).Debug(stdout)
-		log.WithFields(log.Fields{
-			"function": "GadgetStart",
-			"name": container.Alias,
-			"stop-stage": "rm",
-		}).Debug(stderr)
+		//~ log.WithFields(log.Fields{
+			//~ "function": "GadgetStart",
+			//~ "name": container.Alias,
+			//~ "stop-stage": "rm",
+		//~ }).Debug(stdout)
+		//~ log.WithFields(log.Fields{
+			//~ "function": "GadgetStart",
+			//~ "name": container.Alias,
+			//~ "stop-stage": "rm",
+		//~ }).Debug(stderr)
 		
-		if err != nil {
+		//~ if err != nil {
 			
-			stopFailed = true
+			//~ stopFailed = true
 			
-			log.WithFields(log.Fields{
-				"function": "GadgetStop",
-				"name": container.Alias,
-				"stop-stage": "rm",
-			}).Debug("This is likely due to specifying containers for a previous operation, but trying to stop all")
+			//~ log.WithFields(log.Fields{
+				//~ "function": "GadgetStop",
+				//~ "name": container.Alias,
+				//~ "stop-stage": "rm",
+			//~ }).Debug("This is likely due to specifying containers for a previous operation, but trying to stop all")
 
 
-			log.Errorf("Failed to stop '%s' on Gadget", container.Name)
-			log.Warn("Was it ever started?")
+			//~ log.Errorf("Failed to stop '%s' on Gadget", container.Name)
+			//~ log.Warn("Was it ever started?")
 			
-		} else {
-			log.Info("  - stopped")
-		}
+		//~ } else {
+			//~ log.Info("  - stopped")
+		//~ }
 	}
 	
 	if stopFailed {

@@ -27,7 +27,38 @@ func GadgetDelete(args []string, g *libgadget.GadgetContext) error {
 	for _, container := range stagedContainers {
 		log.Infof("  %s", container.ImageAlias)
 		
-		stdout, stderr, err := libgadget.RunRemoteCommand(client, "docker", "rmi", container.ImageAlias)
+		stdout, stderr, err := libgadget.RunRemoteCommand(client, "docker rm", container.Alias)
+		
+		log.WithFields(log.Fields{
+			"function": "GadgetStart",
+			"name": container.Alias,
+			"stop-stage": "rm",
+		}).Debug(stdout)
+		log.WithFields(log.Fields{
+			"function": "GadgetStart",
+			"name": container.Alias,
+			"stop-stage": "rm",
+		}).Debug(stderr)
+		
+		//~ if err != nil {
+			
+			//~ stopFailed = true
+			
+			//~ log.WithFields(log.Fields{
+				//~ "function": "GadgetStop",
+				//~ "name": container.Alias,
+				//~ "stop-stage": "rm",
+			//~ }).Debug("This is likely due to specifying containers for a previous operation, but trying to stop all")
+
+
+			//~ log.Errorf("Failed to stop '%s' on Gadget", container.Name)
+			//~ log.Warn("Was it ever started?")
+			
+		//~ } else {
+			//~ log.Info("  - stopped")
+		//~ }
+		
+		stdout, stderr, err = libgadget.RunRemoteCommand(client, "docker", "rmi", container.ImageAlias)
 		
 		log.WithFields(log.Fields{
 			"function": "GadgetDelete",

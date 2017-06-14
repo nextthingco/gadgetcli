@@ -11,21 +11,21 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func DeployContainer( client *ssh.Client, container *libgadget.GadgetContainer,g *libgadget.GadgetContext, autostart bool) error {
+func DeployContainer( client *ssh.Client, container *libgadget.GadgetContainer,g *libgadget.GadgetContext) error {
 	binary, err := exec.LookPath("docker")
 	if err != nil {
 		return err
 	}
-		
+	
 	log.Infof("Deploying: '%s'", container.Name)
 	docker := exec.Command(binary, "save", container.ImageAlias)
-
+	
 	session, err := client.NewSession()
 	if err != nil {
 		client.Close()
 		return err
 	}
-		
+	
 	// create pipe for local -> remote file transmission
 	pr, pw := io.Pipe()
 	sessionLogger := log.New()
@@ -79,34 +79,69 @@ func DeployContainer( client *ssh.Client, container *libgadget.GadgetContainer,g
 		log.Debug("Closing session")
 	}
 	session.Close()
-		
-	if autostart {
-		stdout, stderr, err := libgadget.RunRemoteCommand(client, "docker",
-			"create",
-			"--name", container.Alias,
-			"--restart=always",
-			container.ImageAlias,
-			strings.Join(container.Command[:]," "))
-		
-		if err != nil {
-			log.Errorf("Failed to set %s to always restart on Gadget", container.Alias)
-			return err
-		}
-		
-		log.WithFields(log.Fields{
-			"function": "DeployContainer",
-			"name": container.Alias,
-			"deploy-stage": "create restarting",
-		}).Debug(stdout)
-		log.WithFields(log.Fields{
-			"function": "DeployContainer",
-			"name": container.Alias,
-			"deploy-stage": "create restarting",
-		}).Debug(stderr)
-		
+	
+	//~ restart := "--restart=on-failure:3"
+	restart := ""
+	mode, err := FindRunMode(container.UUID, g.Config.Onboot, g.Config.Services)
+	if err != nil {
+		log.Debug(err)
+		log.Errorf("Failed to find run mode for '%s:%s'", container.Name, container.UUID)
+		return err
+	} else if mode == GADGETSERVICE {
+		restart = "--restart=on-failure"
 	}
 	
+	//~ stdout, stderr, err := libgadget.RunRemoteCommand(client, "docker",
+		//~ "create",
+		//~ "--name", container.Alias,
+		//~ restart,
+		//~ container.ImageAlias,
+		//~ strings.Join(container.Command[:]," "))
+		
+	binds := strings.Join( libgadget.PrependToStrings(container.Binds[:],"-v "), " ")
+	commands := strings.Join(container.Command[:]," ")
+	
+	stdout, stderr, err := libgadget.RunRemoteCommand(client, "docker create --name", container.Alias, binds, restart, container.ImageAlias, commands)
+	
+	
+	if err != nil {
+		log.Errorf("Failed to set %s to always restart on Gadget", container.Alias)
+		return err
+	}
+	
+	log.WithFields(log.Fields{
+		"function": "DeployContainer",
+		"name": container.Alias,
+		"deploy-stage": "create restarting",
+	}).Debug(stdout)
+	log.WithFields(log.Fields{
+		"function": "DeployContainer",
+		"name": container.Alias,
+		"deploy-stage": "create restarting",
+	}).Debug(stderr)
+		
+	
 	return err
+}
+
+const (
+	GADGETONBOOT = 1 << iota
+	GADGETSERVICE
+)
+
+func FindRunMode(uuid string, onboot []libgadget.GadgetContainer, services []libgadget.GadgetContainer) ( int, error ) {
+	for _,container := range onboot {
+		if container.UUID == uuid {
+			return GADGETONBOOT, nil
+		}
+	}
+	for _,container := range services {
+		if container.UUID == uuid {
+			return GADGETSERVICE, nil
+		}
+	}
+	
+	return 0, errors.New("Failed to find by UUID")
 }
 
 // Process the build arguments and execute build
@@ -149,7 +184,7 @@ func GadgetDeploy(args []string, g *libgadget.GadgetContext) error {
 			log.SetLevel(log.InfoLevel)
 		}
 		
-		err = DeployContainer(client, &container, g, false)
+		err = DeployContainer(client, &container, g)
 		deployFailed = true
 	}
 	

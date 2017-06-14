@@ -25,41 +25,41 @@ func GadgetStart(args []string, g *libgadget.GadgetContext) error {
 	for _, container := range stagedContainers {
 		
 		log.Infof("  %s", container.Alias)
-		binds := strings.Join( libgadget.PrependToStrings(container.Binds[:],"-v "), " ")
+		//~ binds := strings.Join( libgadget.PrependToStrings(container.Binds[:],"-v "), " ")
 		commands := strings.Join(container.Command[:]," ")
 		
-		stdout, stderr, err := libgadget.RunRemoteCommand(client, "docker create --name", container.Alias, binds, container.ImageAlias, commands)
+		//~ stdout, stderr, err := libgadget.RunRemoteCommand(client, "docker create --name", container.Alias, binds, container.ImageAlias, commands)
 		
-		log.WithFields(log.Fields{
-			"function": "GadgetStart",
-			"name": container.Alias,
-			"start-stage": "create",
-		}).Debug(stdout)
-		log.WithFields(log.Fields{
-			"function": "GadgetStart",
-			"name": container.Alias,
-			"start-stage": "create",
-		}).Debug(stderr)
+		//~ log.WithFields(log.Fields{
+			//~ "function": "GadgetStart",
+			//~ "name": container.Alias,
+			//~ "start-stage": "create",
+		//~ }).Debug(stdout)
+		//~ log.WithFields(log.Fields{
+			//~ "function": "GadgetStart",
+			//~ "name": container.Alias,
+			//~ "start-stage": "create",
+		//~ }).Debug(stderr)
 		
-		if err != nil {
+		//~ if err != nil {
 			
-			// fail loudly, but continue
+			//~ // fail loudly, but continue
 			
-			log.WithFields(log.Fields{
-				"function": "GadgetStart",
-				"name": container.Alias,
-				"start-stage": "create",
-			}).Debug("This is likely due to specifying containers for deploying, but trying to start all")
+			//~ log.WithFields(log.Fields{
+				//~ "function": "GadgetStart",
+				//~ "name": container.Alias,
+				//~ "start-stage": "create",
+			//~ }).Debug("This is likely due to specifying containers for deploying, but trying to start all")
 
 
-			log.Debugf("Failed to create %s on Gadget,", container.Alias)
-			log.Debug("it might have already been deployed,")
-			log.Debug("Or creation otherwise failed")
+			//~ log.Debugf("Failed to create %s on Gadget,", container.Alias)
+			//~ log.Debug("it might have already been deployed,")
+			//~ log.Debug("Or creation otherwise failed")
 			
-			startFailed = true
-		}
+			//~ startFailed = true
+		//~ }
 
-		stdout, stderr, err = libgadget.RunRemoteCommand(client, "docker start", container.Alias)
+		stdout, stderr, err := libgadget.RunRemoteCommand(client, "docker start", container.Alias)
 		
 		log.WithFields(log.Fields{
 			"function": "GadgetStart",
@@ -81,11 +81,13 @@ func GadgetStart(args []string, g *libgadget.GadgetContext) error {
 				"start-stage": "create",
 			}).Debug("This is likely due to specifying containers for deploying, but trying to start all")
 			
-			log.Errorf("Failed to start '%s' on Gadget", container.Name)
-			log.Warn("Was it ever deployed?")
+			log.Errorf("  Failed to start '%s' on Gadget", container.Name)
+			log.Warn("  Potential causes:")
+			log.Warn("  - container was never deployed")
 			if commands != "" {
-				log.Warnf("'%s' was also supplied with the commands '%s'..", container.Name, commands)
-				log.Warn("Consult the original Dockerfile to rule out conflicting CMD/ENTRYPOINT")
+				log.Warn("  - conflicting CMD/ENTRYPOINT")
+				log.Warnf("    ['%s' was also supplied with the commands '%s']", container.Name, commands)
+				log.Warn("    [consult the original Dockerfile to rule out conflicting CMD/ENTRYPOINT]")
 			}
 			
 			startFailed = true
