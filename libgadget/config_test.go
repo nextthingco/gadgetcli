@@ -26,7 +26,7 @@ func TestTemplateConfig(t *testing.T) {
 		Onboot: []libgadget.GadgetContainer{
 			{
 				Name:    "hello-world",
-				Image:   "armhf/hello-world",
+				Image:   "arm32v7/hello-world",
 				UUID:    fmt.Sprintf("%s", initUu2),
 			},
 		},
