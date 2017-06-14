@@ -129,6 +129,26 @@ func GadgetDeploy(args []string, g *libgadget.GadgetContext) error {
 	deployFailed := false
 	
 	for _, container := range stagedContainers {
+		
+		// stop and delete possible older versions of image/container
+		// not collecting the errors, as errors may be returned
+		// when trying to delete an img/cntnr that was never deployed
+		tmpName := make( []string, 1 )
+		tmpName[0] = container.Name
+		
+		log.Infof("Stopping/deleting older '%s' if applicable", container.Name)
+		
+		if ! g.Verbose {
+			log.SetLevel(log.PanicLevel)
+		}
+		
+		_ = GadgetStop(tmpName, g)
+		_ = GadgetDelete(tmpName, g)
+		
+		if ! g.Verbose {
+			log.SetLevel(log.InfoLevel)
+		}
+		
 		err = DeployContainer(client, &container, g, false)
 		deployFailed = true
 	}
