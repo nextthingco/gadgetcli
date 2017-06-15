@@ -3,12 +3,12 @@ package libgadget
 import (
 	"errors"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime"
-	log "github.com/sirupsen/logrus"
 )
 
 type GadgetContext struct {
@@ -48,9 +48,9 @@ func TemplateConfig(gName, gUu1, gUu2 string) GadgetConfig {
 		Type: "docker",
 		Onboot: []GadgetContainer{
 			{
-				Name:    "hello-world",
-				Image:   "arm32v7/hello-world",
-				UUID:    gUu2,
+				Name:  "hello-world",
+				Image: "arm32v7/hello-world",
+				UUID:  gUu2,
 			},
 		},
 	}
@@ -68,11 +68,11 @@ func ParseConfig(config []byte) (GadgetConfig, error) {
 	return g, nil
 }
 
-func CleanConfig( g GadgetConfig ) GadgetConfig {
-	
+func CleanConfig(g GadgetConfig) GadgetConfig {
+
 	// helper function to remove hidden config
 	// items before writing the struct out
-	
+
 	for i := range g.Onboot {
 		g.Onboot[i].Alias = ""
 		g.Onboot[i].ImageAlias = ""
@@ -82,8 +82,8 @@ func CleanConfig( g GadgetConfig ) GadgetConfig {
 		g.Services[i].Alias = ""
 		g.Services[i].ImageAlias = ""
 	}
-	
-	return g	
+
+	return g
 }
 
 // helper function for walkup, determines if cwd is '/'
@@ -171,19 +171,19 @@ func (g *GadgetContext) LoadConfig() error {
 		service.ImageAlias = fmt.Sprintf("%s-img", service.Alias)
 		g.Config.Services[index] = service
 	}
-	
-	
+
 	if parseerr != nil || cwderr != nil {
 		parseerr = errors.New("Failed to load config")
 		log.Errorf("  Cannot open config file: %v", parseerr)
 	}
-	
+
 	return parseerr
 }
+
 type GadgetContainers []GadgetContainer
 
 func (containers GadgetContainers) Find(name string) (GadgetContainer, error) {
-	for _,container := range containers {
+	for _, container := range containers {
 		if container.Name == name {
 			return container, nil
 		}

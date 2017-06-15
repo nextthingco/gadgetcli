@@ -4,6 +4,7 @@ BUILD_DATE=$(shell date --iso-8601)
 VERSION_FILE=libgadget/version.go
 
 GADGET_SOURCES=$(shell ls gadgetcli/*.go)
+GADGETOSINIT_SOURCES=$(shell ls gadgetosinit/*.go)
 LIBGADGET_SOURCES=$(shell ls libgadget/*.go)
 
 DEPENDS=\
@@ -32,29 +33,37 @@ genversion:
 	@echo "	BuildDate = \"${BUILD_DATE}\"" >> $(VERSION_FILE)
 	@echo ")" >> $(VERSION_FILE)
 
-release: $(GADGET_SOURCES) $(LIBGADGET_SOURCES)
+gadget_release: $(GADGET_SOURCES) $(LIBGADGET_SOURCES)
 	@echo "Building Gadget Release"
 	@mkdir -p build/linux
 	@mkdir -p build/linux_arm
 	@mkdir -p build/linux_arm64
 	@mkdir -p build/windows
 	@mkdir -p build/darwin
-	@GOOS=linux GOARCH=amd64 go build -o build/linux/gadget -ldflags="-s -w -X libgadget.Version=$(VERSION) -X libgadget.GitCommit=$(GIT_COMMIT)" -v ./gadgetcli
-	@GOOS=linux GOARCH=arm go build -o build/linux_arm/gadget -ldflags="-s -w -X libgadget.Version=$(VERSION) -X libgadget.GitCommit=$(GIT_COMMIT)" -v ./gadgetcli
-	@GOOS=linux GOARCH=arm64 go build -o build/linux_arm64/gadget -ldflags="-s -w -X libgadget.Version=$(VERSION) -X libgadget.GitCommit=$(GIT_COMMIT)" -v ./gadgetcli
-	@GOOS=windows GOARCH=amd64 go build -o build/windows/gadget.exe -ldflags="-s -w -X libgadget.Version=$(VERSION) -X libgadget.GitCommit=$(GIT_COMMIT)" -v ./gadgetcli
-	@GOOS=darwin GOARCH=amd64 go build -o build/darwin/gadget -ldflags="-s -w -X libgadget.Version=$(VERSION) -X libgadget.GitCommit=$(GIT_COMMIT)" -v ./gadgetcli
+	@GOOS=linux GOARCH=amd64 go build -o build/linux/gadget -ldflags="-s -w" -v ./gadgetcli
+	@GOOS=linux GOARCH=arm go build -o build/linux_arm/gadget -ldflags="-s -w" -v ./gadgetcli
+	@GOOS=linux GOARCH=arm64 go build -o build/linux_arm64/gadget -ldflags="-s -w" -v ./gadgetcli
+	@GOOS=windows GOARCH=amd64 go build -o build/windows/gadget.exe -ldflags="-s -w" -v ./gadgetcli
+	@GOOS=darwin GOARCH=amd64 go build -o build/darwin/gadget -ldflags="-s -w" -v ./gadgetcli
+
+gadgetosinit_release: $(GADGETOSINIT_SOURCES) $(LIBGADGET_SOURCES)
+	@echo "Building Gadget Release"
+	@mkdir -p build/linux_arm
+	@mkdir -p build/linux_arm64
+	@GOOS=linux GOARCH=arm go build -o build/linux_arm/gadgetosinit -ldflags="-s -w" ./gadgetosinit
+	@GOOS=linux GOARCH=arm go build -o build/linux_arm64/gadgetosinit -ldflags="-s -w" ./gadgetosinit
 
 tidy:
 	@echo "Tidying up sources"
 	@go fmt ./gadgetcli
+	@go fmt ./gadgetosinit
 	@go fmt ./libgadget
 
 test: $(GADGET_SOURCES) $(GADGET_SOURCES)
 	@echo "Testing Gadget"
 	@rm -f /tmp/gadget.yml gadgetcli/gadget.yml
-	@go test -ldflags="-s -w -X libgadget.Version=$(VERSION) -X libgadget.GitCommit=$(GIT_COMMIT)" -v ./gadgetcli
-	@go test -ldflags="-s -w -X libgadget.Version=$(VERSION) -X libgadget.GitCommit=$(GIT_COMMIT)" -v ./libgadget
+	@go test -ldflags="-s -w" -v ./gadgetcli
+	@go test -ldflags="-s -w" -v ./libgadget
 
 get:
 	@echo "Downloading external dependencies"

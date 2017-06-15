@@ -1,16 +1,16 @@
 package main
 
 import (
+	"github.com/nextthingco/libgadget"
+	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/terminal"
 	"os"
-	"github.com/nextthingco/libgadget"
-	log "github.com/sirupsen/logrus"
 )
 
 // Process the build arguments and execute build
 func GadgetShell(args []string, g *libgadget.GadgetContext) error {
-	
+
 	libgadget.EnsureKeys()
 
 	client, err := libgadget.GadgetLogin(libgadget.GadgetPrivKeyLocation)
@@ -26,27 +26,26 @@ func GadgetShell(args []string, g *libgadget.GadgetContext) error {
 
 	session.Stdout = os.Stdout
 	session.Stderr = os.Stderr
-	session.Stdin  = os.Stdin
+	session.Stdin = os.Stdin
 
 	modes := ssh.TerminalModes{
-		ssh.ECHO:          1,     // disable echoing
-		ssh.ECHONL:        1,
+		ssh.ECHO:   1, // disable echoing
+		ssh.ECHONL: 1,
 	}
 
 	if err := session.RequestPty("xterm", 25, 80, modes); err != nil {
 		session.Close()
 		return err
 	}
-	
+
 	if err := session.Shell(); err != nil {
 		return err
 	}
-	
+
 	log.WithFields(log.Fields{
 		"function": "GadgetShell",
 	}).Debug("Entering shell..")
 
-	
 	oldState, err := terminal.MakeRaw(0)
 	if err != nil {
 		return err
@@ -54,9 +53,9 @@ func GadgetShell(args []string, g *libgadget.GadgetContext) error {
 	defer terminal.Restore(0, oldState)
 
 	session.Wait()
-	
+
 	log.WithFields(log.Fields{
 		"function": "GadgetShell",
 	}).Debug("Closed shell.")
-	return nil	
+	return nil
 }

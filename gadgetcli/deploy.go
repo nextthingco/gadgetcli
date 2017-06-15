@@ -1,49 +1,51 @@
 package main
 
 import (
-	"os/exec"
-	"io"
 	"errors"
-	"golang.org/x/crypto/ssh"
-	"gopkg.in/cheggaaa/pb.v1"
-	"strings"
 	"github.com/nextthingco/libgadget"
 	log "github.com/sirupsen/logrus"
+	"golang.org/x/crypto/ssh"
+	"gopkg.in/cheggaaa/pb.v1"
+	"io"
+	"os/exec"
+	"strings"
 )
 
-func DeployContainer( client *ssh.Client, container *libgadget.GadgetContainer,g *libgadget.GadgetContext) error {
+func DeployContainer(client *ssh.Client, container *libgadget.GadgetContainer, g *libgadget.GadgetContext) error {
 	binary, err := exec.LookPath("docker")
 	if err != nil {
 		return err
 	}
-	
+
 	log.Infof("Deploying: '%s'", container.Name)
 	docker := exec.Command(binary, "save", container.ImageAlias)
-	
+
 	session, err := client.NewSession()
 	if err != nil {
 		client.Close()
 		return err
 	}
-	
+
 	// create pipe for local -> remote file transmission
 	pr, pw := io.Pipe()
 	sessionLogger := log.New()
-	if g.Verbose { sessionLogger.Level = log.DebugLevel }
-	
+	if g.Verbose {
+		sessionLogger.Level = log.DebugLevel
+	}
+
 	bar := pb.New(0)
 	bar.SetUnits(pb.U_BYTES)
 	bar.ShowSpeed = true
 	bar.ShowPercent = false
 	bar.ShowTimeLeft = false
 	bar.ShowBar = false
-	
+
 	docker.Stdout = pw
 	reader := bar.NewProxyReader(pr)
 	session.Stdin = reader
 	session.Stdout = sessionLogger.WriterLevel(log.DebugLevel)
 	session.Stderr = sessionLogger.WriterLevel(log.DebugLevel)
-	
+
 	log.Debug("  Starting session")
 	if err := session.Start(`docker load`); err != nil {
 		return err
@@ -55,13 +57,13 @@ func DeployContainer( client *ssh.Client, container *libgadget.GadgetContainer,g
 	}
 
 	deployFailed := false
-	
+
 	go func() error {
 		defer pw.Close()
 		log.Info("  Starting transfer..")
 		log.Debug("  Waiting on docker")
 		bar.Start()
-		
+
 		if err := docker.Wait(); err != nil {
 			deployFailed = true
 			// TODO: we should handle this error or report to the log
@@ -71,15 +73,15 @@ func DeployContainer( client *ssh.Client, container *libgadget.GadgetContainer,g
 		}
 		return err
 	}()
-	
+
 	session.Wait()
 	bar.Finish()
-	if ! deployFailed {
+	if !deployFailed {
 		log.Info("Done!")
 		log.Debug("Closing session")
 	}
 	session.Close()
-	
+
 	//~ restart := "--restart=on-failure:3"
 	restart := ""
 	mode, err := FindRunMode(container.UUID, g.Config.Onboot, g.Config.Services)
@@ -90,37 +92,35 @@ func DeployContainer( client *ssh.Client, container *libgadget.GadgetContainer,g
 	} else if mode == GADGETSERVICE {
 		restart = "--restart=on-failure"
 	}
-	
+
 	//~ stdout, stderr, err := libgadget.RunRemoteCommand(client, "docker",
-		//~ "create",
-		//~ "--name", container.Alias,
-		//~ restart,
-		//~ container.ImageAlias,
-		//~ strings.Join(container.Command[:]," "))
-		
-	binds := strings.Join( libgadget.PrependToStrings(container.Binds[:],"-v "), " ")
-	commands := strings.Join(container.Command[:]," ")
-	
+	//~ "create",
+	//~ "--name", container.Alias,
+	//~ restart,
+	//~ container.ImageAlias,
+	//~ strings.Join(container.Command[:]," "))
+
+	binds := strings.Join(libgadget.PrependToStrings(container.Binds[:], "-v "), " ")
+	commands := strings.Join(container.Command[:], " ")
+
 	stdout, stderr, err := libgadget.RunRemoteCommand(client, "docker create --name", container.Alias, binds, restart, container.ImageAlias, commands)
-	
-	
+
 	if err != nil {
 		log.Errorf("Failed to set %s to always restart on Gadget", container.Alias)
 		return err
 	}
-	
+
 	log.WithFields(log.Fields{
-		"function": "DeployContainer",
-		"name": container.Alias,
+		"function":     "DeployContainer",
+		"name":         container.Alias,
 		"deploy-stage": "create restarting",
 	}).Debug(stdout)
 	log.WithFields(log.Fields{
-		"function": "DeployContainer",
-		"name": container.Alias,
+		"function":     "DeployContainer",
+		"name":         container.Alias,
 		"deploy-stage": "create restarting",
 	}).Debug(stderr)
-		
-	
+
 	return err
 }
 
@@ -129,24 +129,24 @@ const (
 	GADGETSERVICE
 )
 
-func FindRunMode(uuid string, onboot []libgadget.GadgetContainer, services []libgadget.GadgetContainer) ( int, error ) {
-	for _,container := range onboot {
+func FindRunMode(uuid string, onboot []libgadget.GadgetContainer, services []libgadget.GadgetContainer) (int, error) {
+	for _, container := range onboot {
 		if container.UUID == uuid {
 			return GADGETONBOOT, nil
 		}
 	}
-	for _,container := range services {
+	for _, container := range services {
 		if container.UUID == uuid {
 			return GADGETSERVICE, nil
 		}
 	}
-	
+
 	return 0, errors.New("Failed to find by UUID")
 }
 
 // Process the build arguments and execute build
 func GadgetDeploy(args []string, g *libgadget.GadgetContext) error {
-	
+
 	err := libgadget.EnsureKeys()
 	if err != nil {
 		log.Errorf("Failed to connect to Gadget")
@@ -160,37 +160,37 @@ func GadgetDeploy(args []string, g *libgadget.GadgetContext) error {
 	}
 
 	stagedContainers, err := libgadget.FindStagedContainers(args, append(g.Config.Onboot, g.Config.Services...))
-	
+
 	deployFailed := false
-	
+
 	for _, container := range stagedContainers {
-		
+
 		// stop and delete possible older versions of image/container
 		// not collecting the errors, as errors may be returned
 		// when trying to delete an img/cntnr that was never deployed
-		tmpName := make( []string, 1 )
+		tmpName := make([]string, 1)
 		tmpName[0] = container.Name
-		
+
 		log.Infof("Stopping/deleting older '%s' if applicable", container.Name)
-		
-		if ! g.Verbose {
+
+		if !g.Verbose {
 			log.SetLevel(log.PanicLevel)
 		}
-		
+
 		_ = GadgetStop(tmpName, g)
 		_ = GadgetDelete(tmpName, g)
-		
-		if ! g.Verbose {
+
+		if !g.Verbose {
 			log.SetLevel(log.InfoLevel)
 		}
-		
+
 		err = DeployContainer(client, &container, g)
 		deployFailed = true
 	}
-	
+
 	if deployFailed == true {
 		err = errors.New("Failed to deploy one or more containers")
 	}
-	
+
 	return err
 }

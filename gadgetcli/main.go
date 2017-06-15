@@ -1,14 +1,14 @@
 package main
 
 import (
+	"errors"
 	"flag"
+	"github.com/nextthingco/libgadget"
+	gadgetFormatter "github.com/nextthingco/logrus-gadget-formatter"
+	log "github.com/sirupsen/logrus"
 	"os"
 	"path/filepath"
 	"strings"
-	"errors"
-	"github.com/nextthingco/libgadget"
-	log "github.com/sirupsen/logrus"
-	gadgetFormatter "github.com/nextthingco/logrus-gadget-formatter"
 )
 
 type GadgetCommandFunc func([]string, *libgadget.GadgetContext) error
@@ -19,20 +19,20 @@ type GadgetCommand struct {
 	NeedsConfig bool
 }
 
-var Commands = []GadgetCommand {
-	{ Name: "init",    Function: GadgetInit,    NeedsConfig: false },
-	{ Name: "add",     Function: GadgetAdd,     NeedsConfig: true  },
-	{ Name: "build",   Function: GadgetBuild,   NeedsConfig: true  },
-	{ Name: "deploy",  Function: GadgetDeploy,  NeedsConfig: true  },
-	{ Name: "start",   Function: GadgetStart,   NeedsConfig: true  },
-	{ Name: "stop",    Function: GadgetStop,    NeedsConfig: true  },
-	{ Name: "status",  Function: GadgetStatus,  NeedsConfig: true  },
-	{ Name: "delete",  Function: GadgetDelete,  NeedsConfig: true  },
-	{ Name: "shell",   Function: GadgetShell,   NeedsConfig: false },
-	{ Name: "logs",    Function: GadgetLogs,    NeedsConfig: true  },
-	{ Name: "run",     Function: GadgetRun,     NeedsConfig: false },
-	{ Name: "version", Function: GadgetVersion, NeedsConfig: false },
-	{ Name: "help",    Function: GadgetHelp,    NeedsConfig: false },
+var Commands = []GadgetCommand{
+	{Name: "init", Function: GadgetInit, NeedsConfig: false},
+	{Name: "add", Function: GadgetAdd, NeedsConfig: true},
+	{Name: "build", Function: GadgetBuild, NeedsConfig: true},
+	{Name: "deploy", Function: GadgetDeploy, NeedsConfig: true},
+	{Name: "start", Function: GadgetStart, NeedsConfig: true},
+	{Name: "stop", Function: GadgetStop, NeedsConfig: true},
+	{Name: "status", Function: GadgetStatus, NeedsConfig: true},
+	{Name: "delete", Function: GadgetDelete, NeedsConfig: true},
+	{Name: "shell", Function: GadgetShell, NeedsConfig: false},
+	{Name: "logs", Function: GadgetLogs, NeedsConfig: true},
+	{Name: "run", Function: GadgetRun, NeedsConfig: false},
+	{Name: "version", Function: GadgetVersion, NeedsConfig: false},
+	{Name: "help", Function: GadgetHelp, NeedsConfig: false},
 }
 
 func GadgetVersion(args []string, g *libgadget.GadgetContext) error {
@@ -49,56 +49,56 @@ func GadgetHelp(args []string, g *libgadget.GadgetContext) error {
 }
 
 func FindCommand(name string) (*GadgetCommand, error) {
-	for _,cmd := range Commands {
+	for _, cmd := range Commands {
 		if cmd.Name == name {
-			return &cmd,nil
+			return &cmd, nil
 		}
 	}
 	return nil, errors.New("Failed to find command")
 }
 
 func main() {
-	// Hey, Listen! 
+	// Hey, Listen!
 	// Everything that outputs needs to come after g.Verbose check!
 	flag.Usage = func() {
-		log.Info ("")
+		log.Info("")
 		log.Infof("USAGE: %s [options] COMMAND", filepath.Base(os.Args[0]))
-		log.Info ("")
-		log.Info ("Commands:")
-		log.Info ("  init        Initialize gadget project")
-		log.Info ("  add         Add new container to config")
-		log.Info ("  build       Build container[s]")
-		log.Info ("  deploy      Deploy container[s]")
-		log.Info ("  start       Run container[s]")
-		log.Info ("  stop        Stop running container[s]")
-		log.Info ("  status      Fetch status of container[s]")
-		log.Info ("  delete      Remove container[s] from gadget")
-		log.Info ("  shell       Connect to remote device running GadgetOS")
-		log.Info ("  logs        Fetch logs(stdout) of container[s]")
-		log.Info ("  version     Print version information")
-		log.Info ("  help        Print this message")
-		log.Info ("")
+		log.Info("")
+		log.Info("Commands:")
+		log.Info("  init        Initialize gadget project")
+		log.Info("  add         Add new container to config")
+		log.Info("  build       Build container[s]")
+		log.Info("  deploy      Deploy container[s]")
+		log.Info("  start       Run container[s]")
+		log.Info("  stop        Stop running container[s]")
+		log.Info("  status      Fetch status of container[s]")
+		log.Info("  delete      Remove container[s] from gadget")
+		log.Info("  shell       Connect to remote device running GadgetOS")
+		log.Info("  logs        Fetch logs(stdout) of container[s]")
+		log.Info("  version     Print version information")
+		log.Info("  help        Print this message")
+		log.Info("")
 		log.Infof("Run '%s COMMAND --help' for more information on the command", filepath.Base(os.Args[0]))
-		log.Info ("")
+		log.Info("")
 		log.Infof("Options:")
-		log.Info ("  -C <path>                            ")
-		log.Info ("    	Run in directory (default \".\")  ")
-		log.Info ("  -v	Verbose execution                 ")
-		log.Info ("")
+		log.Info("  -C <path>                            ")
+		log.Info("    	Run in directory (default \".\")  ")
+		log.Info("  -v	Verbose execution                 ")
+		log.Info("")
 	}
 
 	g := libgadget.GadgetContext{}
-	
+
 	flag.BoolVar(&g.Verbose, "v", false, "Verbose execution")
 	flag.StringVar(&g.WorkingDirectory, "C", ".", "Run in directory")
 	flag.Parse()
-	
+
 	var gFormatter *gadgetFormatter.TextFormatter
-	
+
 	if g.Verbose {
 		gFormatter = new(gadgetFormatter.TextFormatter)
 		gFormatter.DisableColors = true
-		
+
 		log.SetLevel(log.DebugLevel)
 	} else {
 		gFormatter = new(gadgetFormatter.TextFormatter)
@@ -108,13 +108,13 @@ func main() {
 		gFormatter.EntryString.InfoLevelString = "I:"
 		gFormatter.EntryString.WarnLevelString = "W:"
 		gFormatter.EntryString.ErrorLevelString = "E:"
-		
+
 		log.SetLevel(log.InfoLevel)
 	}
-	
+
 	log.SetFormatter(gFormatter)
-	
-	// Hey, Listen! 
+
+	// Hey, Listen!
 	// Everything that outputs needs to come after g.Verbose check!
 
 	err := libgadget.RequiredSsh()
@@ -129,9 +129,9 @@ func main() {
 		log.Error("No Command Specified")
 		os.Exit(1)
 	}
-		
+
 	// file command
-	cmd,err := FindCommand(args[0])
+	cmd, err := FindCommand(args[0])
 	if err != nil {
 		flag.Usage()
 		log.WithFields(log.Fields{

@@ -2,24 +2,24 @@ package libgadget
 
 import (
 	"bufio"
-	"errors"
 	"bytes"
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
+	"errors"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"github.com/tmc/scp"
 	"golang.org/x/crypto/ssh"
 	"io/ioutil"
 	"math/rand"
 	"os"
-	"os/user"
 	"os/exec"
-	"runtime"
-	"time"
-	"strings"
+	"os/user"
 	"path/filepath"
-	log "github.com/sirupsen/logrus"
+	"runtime"
+	"strings"
+	"time"
 )
 
 var (
@@ -59,7 +59,6 @@ FwRYLLbqbGByhykSn5ybp/DuSQpH4blitu/fEYOg6QX/I/6zayd+
 	defaultPrivKeyLocation = ""
 	GadgetPrivKeyLocation  = ""
 	GadgetPubKeyLocation   = ""
-	
 )
 
 func PathExists(path string) (bool, error) {
@@ -111,10 +110,10 @@ func RequiredSsh() error {
 	}
 
 	// get proper homedir locations
-	sshLocation = filepath.Join(usr.HomeDir,".ssh")
-	defaultPrivKeyLocation = filepath.Join(sshLocation,"gadget_default_rsa")
-	GadgetPrivKeyLocation = filepath.Join(sshLocation,"gadget_rsa")
-	GadgetPubKeyLocation = filepath.Join(sshLocation,"gadget_rsa.pub")
+	sshLocation = filepath.Join(usr.HomeDir, ".ssh")
+	defaultPrivKeyLocation = filepath.Join(sshLocation, "gadget_default_rsa")
+	GadgetPrivKeyLocation = filepath.Join(sshLocation, "gadget_rsa")
+	GadgetPubKeyLocation = filepath.Join(sshLocation, "gadget_rsa.pub")
 
 	// check OS for IP address
 	if runtime.GOOS == "windows" {
@@ -146,7 +145,7 @@ func RequiredSsh() error {
 		log.WithFields(log.Fields{
 			"function": "RequiredSsh",
 		}).Debug("default private key: ~/.ssh/gadget_default_rsa")
-		
+
 		outBytes := []byte(defaultKey)
 		err = ioutil.WriteFile(defaultPrivKeyLocation, outBytes, 0600)
 		if err != nil {
@@ -158,60 +157,60 @@ func RequiredSsh() error {
 	gadgetPrivExists, err := PathExists(GadgetPrivKeyLocation)
 	if err != nil {
 		log.WithFields(log.Fields{
-			"function": "RequiredSsh",
+			"function":    "RequiredSsh",
 			"keyLocation": GadgetPrivKeyLocation,
-			"error": err,
+			"error":       err,
 		}).Error("something went wrong with gadgetPubExists")
 		return err
 	}
 	gadgetPubExists, err := PathExists(GadgetPubKeyLocation)
 	if err != nil {
 		log.WithFields(log.Fields{
-			"function": "RequiredSsh",
+			"function":    "RequiredSsh",
 			"keyLocation": GadgetPubKeyLocation,
-			"error": err,
+			"error":       err,
 		}).Error("something went wrong with gadgetPubExists")
 		return err
 	}
 
 	if !gadgetPrivExists && !gadgetPubExists {
 		log.Warn("Unable to locate personal gadget ssh keys, generating..")
-		
+
 		log.WithFields(log.Fields{
-			"function": "RequiredSsh",
+			"function":    "RequiredSsh",
 			"keyLocation": GadgetPubKeyLocation,
-			"error": err,
+			"error":       err,
 		}).Debug("private key: ~/.ssh/gadget_rsa[.pub]")
-		
+
 		privkey, pubkey, err := GenGadgetKeys()
 		if err != nil {
 			log.WithFields(log.Fields{
 				"function": "RequiredSsh",
-				"error": err,
+				"error":    err,
 			}).Error("something went wrong with genGadgetKeys")
 			return err
 		}
-		
+
 		log.Info("    private key: ~/.ssh/gadget_rsa")
 		outBytes := []byte(privkey)
 		err = ioutil.WriteFile(GadgetPrivKeyLocation, outBytes, 0600)
 		if err != nil {
 			log.WithFields(log.Fields{
-				"function": "RequiredSsh",
+				"function":    "RequiredSsh",
 				"keyLocation": GadgetPrivKeyLocation,
-				"error": err,
+				"error":       err,
 			}).Error("something went wrong with gadgetPrivKey")
 			return err
 		}
-		
+
 		log.Info("    public key: ~/.ssh/gadget_rsa.pub")
 		outBytes = []byte(pubkey)
 		err = ioutil.WriteFile(GadgetPubKeyLocation, outBytes, 0600)
 		if err != nil {
 			log.WithFields(log.Fields{
-				"function": "RequiredSsh",
+				"function":    "RequiredSsh",
 				"keyLocation": GadgetPrivKeyLocation,
-				"error": err,
+				"error":       err,
 			}).Error("something went wrong with gadgetPrivKey")
 			return err
 		}
@@ -224,9 +223,9 @@ func GadgetLogin(keyLocation string) (*ssh.Client, error) {
 	key, err := ioutil.ReadFile(keyLocation)
 	if err != nil {
 		log.WithFields(log.Fields{
-			"function": "RequiredSsh",
+			"function":    "RequiredSsh",
 			"keyLocation": GadgetPrivKeyLocation,
-			"error": err,
+			"error":       err,
 		}).Error("something went wrong with gadgetPrivKey")
 		return nil, err
 	}
@@ -243,7 +242,7 @@ func GadgetLogin(keyLocation string) (*ssh.Client, error) {
 			ssh.PublicKeys(signer),
 		},
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
-		Timeout: (time.Second * 3),
+		Timeout:         (time.Second * 3),
 	}
 
 	// Connect to the remote server and perform the SSH handshake.
@@ -260,7 +259,7 @@ func GadgetInstallKeys() error {
 	if err != nil {
 		log.WithFields(log.Fields{
 			"function": "GadgetInstallKeys",
-			"file": defaultPrivKeyLocation,
+			"file":     defaultPrivKeyLocation,
 		}).Error("Failed to read private key")
 		return err
 	}
@@ -269,7 +268,7 @@ func GadgetInstallKeys() error {
 	if err != nil {
 		log.WithFields(log.Fields{
 			"function": "GadgetInstallKeys",
-			"file": defaultPrivKeyLocation,
+			"file":     defaultPrivKeyLocation,
 		}).Error("Failed parse private key")
 		return err
 	}
@@ -280,14 +279,14 @@ func GadgetInstallKeys() error {
 			ssh.PublicKeys(signer),
 		},
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
-		Timeout: (time.Second * 3),
+		Timeout:         (time.Second * 3),
 	}
 
 	client, err := ssh.Dial("tcp", ip, config)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"function": "GadgetInstallKeys",
-			"tcp": ip,
+			"tcp":      ip,
 		}).Error("Failed to dial ssh")
 		return err
 	}
@@ -300,22 +299,22 @@ func GadgetInstallKeys() error {
 		client.Close()
 		return err
 	}
-	
+
 	dest := "/root/.ssh/authorized_keys"
 	log.WithFields(log.Fields{
 		"function": "RequiredSsh",
-		"gadget": dest,
+		"gadget":   dest,
 	}).Debug("Installing personal gadget ssh key..")
 
 	err = scp.CopyPath(GadgetPubKeyLocation, dest, session)
 	if _, err := os.Stat(GadgetPubKeyLocation); os.IsNotExist(err) {
 		log.WithFields(log.Fields{
-			"function": "RequiredSsh",
-			"gadget": dest,
+			"function":             "RequiredSsh",
+			"gadget":               dest,
 			"GadgetPubKeyLocation": GadgetPubKeyLocation,
 		}).Error("Public key file does not exist")
 	}
-	
+
 	defer client.Close()
 	return nil
 }
@@ -325,10 +324,10 @@ func EnsureKeys() error {
 	_, err := GadgetLogin(GadgetPrivKeyLocation)
 	if err != nil {
 		log.Warn("  Private key login failed, trying default key")
-		
+
 		log.WithFields(log.Fields{
-			"function": "EnsureKeys",
-			"GadgetPrivKeyLocation": GadgetPrivKeyLocation,
+			"function":               "EnsureKeys",
+			"GadgetPrivKeyLocation":  GadgetPrivKeyLocation,
 			"defaultPrivKeyLocation": defaultPrivKeyLocation,
 		}).Debug("  Private key login failed, trying default key")
 
@@ -344,7 +343,7 @@ func EnsureKeys() error {
 			}).Debug("  Default key login success")
 
 			log.WithFields(log.Fields{
-				"function": "EnsureKeys",
+				"function":             "EnsureKeys",
 				"GadgetPubKeyLocation": GadgetPubKeyLocation,
 			}).Debug("  Public key file does not exist")
 
@@ -378,15 +377,15 @@ func RunRemoteCommand(client *ssh.Client, cmd ...string) (*bytes.Buffer, *bytes.
 	session.Stdout = &outBuffer
 	session.Stderr = &errBuffer
 	err = session.Wait()
-	
+
 	return &outBuffer, &errBuffer, err
 }
 
 func RunLocalCommand(binary string, g *GadgetContext, arguments ...string) (string, string, error) {
 	//~ log.Debugf(binary, arguments...)
-	
+
 	cmd := exec.Command(binary, arguments...)
-	
+
 	cmd.Env = os.Environ()
 
 	stdOutReader, execErr := cmd.StdoutPipe()
@@ -415,15 +414,14 @@ func RunLocalCommand(binary string, g *GadgetContext, arguments ...string) (stri
 	}
 
 	execErr = cmd.Wait()
-	
+
 	return outScanner.Text(), errScanner.Text(), execErr
 }
 
-
 func PrependToStrings(stringArray []string, prefix string) []string {
-	for key,value := range stringArray {
+	for key, value := range stringArray {
 		s := []string{prefix, value}
-		stringArray[key] = strings.Join(s,"")
+		stringArray[key] = strings.Join(s, "")
 	}
 	return stringArray //strings.Join(stringArray, " ")
 }
@@ -434,8 +432,8 @@ func FindStagedContainers(args []string, containers GadgetContainers) (GadgetCon
 
 	// if we have any arguments, we're specifying containers to build
 	if len(args) > 0 {
-		for _,arg := range args {
-			c,err := containers.Find(arg)
+		for _, arg := range args {
+			c, err := containers.Find(arg)
 			if err != nil {
 				log.Errorf("Could not find container: '%s'", arg)
 				unavailableContainers = append(unavailableContainers, arg)

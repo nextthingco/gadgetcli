@@ -1,24 +1,23 @@
-
 package main
 
 import (
-	"testing"
 	"github.com/nextthingco/libgadget"
+	"testing"
 )
 
-func TestGadgetInit(t *testing.T){
-	
+func TestGadgetInit(t *testing.T) {
+
 	// USAGE TEST PREP
 	initContext := libgadget.GadgetContext{
 		WorkingDirectory: ".",
 	}
-	
-	initArgs := []string { "these", "aren't", "used" }
+
+	initArgs := []string{"these", "aren't", "used"}
 	err := GadgetInit(initArgs, &initContext)
 	if err != nil {
 		t.Error("failed to initialize ./gadget.yml for tests")
 	}
-	
+
 	err = initContext.LoadConfig()
 	if err != nil {
 		t.Error("failed to load ./gadget.yml for tests")
@@ -35,5 +34,5 @@ func TestGadgetInit(t *testing.T){
 	if initContext.Config.Onboot[0].Directory != "" {
 		t.Error("./gadget.yml container[hello-world] directory is not empty")
 	}
-	
+
 }
