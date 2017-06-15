@@ -17,6 +17,7 @@ DEPENDS=\
 	github.com/sirupsen/logrus\
 	gopkg.in/cheggaaa/pb.v1\
 	github.com/nextthingco/logrus-gadget-formatter\
+	github.com/gin-gonic/gin\
 
 gadget: genversion $(GADGET_SOURCES) $(VERSION_FILE) $(LIBGADGET_SOURCES)
 	@echo "Building Gadget"

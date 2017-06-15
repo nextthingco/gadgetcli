@@ -90,6 +90,7 @@ func GadgetBuild(args []string, g *libgadget.GadgetContext) error {
 				buildFailed = true
 
 				log.Errorf("Failed to build '%s'", container.Name)
+				log.Warn("Are you sure '%s' is a valid image [and tag]?")
 				log.Warn("Is the docker daemon installed and running?")
 
 				log.WithFields(log.Fields{
