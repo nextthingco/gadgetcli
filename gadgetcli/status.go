@@ -25,8 +25,8 @@ func GadgetStatus(args []string, g *libgadget.GadgetContext) error {
 	statusFailed := false
 	
 	for _, container := range stagedContainers {
-		commandFormat := `docker ps -a --filter=ancestor=%s --format "{{.Image}} {{.Command}} {{.Status}}"`
-		cmd := fmt.Sprintf(commandFormat, container.ImageAlias)
+		commandFormat := `docker ps -a --filter=name=%s --format "{{.Image}} {{.Command}} {{.Status}}"`
+		cmd := fmt.Sprintf(commandFormat, container.Alias)
 		
 		stdout, stderr, err := libgadget.RunRemoteCommand(client, cmd)
 		if err != nil {

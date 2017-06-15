@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"os/exec"
+	"strings"
 	"github.com/nextthingco/libgadget"
 	log "github.com/sirupsen/logrus"
 )
@@ -35,10 +36,14 @@ func GadgetOsInit(args []string, g *libgadget.GadgetContext) error {
 	
 	log.Info("Starting:")
 	
-	for _, container := range g.Config.Onboot {
+	stagedContainers,_ := libgadget.FindStagedContainers(args, append(g.Config.Onboot, g.Config.Services...))
+	for _, container := range stagedContainers {
 		
 		log.Infof("  %s", container.Alias)
-		stdout, stderr, err := libgadget.RunLocalCommand(binary, g, "run", "--restart=on-failure:3", "--rm", container.ImageAlias)
+		
+		commands := strings.Join(container.Command[:]," ")
+
+		stdout, stderr, err := libgadget.RunLocalCommand(binary, g, "start", container.Alias)
 		
 		log.WithFields(log.Fields{
 			"function": "GadgetStart",
@@ -59,46 +64,15 @@ func GadgetOsInit(args []string, g *libgadget.GadgetContext) error {
 				"name": container.Alias,
 				"start-stage": "create",
 			}).Debug("This is likely due to specifying containers for deploying, but trying to start all")
-
-
-			log.Errorf("Failed to start '%s' on Gadget", container.Name)
-			log.Warn("Was it ever deployed?")
 			
-			initFailed = true
-		} else {
-			log.Info("    - started")
-		}
-
-	}
-	
-	for _, container := range g.Config.Services {
-		
-		log.Infof("  %s", container.Alias)
-		stdout, stderr, err := libgadget.RunLocalCommand(binary, g, "run", "--restart=on-failure:3", "--rm", container.ImageAlias)
-		
-		log.WithFields(log.Fields{
-			"function": "GadgetStart",
-			"name": container.Alias,
-			"start-stage": "create",
-		}).Debug(stdout)
-		log.WithFields(log.Fields{
-			"function": "GadgetStart",
-			"name": container.Alias,
-			"start-stage": "create",
-		}).Debug(stderr)
-		
-		if err != nil {			
-			// fail loudly, but continue
-			
-			log.WithFields(log.Fields{
-				"function": "GadgetStart",
-				"name": container.Alias,
-				"start-stage": "create",
-			}).Debug("This is likely due to specifying containers for deploying, but trying to start all")
-
-
-			log.Errorf("Failed to start '%s' on Gadget", container.Name)
-			log.Warn("Was it ever deployed?")
+			log.Errorf("  Failed to start '%s' on Gadget", container.Name)
+			log.Warn("  Potential causes:")
+			log.Warn("  - container was never deployed")
+			if commands != "" {
+				log.Warn("  - conflicting CMD/ENTRYPOINT")
+				log.Warnf("    ['%s' was also supplied with the commands '%s']", container.Name, commands)
+				log.Warn("    [consult the original Dockerfile to rule out conflicting CMD/ENTRYPOINT]")
+			}
 			
 			initFailed = true
 		} else {
