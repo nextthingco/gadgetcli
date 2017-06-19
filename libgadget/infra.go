@@ -53,7 +53,7 @@ FwRYLLbqbGByhykSn5ybp/DuSQpH4blitu/fEYOg6QX/I/6zayd+
 -----END RSA PRIVATE KEY-----
 `
 
-	ip = "192.168.81.1:22"
+    ip = ""
 
 	sshLocation            = ""
 	defaultPrivKeyLocation = ""
@@ -115,10 +115,15 @@ func RequiredSsh() error {
 	GadgetPrivKeyLocation = filepath.Join(sshLocation, "gadget_rsa")
 	GadgetPubKeyLocation = filepath.Join(sshLocation, "gadget_rsa.pub")
 
-	// check OS for IP address
-	if runtime.GOOS == "windows" {
-		ip = "192.168.82.1:22"
-	}
+    present:=false
+    if ip,present=os.LookupEnv("GADGET_ADDR"); present==false {
+        // check OS for IP address
+        if runtime.GOOS == "windows" {
+            ip = "192.168.82.1:22"
+	    } else {
+	        ip = "192.168.81.1:22"
+        }
+    }
 
 	// check/create ~/.ssh
 	sshDirExists, err := PathExists(sshLocation)
