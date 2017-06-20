@@ -60,6 +60,10 @@ tidy:
 	@go fmt ./gadgetosinit
 	@go fmt ./libgadget
 
+clean:
+	@echo "Cleaning"
+	@rm -rf build/ gadget gadget.yml
+
 test: $(GADGET_SOURCES) $(GADGET_SOURCES)
 	@echo "Testing Gadget"
 	@rm -f /tmp/gadget.yml gadgetcli/gadget.yml
