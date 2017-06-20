@@ -34,7 +34,7 @@ genversion:
 	@echo "	BuildDate = \"${BUILD_DATE}\"" >> $(VERSION_FILE)
 	@echo ")" >> $(VERSION_FILE)
 
-gadget_release: $(GADGET_SOURCES) $(LIBGADGET_SOURCES)
+gadget_release: genversion $(GADGET_SOURCES) $(VERSION_FILE) $(LIBGADGET_SOURCES)
 	@echo "Building Gadget Release"
 	@mkdir -p build/linux
 	@mkdir -p build/linux_arm
@@ -47,7 +47,7 @@ gadget_release: $(GADGET_SOURCES) $(LIBGADGET_SOURCES)
 	@GOOS=windows GOARCH=amd64 go build -o build/windows/gadget.exe -ldflags="-s -w" -v ./gadgetcli
 	@GOOS=darwin GOARCH=amd64 go build -o build/darwin/gadget -ldflags="-s -w" -v ./gadgetcli
 
-gadgetosinit_release: $(GADGETOSINIT_SOURCES) $(LIBGADGET_SOURCES)
+gadgetosinit_release: genversion $(GADGET_SOURCES) $(VERSION_FILE) $(LIBGADGET_SOURCES)
 	@echo "Building Gadget Release"
 	@mkdir -p build/linux_arm
 	@mkdir -p build/linux_arm64
@@ -62,7 +62,7 @@ tidy:
 
 clean:
 	@echo "Cleaning"
-	@rm -rf build/ gadget gadget.yml
+	@rm -rf build/ gadget gadget.yml $(VERSION_FILE)
 
 test: $(GADGET_SOURCES) $(GADGET_SOURCES)
 	@echo "Testing Gadget"
