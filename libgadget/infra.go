@@ -372,7 +372,7 @@ func GadgetInstallKeys() error {
 		return err
 	}
 
-	dest := "/root/.ssh/authorized_keys"
+	dest := "/data/root/.ssh/authorized_keys"
 	log.WithFields(log.Fields{
 		"function": "RequiredSsh",
 		"gadget":   dest,
