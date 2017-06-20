@@ -19,11 +19,8 @@ DEPENDS=\
 	github.com/nextthingco/logrus-gadget-formatter\
 	github.com/gin-gonic/gin\
 
-gadget: genversion $(GADGET_SOURCES) $(VERSION_FILE) $(LIBGADGET_SOURCES)
+gadget: libgadget $(GADGET_SOURCES) $(VERSION_FILE) $(LIBGADGET_SOURCES)
 	@echo "Building Gadget"
-	@rm -rf ${GOPATH}/src/github.com/nextthingco/libgadget
-	@cp -r libgadget ${GOPATH}/src/github.com/nextthingco/
-	@go install -ldflags="-X libgadget.Version=$(VERSION) -X libgadget.GitCommit=$(GIT_COMMIT)" -v github.com/nextthingco/libgadget
 	@go build -o gadget -ldflags="-s -w" -v ./gadgetcli
 
 genversion:
@@ -34,7 +31,7 @@ genversion:
 	@echo "	BuildDate = \"${BUILD_DATE}\"" >> $(VERSION_FILE)
 	@echo ")" >> $(VERSION_FILE)
 
-gadget_release: genversion $(GADGET_SOURCES) $(VERSION_FILE) $(LIBGADGET_SOURCES)
+gadget_release: libgadget $(GADGET_SOURCES) $(VERSION_FILE) $(LIBGADGET_SOURCES)
 	@echo "Building Gadget Release"
 	@mkdir -p build/linux
 	@mkdir -p build/linux_arm
@@ -47,12 +44,18 @@ gadget_release: genversion $(GADGET_SOURCES) $(VERSION_FILE) $(LIBGADGET_SOURCES
 	@GOOS=windows GOARCH=amd64 go build -o build/windows/gadget.exe -ldflags="-s -w" -v ./gadgetcli
 	@GOOS=darwin GOARCH=amd64 go build -o build/darwin/gadget -ldflags="-s -w" -v ./gadgetcli
 
-gadgetosinit_release: genversion $(GADGET_SOURCES) $(VERSION_FILE) $(LIBGADGET_SOURCES)
+gadgetosinit_release: libgadget $(GADGET_SOURCES) $(VERSION_FILE) $(LIBGADGET_SOURCES)
 	@echo "Building Gadget Release"
 	@mkdir -p build/linux_arm
 	@mkdir -p build/linux_arm64
 	@GOOS=linux GOARCH=arm go build -o build/linux_arm/gadgetosinit -ldflags="-s -w" ./gadgetosinit
 	@GOOS=linux GOARCH=arm go build -o build/linux_arm64/gadgetosinit -ldflags="-s -w" ./gadgetosinit
+
+libgadget: genversion
+	@echo "Building libgadget"
+	@rm -rf ${GOPATH}/src/github.com/nextthingco/libgadget
+	@cp -r libgadget ${GOPATH}/src/github.com/nextthingco/
+	@go install -ldflags="-X libgadget.Version=$(VERSION) -X libgadget.GitCommit=$(GIT_COMMIT)" -v github.com/nextthingco/libgadget
 
 tidy:
 	@echo "Tidying up sources"
