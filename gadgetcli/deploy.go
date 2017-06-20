@@ -12,6 +12,7 @@ import (
 )
 
 func DeployContainer(client *ssh.Client, container *libgadget.GadgetContainer, g *libgadget.GadgetContext) error {
+	
 	binary, err := exec.LookPath("docker")
 	if err != nil {
 		return err
@@ -120,7 +121,10 @@ func DeployContainer(client *ssh.Client, container *libgadget.GadgetContainer, g
 		"name":         container.Alias,
 		"deploy-stage": "create restarting",
 	}).Debug(stderr)
-
+	
+	// copy the config file over for autostarts
+	libgadget.GadgetInstallConfig(g)
+	
 	return err
 }
 

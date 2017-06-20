@@ -11,14 +11,6 @@ import (
 // Process the build arguments and execute build
 func GadgetOsInit(args []string, g *libgadget.GadgetContext) error {
 
-	//~ libgadget.EnsureKeys()
-
-	//~ client, err := libgadget.GadgetLogin(libgadget.GadgetPrivKeyLocation)
-
-	//~ if err != nil {
-	//~ return err
-	//~ }
-
 	binary, err := exec.LookPath("docker")
 	if err != nil {
 		log.Error("Failed to find local docker binary")

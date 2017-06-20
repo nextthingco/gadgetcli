@@ -88,6 +88,9 @@ func GadgetDelete(args []string, g *libgadget.GadgetContext) error {
 	if deleteFailed {
 		err = errors.New("Failed to delete one or more containers")
 	}
+	
+	// copy the config file over for autostarts
+	libgadget.GadgetInstallConfig(g)
 
 	return err
 }

@@ -259,6 +259,73 @@ func GadgetLogin(keyLocation string) (*ssh.Client, error) {
 	return client, err
 }
 
+func GadgetInstallConfig(g *GadgetContext) error {
+	configLocation := fmt.Sprintf("%s/gadget.yml", g.WorkingDirectory)
+	
+	key, err := ioutil.ReadFile(GadgetPrivKeyLocation)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"function": "GadgetInstallConfig",
+			"file":     GadgetPrivKeyLocation,
+		}).Error("Failed to read private key")
+		return err
+	}
+
+	signer, err := ssh.ParsePrivateKey(key)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"function": "GadgetInstallConfig",
+			"file":     GadgetPrivKeyLocation,
+		}).Error("Failed parse private key")
+		return err
+	}
+
+	config := &ssh.ClientConfig{
+		User: "root",
+		Auth: []ssh.AuthMethod{
+			ssh.PublicKeys(signer),
+		},
+		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+		Timeout:         (time.Second * 3),
+	}
+
+	client, err := ssh.Dial("tcp", ip, config)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"function": "GadgetInstallConfig",
+			"tcp":      ip,
+		}).Error("Failed to dial ssh")
+		return err
+	}
+
+	session, err := client.NewSession()
+	if err != nil {
+		log.WithFields(log.Fields{
+			"function": "GadgetInstallConfig",
+		}).Error("Failed to create new ssh client session")
+		client.Close()
+		return err
+	}
+
+	dest := "/data/gadget.yml"
+	log.WithFields(log.Fields{
+		"function": "GadgetInstallConfig",
+		"gadget":   dest,
+	}).Debug("Installing personal gadget ssh key..")
+
+	err = scp.CopyPath(configLocation, dest, session)
+	if _, err := os.Stat(configLocation); os.IsNotExist(err) {
+		log.WithFields(log.Fields{
+			"function":             "GadgetInstallConfig",
+			"gadget":               dest,
+			"GadgetInstallConfigLocation": configLocation,
+		}).Error("Config file copy failed")
+	}
+
+	defer client.Close()
+	return nil
+}
+
 func GadgetInstallKeys() error {
 	key, err := ioutil.ReadFile(defaultPrivKeyLocation)
 	if err != nil {
