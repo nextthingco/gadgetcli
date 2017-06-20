@@ -89,7 +89,7 @@ func main() {
 
 	g := libgadget.GadgetContext{}
 
-	g.WorkingDirectory = "/etc/"
+	g.WorkingDirectory = "/data/"
 
 	//~ flag.BoolVar(&g.Verbose, "v", false, "Verbose execution")
 	//~ flag.StringVar(&g.WorkingDirectory, "C", ".", "Run in directory")
