@@ -36,6 +36,7 @@ type GadgetContainer struct {
 	Command      []string `yaml:",flow"`
 	Binds        []string `yaml:",flow"`
 	Capabilities []string `yaml:",flow"`
+	Devices      []string `yaml:",flow"`
 	Alias        string   "alias,omitempty"
 	ImageAlias   string   "imagealias,omitempty"
 }
