@@ -3,6 +3,8 @@ GIT_COMMIT=$(shell git rev-parse --short HEAD)
 BUILD_DATE=$(shell date --iso-8601)
 VERSION_FILE=libgadget/version.go
 
+## This is an arbitrary comment to arbitrarily change the commit hash
+
 GADGET_SOURCES=$(shell ls gadgetcli/*.go)
 GADGETOSINIT_SOURCES=$(shell ls gadgetosinit/*.go)
 LIBGADGET_SOURCES=$(shell ls libgadget/*.go)
