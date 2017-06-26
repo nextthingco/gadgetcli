@@ -81,6 +81,7 @@ func ParseConfig(config []byte) (GadgetConfig, error) {
 	// Parse yaml
 	err := yaml.Unmarshal(config, &g)
 	if err != nil {
+		log.Errorf("  gadget.yml syntax error: %v", err)
 		return g, err
 	}
 
@@ -192,7 +193,7 @@ func (g *GadgetContext) LoadConfig() error {
 	}
 
 	if parseerr != nil || cwderr != nil {
-		parseerr = errors.New("Failed to load config")
+		parseerr = errors.New("Failed to parse config")
 		log.Errorf("  Cannot open config file: %v", parseerr)
 	}
 

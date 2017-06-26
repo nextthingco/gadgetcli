@@ -116,31 +116,19 @@ func DeployContainer(client *ssh.Client, container *libgadget.GadgetContainer, g
 	binds := strings.Join(libgadget.PrependToStrings(container.Binds[:], "-v "), " ")
 	caps := strings.Join(libgadget.PrependToStrings(container.Capabilities[:], "--cap-add "), " ")
 	devs := strings.Join(libgadget.PrependToStrings(container.Devices[:], "--device "), " ")
-	
-	nets := ""
-	if container.Net != "" {
-		tmpNet := []string{container.Net}
-		nets = strings.Join(libgadget.PrependToStrings(tmpNet, "--net "), " ")
-	}
-	
 	commands := strings.Join(container.Command[:], " ")
+	
+	tmpNet := []string{container.Net}
+	nets := strings.Join(libgadget.PrependToStrings(tmpNet[:], "--net "), " ")
+	
 	
 	stdout, stderr, err := libgadget.RunRemoteCommand(client, "docker create --name", container.Alias,
 		binds, caps, devs, nets, restart, container.ImageAlias, commands)
 
-	if err != nil {
+	log.Debugf("docker create --name %s %s %s %s %s %s %s %s", container.Alias,
+	binds, caps, devs, nets, restart, container.ImageAlias, commands)
 
-		log.WithFields(log.Fields{
-			"function":     "DeployContainer",
-			"name":         container.Alias,
-			"imagealias":   container.ImageAlias,
-			"deploy-stage": "create",
-			"binds": binds,
-			"caps": caps,
-			"nets": nets,
-			"restart": restart,
-			"commands": commands,
-		}).Debug(stdout)
+	if err != nil {
 		
 		log.Errorf("Failed to set %s to always restart on Gadget", container.Alias)
 		return err

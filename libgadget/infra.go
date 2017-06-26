@@ -526,6 +526,12 @@ func RunLocalCommand(binary string, g *GadgetContext, arguments ...string) (stri
 }
 
 func PrependToStrings(stringArray []string, prefix string) []string {
+	
+	//~ log.Infof("len(stringArray): %d", len(stringArray))
+	if len(stringArray) == 0 || (len(stringArray) == 1 && stringArray[0] == "") {
+		return []string{""}
+	}
+		
 	for key, value := range stringArray {
 		s := []string{prefix, value}
 		stringArray[key] = strings.Join(s, "")
