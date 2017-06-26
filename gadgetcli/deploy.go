@@ -93,25 +93,37 @@ func DeployContainer(client *ssh.Client, container *libgadget.GadgetContainer, g
 	} else if mode == GADGETSERVICE {
 		restart = "--restart=on-failure"
 	}
-
-	//~ stdout, stderr, err := libgadget.RunRemoteCommand(client, "docker",
-	//~ "create",
-	//~ "--name", container.Alias,
-	//~ restart,
-	//~ container.ImageAlias,
-	//~ strings.Join(container.Command[:]," "))
+	
 	
 	binds := strings.Join(libgadget.PrependToStrings(container.Binds[:], "-v "), " ")
 	caps := strings.Join(libgadget.PrependToStrings(container.Capabilities[:], "--cap-add "), " ")
 	devs := strings.Join(libgadget.PrependToStrings(container.Devices[:], "--device "), " ")
-	tmpNet := []string{container.Net}
-	nets := strings.Join(libgadget.PrependToStrings(tmpNet, "--net "), " ")
+	
+	nets := ""
+	if container.Net != "" {
+		tmpNet := []string{container.Net}
+		nets = strings.Join(libgadget.PrependToStrings(tmpNet, "--net "), " ")
+	}
+	
 	commands := strings.Join(container.Command[:], " ")
-
-	stdout, stderr, err := libgadget.RunRemoteCommand(client, "docker create --name", container.Alias, 
+	
+	stdout, stderr, err := libgadget.RunRemoteCommand(client, "docker create --name", container.Alias,
 		binds, caps, devs, nets, restart, container.ImageAlias, commands)
 
 	if err != nil {
+
+		log.WithFields(log.Fields{
+			"function":     "DeployContainer",
+			"name":         container.Alias,
+			"imagealias":   container.ImageAlias,
+			"deploy-stage": "create",
+			"binds": binds,
+			"caps": caps,
+			"nets": nets,
+			"restart": restart,
+			"commands": commands,
+		}).Debug(stdout)
+		
 		log.Errorf("Failed to set %s to always restart on Gadget", container.Alias)
 		return err
 	}

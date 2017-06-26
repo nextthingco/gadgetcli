@@ -106,6 +106,10 @@ func RequiredSsh() error {
 
 	usr, err := user.Current()
 	if err != nil {
+		log.WithFields(log.Fields{
+			"function":    "RequiredSsh",
+			"error":       err,
+		}).Error("Couldn't determine username.")
 		return err
 	}
 
@@ -128,12 +132,20 @@ func RequiredSsh() error {
 	// check/create ~/.ssh
 	sshDirExists, err := PathExists(sshLocation)
 	if err != nil {
+		log.WithFields(log.Fields{
+			"function":    "RequiredSsh",
+			"error":       err,
+		}).Error("Couldn't determine if the ~/.ssh directory exists.")
 		return err
 	}
 
 	if !sshDirExists {
 		err = os.Mkdir(sshLocation, 0644)
 		if err != nil {
+			log.WithFields(log.Fields{
+				"function":    "RequiredSsh",
+				"error":       err,
+			}).Error("Couldn't create the ~/.ssh directory.")
 			return err
 		}
 	}
@@ -141,6 +153,11 @@ func RequiredSsh() error {
 	// check/create ~/.ssh/gadget_default_rsa
 	defaultPrivExists, err := PathExists(defaultPrivKeyLocation)
 	if err != nil {
+		log.WithFields(log.Fields{
+			"function":    "RequiredSsh",
+			"error":       err,
+			"keyLocation": defaultPrivKeyLocation,
+		}).Error("Couldn't determine if the default private key exists.")
 		return err
 	}
 
