@@ -55,26 +55,26 @@ func GadgetOsInit(args []string, g *libgadget.GadgetContext) error {
 		stdout, stderr, err := libgadget.RunLocalCommand(binary, g, "start", container.Alias)
 
 		log.WithFields(log.Fields{
-			"function":    "GadgetStart",
-			"name":        container.Alias,
+			"function": "GadgetStart",
+			"name":     container.Alias,
 		}).Debug(stdout)
 		log.WithFields(log.Fields{
-			"function":    "GadgetStart",
-			"name":        container.Alias,
+			"function": "GadgetStart",
+			"name":     container.Alias,
 		}).Debug(stderr)
 
 		if err != nil {
 			// fail loudly, but continue
 
 			log.WithFields(log.Fields{
-				"function":    "GadgetStart",
-				"name":        container.Alias,
+				"function": "GadgetStart",
+				"name":     container.Alias,
 			}).Debug("This is likely due to specifying containers for deploying, but trying to start all")
 
 			log.Errorf("  Failed to start '%s' on Gadget", container.Name)
 			log.Warn("  Potential causes:")
 			log.Warn("  - container was never deployed")
-			
+
 			if commands != "" {
 				log.Warn("  - conflicting CMD/ENTRYPOINT")
 				log.Warnf("    ['%s' was also supplied with the commands '%s']", container.Name, commands)

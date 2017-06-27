@@ -71,7 +71,7 @@ FwRYLLbqbGByhykSn5ybp/DuSQpH4blitu/fEYOg6QX/I/6zayd+
 -----END RSA PRIVATE KEY-----
 `
 
-    ip = ""
+	ip = ""
 
 	sshLocation            = ""
 	defaultPrivKeyLocation = ""
@@ -125,8 +125,8 @@ func RequiredSsh() error {
 	usr, err := user.Current()
 	if err != nil {
 		log.WithFields(log.Fields{
-			"function":    "RequiredSsh",
-			"error":       err,
+			"function": "RequiredSsh",
+			"error":    err,
 		}).Error("Couldn't determine username.")
 		return err
 	}
@@ -137,22 +137,22 @@ func RequiredSsh() error {
 	GadgetPrivKeyLocation = filepath.Join(sshLocation, "gadget_rsa")
 	GadgetPubKeyLocation = filepath.Join(sshLocation, "gadget_rsa.pub")
 
-    present:=false
-    if ip,present=os.LookupEnv("GADGET_ADDR"); present==false {
-        // check OS for IP address
-        if runtime.GOOS == "windows" {
-            ip = "192.168.82.1:22"
-	    } else {
-	        ip = "192.168.81.1:22"
-        }
-    }
+	present := false
+	if ip, present = os.LookupEnv("GADGET_ADDR"); present == false {
+		// check OS for IP address
+		if runtime.GOOS == "windows" {
+			ip = "192.168.82.1:22"
+		} else {
+			ip = "192.168.81.1:22"
+		}
+	}
 
 	// check/create ~/.ssh
 	sshDirExists, err := PathExists(sshLocation)
 	if err != nil {
 		log.WithFields(log.Fields{
-			"function":    "RequiredSsh",
-			"error":       err,
+			"function": "RequiredSsh",
+			"error":    err,
 		}).Error("Couldn't determine if the ~/.ssh directory exists.")
 		return err
 	}
@@ -161,8 +161,8 @@ func RequiredSsh() error {
 		err = os.Mkdir(sshLocation, 0644)
 		if err != nil {
 			log.WithFields(log.Fields{
-				"function":    "RequiredSsh",
-				"error":       err,
+				"function": "RequiredSsh",
+				"error":    err,
 			}).Error("Couldn't create the ~/.ssh directory.")
 			return err
 		}
@@ -296,7 +296,7 @@ func GadgetLogin(keyLocation string) (*ssh.Client, error) {
 
 func GadgetInstallConfig(g *GadgetContext) error {
 	configLocation := fmt.Sprintf("%s/gadget.yml", g.WorkingDirectory)
-	
+
 	key, err := ioutil.ReadFile(GadgetPrivKeyLocation)
 	if err != nil {
 		log.WithFields(log.Fields{
@@ -351,8 +351,8 @@ func GadgetInstallConfig(g *GadgetContext) error {
 	err = scp.CopyPath(configLocation, dest, session)
 	if _, err := os.Stat(configLocation); os.IsNotExist(err) {
 		log.WithFields(log.Fields{
-			"function":             "GadgetInstallConfig",
-			"gadget":               dest,
+			"function":                    "GadgetInstallConfig",
+			"gadget":                      dest,
 			"GadgetInstallConfigLocation": configLocation,
 		}).Error("Config file copy failed")
 	}
@@ -526,12 +526,12 @@ func RunLocalCommand(binary string, g *GadgetContext, arguments ...string) (stri
 }
 
 func PrependToStrings(stringArray []string, prefix string) []string {
-	
+
 	//~ log.Infof("len(stringArray): %d", len(stringArray))
 	if len(stringArray) == 0 || (len(stringArray) == 1 && stringArray[0] == "") {
 		return []string{""}
 	}
-		
+
 	for key, value := range stringArray {
 		s := []string{prefix, value}
 		stringArray[key] = strings.Join(s, "")

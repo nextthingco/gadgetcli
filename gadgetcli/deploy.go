@@ -30,7 +30,7 @@ import (
 )
 
 func DeployContainer(client *ssh.Client, container *libgadget.GadgetContainer, g *libgadget.GadgetContext) error {
-	
+
 	binary, err := exec.LookPath("docker")
 	if err != nil {
 		return err
@@ -111,25 +111,31 @@ func DeployContainer(client *ssh.Client, container *libgadget.GadgetContainer, g
 	} else if mode == GADGETSERVICE {
 		restart = "--restart=on-failure"
 	}
-	
-	
+
+	tmpString := []string{container.Net}
+	net := strings.Join(libgadget.PrependToStrings(tmpString[:], "--net "), " ")
+
+	tmpString = []string{container.PID}
+	pid := strings.Join(libgadget.PrependToStrings(tmpString[:], "--pid "), " ")
+
+	readOnly := ""
+	if container.Readonly {
+		readOnly = "--read-only"
+	}
+
 	binds := strings.Join(libgadget.PrependToStrings(container.Binds[:], "-v "), " ")
 	caps := strings.Join(libgadget.PrependToStrings(container.Capabilities[:], "--cap-add "), " ")
 	devs := strings.Join(libgadget.PrependToStrings(container.Devices[:], "--device "), " ")
 	commands := strings.Join(container.Command[:], " ")
-	
-	tmpNet := []string{container.Net}
-	nets := strings.Join(libgadget.PrependToStrings(tmpNet[:], "--net "), " ")
-	
-	
+
 	stdout, stderr, err := libgadget.RunRemoteCommand(client, "docker create --name", container.Alias,
-		binds, caps, devs, nets, restart, container.ImageAlias, commands)
+		net, pid, readOnly, binds, caps, devs, restart, container.ImageAlias, commands)
 
 	log.Debugf("docker create --name %s %s %s %s %s %s %s %s", container.Alias,
-	binds, caps, devs, nets, restart, container.ImageAlias, commands)
+		net, pid, readOnly, binds, caps, devs, restart, container.ImageAlias, commands)
 
 	if err != nil {
-		
+
 		log.Errorf("Failed to set %s to always restart on Gadget", container.Alias)
 		return err
 	}
@@ -144,10 +150,10 @@ func DeployContainer(client *ssh.Client, container *libgadget.GadgetContainer, g
 		"name":         container.Alias,
 		"deploy-stage": "create restarting",
 	}).Debug(stderr)
-	
+
 	// copy the config file over for autostarts
 	libgadget.GadgetInstallConfig(g)
-	
+
 	return err
 }
 
