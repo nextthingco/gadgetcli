@@ -34,11 +34,19 @@ func GadgetShell(args []string, g *libgadget.GadgetContext) error {
 	client, err := libgadget.GadgetLogin(libgadget.GadgetPrivKeyLocation)
 
 	if err != nil {
+		log.WithFields(log.Fields{
+			"function":    "GadgetShell",
+			"shell-stage": "gadget login",
+		}).Debugf("%v", err)
 		return err
 	}
 
 	session, err := client.NewSession()
 	if err != nil {
+		log.WithFields(log.Fields{
+			"function":    "GadgetShell",
+			"shell-stage": "new session",
+		}).Debugf("%v", err)
 		return err
 	}
 
@@ -47,28 +55,48 @@ func GadgetShell(args []string, g *libgadget.GadgetContext) error {
 	session.Stdin = os.Stdin
 
 	modes := ssh.TerminalModes{
-		ssh.ECHO:   1, // disable echoing
-		ssh.ECHONL: 1,
+		ssh.ECHO:   0, // disable echoing
+		ssh.ECHONL: 0,
+/* 		ssh.ONLCR: 1,
+		ssh.ONLRET: 1, */
+		ssh.IGNCR: 1,
 	}
 
 	if err := session.RequestPty("xterm", 25, 80, modes); err != nil {
 		session.Close()
+		log.WithFields(log.Fields{
+			"function":    "GadgetShell",
+			"shell-stage": "request pty",
+		}).Debugf("%v", err)
 		return err
 	}
 
 	if err := session.Shell(); err != nil {
+		log.WithFields(log.Fields{
+			"function":    "GadgetShell",
+			"shell-stage": "session.Shell",
+		}).Debugf("%v", err)
 		return err
 	}
 
 	log.WithFields(log.Fields{
 		"function": "GadgetShell",
 	}).Debug("Entering shell..")
-
-	oldState, err := terminal.MakeRaw(0)
-	if err != nil {
-		return err
+	
+	if terminal.IsTerminal(0) {
+		oldState, err := terminal.MakeRaw(0)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"function":    "GadgetShell",
+				"shell-stage": "terminal.MakeRaw",
+				
+			}).Debugf("%v", err)
+			return err
+		}
+		defer terminal.Restore(0, oldState)
+	} else {
+		log.Warn("This doesn't look like a real terminal. The shell may exhibit some strange behaviour.")
 	}
-	defer terminal.Restore(0, oldState)
 
 	session.Wait()
 

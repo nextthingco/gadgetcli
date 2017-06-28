@@ -2,6 +2,7 @@ gadgetcli/gadget
 gadgetcli/gadgetcli
 gadgetosinit/gadgetosinit
 /gadget
+/gadget.exe
 /build/
 libgadget/version.go
 gadget.yml
