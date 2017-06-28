@@ -24,6 +24,7 @@ import (
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/terminal"
 	"os"
+	"runtime"
 )
 
 // Process the build arguments and execute build
@@ -53,13 +54,18 @@ func GadgetShell(args []string, g *libgadget.GadgetContext) error {
 	session.Stdout = os.Stdout
 	session.Stderr = os.Stderr
 	session.Stdin = os.Stdin
-
+	
+	
 	modes := ssh.TerminalModes{
-		ssh.ECHO:   0, // disable echoing
-		ssh.ECHONL: 0,
-/* 		ssh.ONLCR: 1,
-		ssh.ONLRET: 1, */
-		ssh.IGNCR: 1,
+		ssh.ECHO:   1, // disable echoing
+		ssh.ECHONL: 1,
+	}
+	if runtime.GOOS == "windows" {
+		modes = ssh.TerminalModes{
+			ssh.ECHO:   0, // disable echoing
+			ssh.ECHONL: 0,
+			ssh.IGNCR: 1,
+		}
 	}
 
 	if err := session.RequestPty("xterm", 25, 80, modes); err != nil {
