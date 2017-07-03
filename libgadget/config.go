@@ -1,14 +1,32 @@
+/*
+This file is part of the Gadget command-line tools.
+Copyright (C) 2017 Next Thing Co.
+
+Gadget is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 2 of the License, or
+(at your option) any later version.
+
+Gadget is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Gadget.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 package libgadget
 
 import (
 	"errors"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime"
-	log "github.com/sirupsen/logrus"
 )
 
 type GadgetContext struct {
@@ -36,6 +54,7 @@ type GadgetContainer struct {
 	Command      []string `yaml:",flow"`
 	Binds        []string `yaml:",flow"`
 	Capabilities []string `yaml:",flow"`
+	Devices      []string `yaml:",flow"`
 	Alias        string   "alias,omitempty"
 	ImageAlias   string   "imagealias,omitempty"
 }
@@ -48,9 +67,9 @@ func TemplateConfig(gName, gUu1, gUu2 string) GadgetConfig {
 		Type: "docker",
 		Onboot: []GadgetContainer{
 			{
-				Name:    "hello-world",
-				Image:   "armhf/hello-world",
-				UUID:    gUu2,
+				Name:  "hello-world",
+				Image: "arm32v7/hello-world",
+				UUID:  gUu2,
 			},
 		},
 	}
@@ -62,17 +81,18 @@ func ParseConfig(config []byte) (GadgetConfig, error) {
 	// Parse yaml
 	err := yaml.Unmarshal(config, &g)
 	if err != nil {
+		log.Errorf("  gadget.yml syntax error: %v", err)
 		return g, err
 	}
 
 	return g, nil
 }
 
-func CleanConfig( g GadgetConfig ) GadgetConfig {
-	
+func CleanConfig(g GadgetConfig) GadgetConfig {
+
 	// helper function to remove hidden config
 	// items before writing the struct out
-	
+
 	for i := range g.Onboot {
 		g.Onboot[i].Alias = ""
 		g.Onboot[i].ImageAlias = ""
@@ -82,8 +102,8 @@ func CleanConfig( g GadgetConfig ) GadgetConfig {
 		g.Services[i].Alias = ""
 		g.Services[i].ImageAlias = ""
 	}
-	
-	return g	
+
+	return g
 }
 
 // helper function for walkup, determines if cwd is '/'
@@ -171,19 +191,19 @@ func (g *GadgetContext) LoadConfig() error {
 		service.ImageAlias = fmt.Sprintf("%s-img", service.Alias)
 		g.Config.Services[index] = service
 	}
-	
-	
+
 	if parseerr != nil || cwderr != nil {
-		parseerr = errors.New("Failed to load config")
+		parseerr = errors.New("Failed to parse config")
 		log.Errorf("  Cannot open config file: %v", parseerr)
 	}
-	
+
 	return parseerr
 }
+
 type GadgetContainers []GadgetContainer
 
 func (containers GadgetContainers) Find(name string) (GadgetContainer, error) {
-	for _,container := range containers {
+	for _, container := range containers {
 		if container.Name == name {
 			return container, nil
 		}
