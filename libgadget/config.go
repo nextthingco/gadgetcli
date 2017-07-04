@@ -49,7 +49,7 @@ type GadgetContainer struct {
 	Image        string
 	Directory    string
 	Net          string
-	PID          string
+	PID          string   "pid,omitempty"
 	Readonly     bool
 	Command      []string `yaml:",flow"`
 	Binds        []string `yaml:",flow"`
