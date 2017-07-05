@@ -127,6 +127,11 @@ func DeployContainer(client *ssh.Client, container *libgadget.GadgetContainer, g
 	caps := strings.Join(libgadget.PrependToStrings(container.Capabilities[:], "--cap-add "), " ")
 	devs := strings.Join(libgadget.PrependToStrings(container.Devices[:], "--device "), " ")
 	commands := strings.Join(container.Command[:], " ")
+	
+	// remove the old container,
+	// there's a possible fault in this work flow, if someone changes the name
+	// of a container in the .yml, and pushes, the old container won't be removed
+	_, _, _ = libgadget.RunRemoteCommand(client, "docker rm %s", container.Alias )
 
 	stdout, stderr, err := libgadget.RunRemoteCommand(client, "docker create --name", container.Alias,
 		net, pid, readOnly, binds, caps, devs, restart, container.ImageAlias, commands)
@@ -211,7 +216,7 @@ func GadgetDeploy(args []string, g *libgadget.GadgetContext) error {
 		}
 
 		_ = GadgetStop(tmpName, g)
-		_ = GadgetDelete(tmpName, g)
+		//~ _ = GadgetDelete(tmpName, g)
 
 		if !g.Verbose {
 			log.SetLevel(log.InfoLevel)
