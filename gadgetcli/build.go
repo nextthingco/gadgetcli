@@ -50,7 +50,7 @@ func GadgetBuild(args []string, g *libgadget.GadgetContext) error {
 
 	for _, container := range stagedContainers {
 		log.Infof("  '%s'", container.Name)
-
+		
 		// use local directory for build
 		if container.Directory != "" {
 			containerDirectory := fmt.Sprintf("%s/%s", g.WorkingDirectory, container.Directory)

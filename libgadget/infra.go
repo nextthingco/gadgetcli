@@ -489,7 +489,7 @@ func RunRemoteCommand(client *ssh.Client, cmd ...string) (*bytes.Buffer, *bytes.
 }
 
 func RunLocalCommand(binary string, g *GadgetContext, arguments ...string) (string, string, error) {
-	//~ log.Debugf(binary, arguments...)
+	log.Debugf("Calling %s %s", binary, arguments)
 
 	cmd := exec.Command(binary, arguments...)
 
@@ -497,14 +497,15 @@ func RunLocalCommand(binary string, g *GadgetContext, arguments ...string) (stri
 
 	stdOutReader, execErr := cmd.StdoutPipe()
 	stdErrReader, execErr := cmd.StderrPipe()
+	
 	outScanner := bufio.NewScanner(stdOutReader)
 	errScanner := bufio.NewScanner(stdErrReader)
-
-	// goroutine to print stdout and stderr
+	
+	cmdReturned := 0
+	
+	// goroutine to print stdout and stderr [doesn't quite work]
 	go func() {
-		// TODO: goroutine gets launched and never exits.
 		for {
-			// TODO: add a check here to only print stdout if verbose
 			if g.Verbose && outScanner.Scan() {
 				log.Debugf(string(outScanner.Text()))
 			}
@@ -512,16 +513,17 @@ func RunLocalCommand(binary string, g *GadgetContext, arguments ...string) (stri
 			if errScanner.Scan() {
 				log.Errorf(string(errScanner.Text()))
 			}
+			
+			if cmdReturned == 1 {
+				log.Warnf("cmdReturned\n")
+				break
+			}
 		}
 	}()
-
-	execErr = cmd.Start()
-	if execErr != nil {
-		return outScanner.Text(), errScanner.Text(), execErr
-	}
-
-	execErr = cmd.Wait()
-
+	
+	execErr = cmd.Run()
+	cmdReturned = 1
+	
 	return outScanner.Text(), errScanner.Text(), execErr
 }
 
