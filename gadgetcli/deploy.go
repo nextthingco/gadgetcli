@@ -100,8 +100,7 @@ func DeployContainer(client *ssh.Client, container *libgadget.GadgetContainer, g
 		log.Debug("Closing session")
 	}
 	session.Close()
-
-	//~ restart := "--restart=on-failure:3"
+	
 	restart := ""
 	mode, err := FindRunMode(container.UUID, g.Config.Onboot, g.Config.Services)
 	if err != nil {
@@ -127,18 +126,28 @@ func DeployContainer(client *ssh.Client, container *libgadget.GadgetContainer, g
 	caps := strings.Join(libgadget.PrependToStrings(container.Capabilities[:], "--cap-add "), " ")
 	devs := strings.Join(libgadget.PrependToStrings(container.Devices[:], "--device "), " ")
 	commands := strings.Join(container.Command[:], " ")
-	
-	// remove the old container,
-	// there's a possible fault in this work flow, if someone changes the name
-	// of a container in the .yml, and pushes, the old container won't be removed
-	_, _, _ = libgadget.RunRemoteCommand(client, "docker rm %s", container.Alias )
 
 	stdout, stderr, err := libgadget.RunRemoteCommand(client, "docker create --name", container.Alias,
 		net, pid, readOnly, binds, caps, devs, restart, container.ImageAlias, commands)
 
 	log.Debugf("docker create --name %s %s %s %s %s %s %s %s", container.Alias,
 		net, pid, readOnly, binds, caps, devs, restart, container.ImageAlias, commands)
+	
+	
+	// delete image danglers
+	err = GadgetRmiDanglers( g)
 
+	log.WithFields(log.Fields{
+		"function":     "GadgetDelete",
+		"name":         container.Alias,
+		"delete-stage": "rmi (danglers)",
+	}).Debug(stdout)
+	log.WithFields(log.Fields{
+		"function":     "GadgetDelete",
+		"name":         container.Alias,
+		"delete-stage": "rmi (danglers)",
+	}).Debug(stderr)
+	
 	if err != nil {
 
 		log.Errorf("Failed to set %s to always restart on Gadget", container.Alias)
@@ -216,7 +225,7 @@ func GadgetDeploy(args []string, g *libgadget.GadgetContext) error {
 		}
 
 		_ = GadgetStop(tmpName, g)
-		//~ _ = GadgetDelete(tmpName, g)
+		_ = GadgetRm(tmpName, g)
 
 		if !g.Verbose {
 			log.SetLevel(log.InfoLevel)

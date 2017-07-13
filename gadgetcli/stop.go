@@ -25,6 +25,63 @@ import (
 )
 
 // Process the build arguments and execute build
+func GadgetRm(args []string, g *libgadget.GadgetContext) error {
+
+	libgadget.EnsureKeys()
+
+	client, err := libgadget.GadgetLogin(libgadget.GadgetPrivKeyLocation)
+
+	if err != nil {
+		return err
+	}
+
+	log.Info("Removing:")
+	stagedContainers, _ := libgadget.FindStagedContainers(args, append(g.Config.Onboot, g.Config.Services...))
+
+	var rmFailed bool = false
+
+	for _, container := range stagedContainers {
+		log.Infof("  %s", container.Alias)
+
+		stdout, stderr, err := libgadget.RunRemoteCommand(client, "docker rm", container.Alias)
+
+		log.WithFields(log.Fields{
+		"function": "GadgetRm",
+		"name": container.Alias,
+		"stop-stage": "rm",
+		}).Debug(stdout)
+		log.WithFields(log.Fields{
+		"function": "GadgetRm",
+		"name": container.Alias,
+		"stop-stage": "rm",
+		}).Debug(stderr)
+
+		if err != nil {
+
+		rmFailed = true
+
+		log.WithFields(log.Fields{
+		"function": "GadgetRm",
+		"name": container.Alias,
+		"stop-stage": "rm",
+		}).Debug("This is likely due to specifying containers for a previous operation, but trying to stop all")
+
+		log.Errorf("Failed to stop '%s' on Gadget", container.Name)
+		log.Warn("Was it ever started?")
+
+		} else {
+		log.Info("  - stopped")
+		}
+	}
+
+	if rmFailed {
+		err = errors.New("A problem was encountered in GadgetStop")
+	}
+
+	return err
+}
+
+// Process the build arguments and execute build
 func GadgetStop(args []string, g *libgadget.GadgetContext) error {
 
 	libgadget.EnsureKeys()
@@ -71,36 +128,6 @@ func GadgetStop(args []string, g *libgadget.GadgetContext) error {
 			log.Debug("Or stop otherwise failed")
 
 		}
-
-		//~ stdout, stderr, err = libgadget.RunRemoteCommand(client, "docker rm", container.Alias)
-
-		//~ log.WithFields(log.Fields{
-		//~ "function": "GadgetStart",
-		//~ "name": container.Alias,
-		//~ "stop-stage": "rm",
-		//~ }).Debug(stdout)
-		//~ log.WithFields(log.Fields{
-		//~ "function": "GadgetStart",
-		//~ "name": container.Alias,
-		//~ "stop-stage": "rm",
-		//~ }).Debug(stderr)
-
-		//~ if err != nil {
-
-		//~ stopFailed = true
-
-		//~ log.WithFields(log.Fields{
-		//~ "function": "GadgetStop",
-		//~ "name": container.Alias,
-		//~ "stop-stage": "rm",
-		//~ }).Debug("This is likely due to specifying containers for a previous operation, but trying to stop all")
-
-		//~ log.Errorf("Failed to stop '%s' on Gadget", container.Name)
-		//~ log.Warn("Was it ever started?")
-
-		//~ } else {
-		//~ log.Info("  - stopped")
-		//~ }
 	}
 
 	if stopFailed {
