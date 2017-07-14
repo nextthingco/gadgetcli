@@ -468,6 +468,25 @@ func EnsureKeys() error {
 	return err
 }
 
+func EnsureDocker(binary string, g *GadgetContext) error {
+
+	stdout, stderr, err := RunLocalCommand(binary,
+	g,
+	"version")
+
+	if g.Verbose {
+		log.WithFields(log.Fields{
+			"function": "EnsureDocker",
+		}).Debugf(stdout)
+
+		log.WithFields(log.Fields{
+			"function":             "EnsureDocker",
+		}).Debugf(stderr)
+	}
+	
+	return err
+}
+
 func RunRemoteCommand(client *ssh.Client, cmd ...string) (*bytes.Buffer, *bytes.Buffer, error) {
 	session, err := client.NewSession()
 	if err != nil {
@@ -489,39 +508,55 @@ func RunRemoteCommand(client *ssh.Client, cmd ...string) (*bytes.Buffer, *bytes.
 }
 
 func RunLocalCommand(binary string, g *GadgetContext, arguments ...string) (string, string, error) {
-	//~ log.Debugf(binary, arguments...)
+	log.Debugf("Calling %s %s", binary, arguments)
 
 	cmd := exec.Command(binary, arguments...)
 
 	cmd.Env = os.Environ()
 
 	stdOutReader, execErr := cmd.StdoutPipe()
+	if execErr != nil {
+		log.Debugf("Couldn't connect to cmd.StdoutPipe()")
+	}
+	
 	stdErrReader, execErr := cmd.StderrPipe()
+	if execErr != nil {
+		log.Debugf("Couldn't connect to cmd.StderrPipe()")
+	}
+	
 	outScanner := bufio.NewScanner(stdOutReader)
 	errScanner := bufio.NewScanner(stdErrReader)
-
-	// goroutine to print stdout and stderr
-	go func() {
-		// TODO: goroutine gets launched and never exits.
-		for {
-			// TODO: add a check here to only print stdout if verbose
-			if g.Verbose && outScanner.Scan() {
+	
+	// goroutines to print stdout and stderr [doesn't quite work]
+	go func(){
+		if g.Verbose {
+			for outScanner.Scan(){
 				log.Debugf(string(outScanner.Text()))
 			}
-			_ = outScanner.Scan()
-			if errScanner.Scan() {
-				log.Errorf(string(errScanner.Text()))
+		} else {
+			for outScanner.Scan(){
+				if strings.Contains(outScanner.Text(), "Step "){
+					log.Infof("    %s",string(outScanner.Text()))
+				}
 			}
 		}
 	}()
-
-	execErr = cmd.Start()
-	if execErr != nil {
-		return outScanner.Text(), errScanner.Text(), execErr
+	
+	printedStderr := false
+	
+	go func(){
+		for errScanner.Scan(){
+			log.Warnf(string(errScanner.Text()))
+			printedStderr = true
+		}
+	}()
+	
+	execErr = cmd.Run()
+	
+	if printedStderr && ! g.Verbose {
+		log.Warn("Use `gadget -v <command>` for more info.")
 	}
-
-	execErr = cmd.Wait()
-
+	
 	return outScanner.Text(), errScanner.Text(), execErr
 }
 

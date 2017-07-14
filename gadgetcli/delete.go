@@ -25,6 +25,90 @@ import (
 )
 
 // Process the build arguments and execute build
+func GadgetRmi(args []string, g *libgadget.GadgetContext) error {
+
+	libgadget.EnsureKeys()
+
+	client, err := libgadget.GadgetLogin(libgadget.GadgetPrivKeyLocation)
+
+	if err != nil {
+		return err
+	}
+
+	log.Info("Removing image:")
+
+	stagedContainers, _ := libgadget.FindStagedContainers(args, append(g.Config.Onboot, g.Config.Services...))
+
+	rmiFailed := false
+
+	for _, container := range stagedContainers {
+		log.Infof("  %s", container.ImageAlias)
+
+		stdout, stderr, err := libgadget.RunRemoteCommand(client, "docker", "rmi", container.ImageAlias)
+
+		log.WithFields(log.Fields{
+			"function":     "GadgetRmi",
+			"name":         container.Alias,
+			"delete-stage": "rmi",
+		}).Debug(stdout)
+		log.WithFields(log.Fields{
+			"function":     "GadgetRmi",
+			"name":         container.Alias,
+			"delete-stage": "rmi",
+		}).Debug(stderr)
+
+		if err != nil {
+
+			log.WithFields(log.Fields{
+				"function":     "GadgetRmi",
+				"name":         container.Alias,
+				"delete-stage": "rmi",
+			}).Debug("This is likely due to specifying containers for a previous stage, but trying to remove all")
+
+			log.Error("Failed to remove image on Gadget")
+			log.Warn("Was the image ever deployed?")
+
+			rmiFailed = true
+		}
+
+	}
+
+	if rmiFailed {
+		err = errors.New("Failed to delete one or more containers")
+	}
+
+	return err
+}
+
+// Process the build arguments and execute build
+func GadgetRmiDanglers(g *libgadget.GadgetContext) error {
+
+	libgadget.EnsureKeys()
+
+	client, err := libgadget.GadgetLogin(libgadget.GadgetPrivKeyLocation)
+
+	if err != nil {
+		return err
+	}
+
+	log.Debug("Removing danglers:")
+	
+	// not checking for error, as it's bound to fail when there are no dangles
+	stdout, stderr, _ := libgadget.RunRemoteCommand(client, "docker", "rmi", `$(docker images -q --filter "dangling=true")`)
+
+	log.WithFields(log.Fields{
+		"function":     "GadgetRmiDangle",
+		"delete-stage": "rmi",
+	}).Debug(stdout)
+	log.WithFields(log.Fields{
+		"function":     "GadgetRmiDangle",
+		"delete-stage": "rmi",
+	}).Debug(stderr)
+
+	return err
+}
+
+// Process the build arguments and execute build
 func GadgetDelete(args []string, g *libgadget.GadgetContext) error {
 
 	libgadget.EnsureKeys()
@@ -43,38 +127,23 @@ func GadgetDelete(args []string, g *libgadget.GadgetContext) error {
 
 	for _, container := range stagedContainers {
 		log.Infof("  %s", container.ImageAlias)
-
+		
+		// delete container
 		stdout, stderr, err := libgadget.RunRemoteCommand(client, "docker rm", container.Alias)
 
 		log.WithFields(log.Fields{
-			"function":   "GadgetStart",
+			"function":   "GadgetDelete",
 			"name":       container.Alias,
 			"stop-stage": "rm",
 		}).Debug(stdout)
 		log.WithFields(log.Fields{
-			"function":   "GadgetStart",
+			"function":   "GadgetDelete",
 			"name":       container.Alias,
 			"stop-stage": "rm",
 		}).Debug(stderr)
-
-		//~ if err != nil {
-
-		//~ stopFailed = true
-
-		//~ log.WithFields(log.Fields{
-		//~ "function": "GadgetStop",
-		//~ "name": container.Alias,
-		//~ "stop-stage": "rm",
-		//~ }).Debug("This is likely due to specifying containers for a previous operation, but trying to stop all")
-
-		//~ log.Errorf("Failed to stop '%s' on Gadget", container.Name)
-		//~ log.Warn("Was it ever started?")
-
-		//~ } else {
-		//~ log.Info("  - stopped")
-		//~ }
-
-		stdout, stderr, err = libgadget.RunRemoteCommand(client, "docker", "rmi", container.ImageAlias)
+		
+		// delete image
+		err = GadgetRmi(args, g)
 
 		log.WithFields(log.Fields{
 			"function":     "GadgetDelete",
@@ -85,6 +154,20 @@ func GadgetDelete(args []string, g *libgadget.GadgetContext) error {
 			"function":     "GadgetDelete",
 			"name":         container.Alias,
 			"delete-stage": "rmi",
+		}).Debug(stdout)
+		
+		// delete image danglers
+		err = GadgetRmiDanglers(g)
+
+		log.WithFields(log.Fields{
+			"function":     "GadgetDelete",
+			"name":         container.Alias,
+			"delete-stage": "rmi (danglers)",
+		}).Debug(stdout)
+		log.WithFields(log.Fields{
+			"function":     "GadgetDelete",
+			"name":         container.Alias,
+			"delete-stage": "rmi (danglers)",
 		}).Debug(stderr)
 
 		if err != nil {

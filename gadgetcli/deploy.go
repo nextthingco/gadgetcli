@@ -100,8 +100,7 @@ func DeployContainer(client *ssh.Client, container *libgadget.GadgetContainer, g
 		log.Debug("Closing session")
 	}
 	session.Close()
-
-	//~ restart := "--restart=on-failure:3"
+	
 	restart := ""
 	mode, err := FindRunMode(container.UUID, g.Config.Onboot, g.Config.Services)
 	if err != nil {
@@ -133,7 +132,22 @@ func DeployContainer(client *ssh.Client, container *libgadget.GadgetContainer, g
 
 	log.Debugf("docker create --name %s %s %s %s %s %s %s %s", container.Alias,
 		net, pid, readOnly, binds, caps, devs, restart, container.ImageAlias, commands)
+	
+	
+	// delete image danglers
+	err = GadgetRmiDanglers( g)
 
+	log.WithFields(log.Fields{
+		"function":     "GadgetDelete",
+		"name":         container.Alias,
+		"delete-stage": "rmi (danglers)",
+	}).Debug(stdout)
+	log.WithFields(log.Fields{
+		"function":     "GadgetDelete",
+		"name":         container.Alias,
+		"delete-stage": "rmi (danglers)",
+	}).Debug(stderr)
+	
 	if err != nil {
 
 		log.Errorf("Failed to set %s to always restart on Gadget", container.Alias)
@@ -211,7 +225,7 @@ func GadgetDeploy(args []string, g *libgadget.GadgetContext) error {
 		}
 
 		_ = GadgetStop(tmpName, g)
-		_ = GadgetDelete(tmpName, g)
+		_ = GadgetRm(tmpName, g)
 
 		if !g.Verbose {
 			log.SetLevel(log.InfoLevel)
