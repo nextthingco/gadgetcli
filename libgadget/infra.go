@@ -468,6 +468,25 @@ func EnsureKeys() error {
 	return err
 }
 
+func EnsureDocker(binary string, g *GadgetContext) error {
+
+	stdout, stderr, err := RunLocalCommand(binary,
+	g,
+	"version")
+
+	if g.Verbose {
+		log.WithFields(log.Fields{
+			"function": "EnsureDocker",
+		}).Debugf(stdout)
+
+		log.WithFields(log.Fields{
+			"function":             "EnsureDocker",
+		}).Debugf(stderr)
+	}
+	
+	return err
+}
+
 func RunRemoteCommand(client *ssh.Client, cmd ...string) (*bytes.Buffer, *bytes.Buffer, error) {
 	session, err := client.NewSession()
 	if err != nil {
@@ -496,33 +515,47 @@ func RunLocalCommand(binary string, g *GadgetContext, arguments ...string) (stri
 	cmd.Env = os.Environ()
 
 	stdOutReader, execErr := cmd.StdoutPipe()
+	if execErr != nil {
+		log.Debugf("Couldn't connect to cmd.StdoutPipe()")
+	}
+	
 	stdErrReader, execErr := cmd.StderrPipe()
+	if execErr != nil {
+		log.Debugf("Couldn't connect to cmd.StderrPipe()")
+	}
 	
 	outScanner := bufio.NewScanner(stdOutReader)
 	errScanner := bufio.NewScanner(stdErrReader)
 	
-	cmdReturned := 0
-	
-	// goroutine to print stdout and stderr [doesn't quite work]
-	go func() {
-		for {
-			if g.Verbose && outScanner.Scan() {
+	// goroutines to print stdout and stderr [doesn't quite work]
+	go func(){
+		if g.Verbose {
+			for outScanner.Scan(){
 				log.Debugf(string(outScanner.Text()))
 			}
-			_ = outScanner.Scan()
-			if errScanner.Scan() {
-				log.Errorf(string(errScanner.Text()))
-			}
-			
-			if cmdReturned == 1 {
-				log.Warnf("cmdReturned\n")
-				break
+		} else {
+			for outScanner.Scan(){
+				if strings.Contains(outScanner.Text(), "Step "){
+					log.Infof("    %s",string(outScanner.Text()))
+				}
 			}
 		}
 	}()
 	
+	printedStderr := false
+	
+	go func(){
+		for errScanner.Scan(){
+			log.Warnf(string(errScanner.Text()))
+			printedStderr = true
+		}
+	}()
+	
 	execErr = cmd.Run()
-	cmdReturned = 1
+	
+	if printedStderr && ! g.Verbose {
+		log.Warn("Use `gadget -v <command>` for more info.")
+	}
 	
 	return outScanner.Text(), errScanner.Text(), execErr
 }

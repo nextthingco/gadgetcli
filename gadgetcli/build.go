@@ -41,6 +41,13 @@ func GadgetBuild(args []string, g *libgadget.GadgetContext) error {
 		}).Debug("Couldn't find docker in the $PATH")
 		return err
 	}
+	
+	err = libgadget.EnsureDocker(binary, g)
+	if err != nil {
+		log.Errorf("Failed to contact the docker daemon.")
+		log.Warnf("Is it installed and running with appropriate permissions?")
+		return err
+	}
 
 	log.Info("Building:")
 
@@ -73,17 +80,17 @@ func GadgetBuild(args []string, g *libgadget.GadgetContext) error {
 			}).Debug(stderr)
 
 			if err != nil {
-
 				buildFailed = true
 
 				log.Errorf("Failed to build '%s'", container.Name)
-				log.Warn("Is the docker daemon installed and running?")
 
 				log.WithFields(log.Fields{
 					"function": "GadgetBuild",
 					"name":     container.Alias,
 				}).Debug("The build command returned an error, possible sources are any docker failure scenario")
 
+			} else {
+				log.Info("    Done ✔")
 			}
 
 		} else {
@@ -109,7 +116,6 @@ func GadgetBuild(args []string, g *libgadget.GadgetContext) error {
 
 				log.Errorf("Failed to build '%s'", container.Name)
 				log.Warn("Are you sure '%s' is a valid image [and tag]?")
-				log.Warn("Is the docker daemon installed and running?")
 
 				log.WithFields(log.Fields{
 					"function": "GadgetBuild",
@@ -142,13 +148,14 @@ func GadgetBuild(args []string, g *libgadget.GadgetContext) error {
 				buildFailed = true
 
 				log.Errorf("Failed to build '%s'", container.Name)
-				log.Warn("Is the docker daemon installed and running?")
 
 				log.WithFields(log.Fields{
 					"function": "GadgetBuild",
 					"name":     container.Alias,
 				}).Debug("The build command returned an error, possible sources are any docker failure scenario")
 
+			} else {
+				log.Info("    Done ✔")
 			}
 		}
 
