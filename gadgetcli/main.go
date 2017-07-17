@@ -46,6 +46,7 @@ var Commands = []GadgetCommand{
 	{Name: "stop", Function: GadgetStop, NeedsConfig: true},
 	{Name: "status", Function: GadgetStatus, NeedsConfig: true},
 	{Name: "delete", Function: GadgetDelete, NeedsConfig: true},
+	{Name: "purge", Function: GadgetPurge, NeedsConfig: false},
 	{Name: "shell", Function: GadgetShell, NeedsConfig: false},
 	{Name: "logs", Function: GadgetLogs, NeedsConfig: true},
 	{Name: "run", Function: GadgetRun, NeedsConfig: false},

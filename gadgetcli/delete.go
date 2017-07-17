@@ -109,6 +109,58 @@ func GadgetRmiDanglers(g *libgadget.GadgetContext) error {
 }
 
 // Process the build arguments and execute build
+func GadgetPurge(garbage []string, g *libgadget.GadgetContext) error {
+
+	libgadget.EnsureKeys()
+
+	client, err := libgadget.GadgetLogin(libgadget.GadgetPrivKeyLocation)
+
+	if err != nil {
+		return err
+	}
+
+	
+	// not checking for error, as it's bound to fail when there are no dangles
+	log.Info("Removing containers ..")
+	stdout, stderr, _ := libgadget.RunRemoteCommand(client, "docker", "rm", "-f", `$(docker ps -aq)`)
+
+	log.WithFields(log.Fields{
+		"function":     "GadgetPurge",
+		"delete-stage": "rm -f",
+	}).Debug(stdout)
+	log.WithFields(log.Fields{
+		"function":     "GadgetPurge",
+		"delete-stage": "rm -f",
+	}).Debug(stderr)
+	
+	log.Info("Removing images..")
+	stdout, stderr, _ = libgadget.RunRemoteCommand(client, "docker", "rmi", "-f", `$(docker images -aq)`)
+
+	log.WithFields(log.Fields{
+		"function":     "GadgetPurge",
+		"delete-stage": "rmi -f",
+	}).Debug(stdout)
+	log.WithFields(log.Fields{
+		"function":     "GadgetPurge",
+		"delete-stage": "rmi -f",
+	}).Debug(stderr)
+	
+	log.Info("Removing volumes..")
+	stdout, stderr, _ = libgadget.RunRemoteCommand(client, "docker", "volume", "rm", `$(docker volume ls -q)`)
+
+	log.WithFields(log.Fields{
+		"function":     "GadgetPurge",
+		"delete-stage": "rmi -f",
+	}).Debug(stdout)
+	log.WithFields(log.Fields{
+		"function":     "GadgetPurge",
+		"delete-stage": "rmi -f",
+	}).Debug(stderr)
+
+	return err
+}
+
+// Process the build arguments and execute build
 func GadgetDelete(args []string, g *libgadget.GadgetContext) error {
 
 	libgadget.EnsureKeys()
