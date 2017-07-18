@@ -118,7 +118,6 @@ func GadgetPurge(garbage []string, g *libgadget.GadgetContext) error {
 	if err != nil {
 		return err
 	}
-
 	
 	// not checking for error, as it's bound to fail when there are no dangles
 	log.Info("Removing containers ..")

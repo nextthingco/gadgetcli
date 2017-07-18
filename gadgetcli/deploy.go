@@ -232,7 +232,9 @@ func GadgetDeploy(args []string, g *libgadget.GadgetContext) error {
 		}
 
 		err = DeployContainer(client, &container, g)
-		deployFailed = true
+		if err != nil {
+			deployFailed = true
+		}
 	}
 
 	if deployFailed == true {
