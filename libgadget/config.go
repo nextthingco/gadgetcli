@@ -39,8 +39,14 @@ type GadgetConfig struct {
 	Name     string
 	UUID     string
 	Type     string
+	Rootfs   GadgetRootfs      "rootfs,omitempty"
 	Onboot   []GadgetContainer
 	Services []GadgetContainer
+}
+
+type GadgetRootfs struct {
+	From string
+	Hash string
 }
 
 type GadgetContainer struct {
