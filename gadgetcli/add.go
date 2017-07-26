@@ -45,7 +45,6 @@ func addUsage() error {
 
 func GadgetAddRootfs(board string, g *libgadget.GadgetContext) (error, string) {
 	
-	hash := ""
 	log.Infof("Retrieving build image for '%s'", board)
 	
 	// find docker binary in path
@@ -58,14 +57,14 @@ func GadgetAddRootfs(board string, g *libgadget.GadgetContext) (error, string) {
 			"function": "GadgetAddRootfs",
 			"stage":    "LookPath(docker)",
 		}).Debug("Couldn't find docker in the $PATH")
-		return err, hash
+		return err, ""
 	}
 	
 	err = libgadget.EnsureDocker(binary, g)
 	if err != nil {
 		log.Errorf("Failed to contact the docker daemon.")
 		log.Warnf("Is it installed and running with appropriate permissions?")
-		return err, hash
+		return err, ""
 	}
 	
 	latestContainer := fmt.Sprintf("computermouth/gbgos-%s-testing:latest", board)
@@ -89,11 +88,11 @@ func GadgetAddRootfs(board string, g *libgadget.GadgetContext) (error, string) {
 	
 	if err != nil {
 		log.Error("Failed to download build image")
-		return err, hash
+		return err, ""
 	}
 	
 	// get hash for container
-	stdout, stderr, err = libgadget.RunLocalCommand(binary,
+	hash, stderr, err := libgadget.RunLocalCommand(binary,
 		g,
 		"run",
 		"-i",
@@ -101,17 +100,20 @@ func GadgetAddRootfs(board string, g *libgadget.GadgetContext) (error, string) {
 		latestContainer,
 		"/bin/bash",
 		"-c",
-		`"HASH=$(git rev-parse --short=8 HEAD) TIMESTAMP=$(date --iso-8601 -d @$(git show -s --format=%ct)) BRANCH=$(git rev-parse --abbrev-ref HEAD) echo computermouth/gbgos-chippro-${BRANCH}:${TIMESTAMP}-${HASH}"`,
+		//~ `"\"echo 'computermouth/gbgos-chippro-\\$(cat .branch):\\$(date --iso-8601)-\\$(git rev-parse --short=8 HEAD)'\""`,
+		`/bin/echo computermouth/gbgos-chippro-$(cat .branch):$(date --iso-8601)-$(git rev-parse --short=8 HEAD)`,
 		)
-
+	
 	log.WithFields(log.Fields{
 		"function": "GadgetAddRootfs",
 		"name":     latestContainer,
+		"stream":   "stdout",
 		"stage":    "get tag name",
-	}).Debug(stdout)
+	}).Debug(hash)
 	log.WithFields(log.Fields{
 		"function": "GadgetAddRootfs",
 		"name":     latestContainer,
+		"stream":   "stderr",
 		"stage":    "get tag name",
 	}).Debug(stderr)
 	
@@ -121,6 +123,7 @@ func GadgetAddRootfs(board string, g *libgadget.GadgetContext) (error, string) {
 		return err, hash
 	}
 	
+	log.Debugf("hash: %s", hash)
 	
 	return nil, hash
 }

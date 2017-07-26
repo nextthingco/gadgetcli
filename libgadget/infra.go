@@ -527,17 +527,22 @@ func RunLocalCommand(binary string, g *GadgetContext, arguments ...string) (stri
 	outScanner := bufio.NewScanner(stdOutReader)
 	errScanner := bufio.NewScanner(stdErrReader)
 	
+	var outBuffer bytes.Buffer
+	var errBuffer bytes.Buffer
+	
 	// goroutines to print stdout and stderr [doesn't quite work]
 	go func(){
 		if g.Verbose {
 			for outScanner.Scan(){
 				log.Debugf(string(outScanner.Text()))
+				outBuffer.WriteString(string(outScanner.Text()))
 			}
 		} else {
 			for outScanner.Scan(){
 				if strings.Contains(outScanner.Text(), "Step "){
 					log.Infof("    %s",string(outScanner.Text()))
 				}
+				outBuffer.WriteString(string(outScanner.Text()))
 			}
 		}
 	}()
@@ -548,6 +553,7 @@ func RunLocalCommand(binary string, g *GadgetContext, arguments ...string) (stri
 		for errScanner.Scan(){
 			log.Warnf(string(errScanner.Text()))
 			printedStderr = true
+			errBuffer.WriteString(string(errScanner.Text()))
 		}
 	}()
 	
@@ -557,7 +563,7 @@ func RunLocalCommand(binary string, g *GadgetContext, arguments ...string) (stri
 		log.Warn("Use `gadget -v <command>` for more info.")
 	}
 	
-	return outScanner.Text(), errScanner.Text(), execErr
+	return outBuffer.String(), errBuffer.String(), execErr
 }
 
 func PrependToStrings(stringArray []string, prefix string) []string {
