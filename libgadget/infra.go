@@ -180,7 +180,7 @@ func RequiredSsh() error {
 	}
 
 	if !defaultPrivExists {
-		log.Warn("Unable to locate default gadget ssh key, generating..")
+		log.Info("Creating default gadget ssh key..")
 
 		log.WithFields(log.Fields{
 			"function": "RequiredSsh",
@@ -214,7 +214,7 @@ func RequiredSsh() error {
 	}
 
 	if !gadgetPrivExists && !gadgetPubExists {
-		log.Warn("Unable to locate personal gadget ssh keys, generating..")
+		log.Info("Creating personal gadget ssh keys..")
 
 		log.WithFields(log.Fields{
 			"function":    "RequiredSsh",

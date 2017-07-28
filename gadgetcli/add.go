@@ -52,7 +52,7 @@ func GadgetAddRootfs(board string, g *libgadget.GadgetContext) (error, string) {
 	if err != nil {
 		log.Error("Failed to find local docker binary")
 		log.Warn("Is docker installed?")
-
+		
 		log.WithFields(log.Fields{
 			"function": "GadgetAddRootfs",
 			"stage":    "LookPath(docker)",
@@ -67,7 +67,7 @@ func GadgetAddRootfs(board string, g *libgadget.GadgetContext) (error, string) {
 		return err, ""
 	}
 	
-	latestContainer := fmt.Sprintf("computermouth/gbgos-%s-testing:latest", board)
+	latestContainer := fmt.Sprintf("computermouth/gbgos-%s-%s:latest", board, libgadget.GitBranch)
 	
 	// pull container
 	stdout, stderr, err := libgadget.RunLocalCommand(binary,
@@ -91,8 +91,8 @@ func GadgetAddRootfs(board string, g *libgadget.GadgetContext) (error, string) {
 		return err, ""
 	}
 	
-	bashLine := fmt.Sprintf(`%q`, fmt.Sprintf("computermouth/gbgos-%s-$(cat .branch):$(date --iso-8601)-$(git rev-parse --short=8 HEAD)", board))
-	
+	bashLine := fmt.Sprintf("%s", fmt.Sprintf("/bin/echo computermouth/gbgos-%s-$(cat .branch):$(date --iso-8601)-$(git rev-parse --short=8 HEAD)", board))
+		
 	// get hash for container
 	hash, stderr, err := libgadget.RunLocalCommand(binary,
 		"", g,
@@ -102,15 +102,12 @@ func GadgetAddRootfs(board string, g *libgadget.GadgetContext) (error, string) {
 		latestContainer,
 		"/bin/bash",
 		"-c",
-		`/bin/echo computermouth/gbgos-chippro-$(cat .branch):$(date --iso-8601)-$(git rev-parse --short=8 HEAD)`,
-		//~ "/bin/echo",
-		//~ bashLine,
+		bashLine,
 		)
 	
 	log.WithFields(log.Fields{
 		"function": "GadgetAddRootfs",
 		"name":     latestContainer,
-		"raw":		`/bin/echo computermouth/gbgos-chippro-$(cat .branch):$(date --iso-8601)-$(git rev-parse --short=8 HEAD)`,
 		"bashLine": bashLine,
 		"stream":   "stdout",
 		"stage":    "get tag name",

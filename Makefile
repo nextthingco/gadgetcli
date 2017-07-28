@@ -1,5 +1,6 @@
 VERSION="0.0"
 GIT_COMMIT=$(shell git rev-parse --short HEAD)
+GIT_BRANCH=$(shell git rev-parse --abbrev-ref HEAD)
 BUILD_DATE=$(shell date --iso-8601)
 VERSION_FILE=libgadget/version.go
 
@@ -30,6 +31,7 @@ genversion:
 	@echo "const (" >> $(VERSION_FILE)
 	@echo "	Version = \"${VERSION}\"" >> $(VERSION_FILE)
 	@echo "	GitCommit = \"${GIT_COMMIT}\"" >> $(VERSION_FILE)
+	@echo "	GitBranch = \"${GIT_BRANCH}\"" >> $(VERSION_FILE)
 	@echo "	BuildDate = \"${BUILD_DATE}\"" >> $(VERSION_FILE)
 	@echo ")" >> $(VERSION_FILE)
 
