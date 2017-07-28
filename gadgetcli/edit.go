@@ -20,19 +20,10 @@ package main
 
 import (
 	"errors"
-	//~ "fmt"
 	"github.com/nextthingco/libgadget"
-	//~ "github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
-	//~ "gopkg.in/yaml.v2"
-	//~ "io/ioutil"
-	//~ "github.com/kr/pty"
-	//~ "bufio"
 	"os/exec"
-	//~ "io"
-	//~ "bytes"
-	//~ "strings"
-	//~ "os"
+	"os"
 )
 
 var (
@@ -50,90 +41,54 @@ func editUsage() error {
 
 func GadgetEditKernel(g *libgadget.GadgetContext) error {
 	
-	log.Info("Edit Kernel")
-	
-	//~ c := exec.Command("docker", "run", "-it", "--rm", "c98", "make", "")
-	//~ f, err := pty.Start(c)
-	//~ if err != nil {
-		//~ panic(err)
-	//~ }
+	cmd := exec.Command("docker", "run", "-it", "--rm", g.Config.Rootfs.Hash, "make", "linux-menuconfig")
 
-	//~ go func() {
-		//~ f.Write([]byte("foo\n"))
-		//~ f.Write([]byte("bar\n"))
-		//~ f.Write([]byte("baz\n"))
-		//~ f.Write([]byte{4}) // EOT
-	//~ }()
-	//~ io.Copy(os.Stdout, f)
-	
-	//~ log.Debugf("Calling %s %s", binary, arguments)
+	cmd.Env = os.Environ()
 
-	//~ cmd := exec.Command("docker", "run", "-it", "--rm", "c98", "make", "menuconfig")
-	//~ f, err := pty.Start(c)
-	//~ cmd.Env = os.Environ()
+	cmd.Stdin , cmd.Stdout, cmd.Stderr = os.Stdin, os.Stdout, os.Stderr
+	
+    if err := cmd.Start(); err != nil {
+        log.Errorf("An error occured: ", err)
+        return err
+    }
+    
+    cmd.Wait()	
+	
+	return nil
+}
 
-	//~ os.Stdout = cmd.StdoutPipe()
-	//~ os.Stderr = cmd.StderrPipe()
-	//~ cmd.StdinPipe() = os.Stdin
+func GadgetEditUserspace(g *libgadget.GadgetContext) error {
 	
-	
+	cmd := exec.Command("docker", "run", "-it", "--rm", g.Config.Rootfs.Hash, "make", "menuconfig")
 
-	//~ stdOutReader, execErr := cmd.StdoutPipe()
-	//~ if execErr != nil {
-		//~ log.Debugf("Couldn't connect to cmd.StdoutPipe()")
-	//~ }
+	cmd.Env = os.Environ()
+
+	cmd.Stdin , cmd.Stdout, cmd.Stderr = os.Stdin, os.Stdout, os.Stderr
 	
-	//~ stdErrReader, execErr := cmd.StderrPipe()
-	//~ if execErr != nil {
-		//~ log.Debugf("Couldn't connect to cmd.StderrPipe()")
-	//~ }
+    if err := cmd.Start(); err != nil {
+        log.Errorf("An error occured: ", err)
+        return err
+    }
+    
+    cmd.Wait()	
 	
-	//~ stdInWriter, execErr := cmd.StdinPipe()
-	//~ if execErr != nil {
-		//~ log.Debugf("Couldn't connect to cmd.StderrPipe()")
-	//~ }
+	return nil
+}
+
+func GadgetEditUboot(g *libgadget.GadgetContext) error {
 	
-	//~ outScanner := bufio.NewScanner(stdOutReader)
-	//~ errScanner := bufio.NewScanner(stdErrReader)
-	//~ inScanner := bufio.NewScanner(os.Stdin)
+	cmd := exec.Command("docker", "run", "-it", "--rm", g.Config.Rootfs.Hash, "make", "uboot-menuconfig")
+
+	cmd.Env = os.Environ()
+
+	cmd.Stdin , cmd.Stdout, cmd.Stderr = os.Stdin, os.Stdout, os.Stderr
 	
-	//~ var outBuffer bytes.Buffer
-	//~ var errBuffer bytes.Buffer
-	
-	//~ // goroutines to print stdout and stderr [doesn't quite work]
-	//~ go func(){
-		//~ if g.Verbose {
-			//~ for outScanner.Scan(){
-				//~ log.Debugf(string(outScanner.Text()))
-				//~ outBuffer.WriteString(string(outScanner.Text()))
-			//~ }
-		//~ } else {
-			//~ for outScanner.Scan(){
-				//~ if strings.Contains(outScanner.Text(), "Step "){
-					//~ log.Infof("    %s",string(outScanner.Text()))
-				//~ }
-				//~ outBuffer.WriteString(string(outScanner.Text()))
-			//~ }
-		//~ }
-	//~ }()
-	
-	//~ printedStderr := false
-	
-	//~ go func(){
-		//~ for errScanner.Scan(){
-			//~ log.Warnf(string(errScanner.Text()))
-			//~ printedStderr = true
-			//~ errBuffer.WriteString(string(errScanner.Text()))
-		//~ }
-	//~ }()
-	
-	//~ go func(){
-		//~ for inScanner.Scan(){
-			
-			//~ log.Warnf(string(errScanner.Bytes()))
-			//~ errBuffer.WriteString(string(errScanner.Text()))
-		//~ }
-	//~ }()
+    if err := cmd.Start(); err != nil {
+        log.Errorf("An error occured: ", err)
+        return err
+    }
+    
+    cmd.Wait()	
 	
 	return nil
 }
@@ -178,6 +133,18 @@ func GadgetEdit(args []string, g *libgadget.GadgetContext) error {
 			err = GadgetEditKernel(g)
 			if err != nil {
 				log.Errorf("Failed to edit the kernel config.")
+				return err
+			}
+		case "userspace":
+			err = GadgetEditUserspace(g)
+			if err != nil {
+				log.Errorf("Failed to edit the userspace config.")
+				return err
+			}
+		case "uboot":
+			err = GadgetEditUboot(g)
+			if err != nil {
+				log.Errorf("Failed to edit the uboot config.")
 				return err
 			}
 		default:

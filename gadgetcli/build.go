@@ -62,7 +62,7 @@ func GadgetBuild(args []string, g *libgadget.GadgetContext) error {
 		if container.Directory != "" {
 			containerDirectory := fmt.Sprintf("%s/%s", g.WorkingDirectory, container.Directory)
 			stdout, stderr, err := libgadget.RunLocalCommand(binary,
-				g,
+				"Step ", g,
 				"build",
 				"--tag",
 				container.ImageAlias,
@@ -95,7 +95,7 @@ func GadgetBuild(args []string, g *libgadget.GadgetContext) error {
 
 		} else {
 			stdout, stderr, err := libgadget.RunLocalCommand(binary,
-				g,
+				"Download", g,
 				"pull",
 				container.Image)
 
@@ -127,7 +127,7 @@ func GadgetBuild(args []string, g *libgadget.GadgetContext) error {
 			}
 
 			stdout, stderr, err = libgadget.RunLocalCommand(binary,
-				g,
+				"", g,
 				"tag",
 				container.Image,
 				container.ImageAlias)

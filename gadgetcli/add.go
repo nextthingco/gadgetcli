@@ -71,7 +71,7 @@ func GadgetAddRootfs(board string, g *libgadget.GadgetContext) (error, string) {
 	
 	// pull container
 	stdout, stderr, err := libgadget.RunLocalCommand(binary,
-		g,
+		"Downloading", g,
 		"pull",
 		latestContainer)
 
@@ -91,28 +91,34 @@ func GadgetAddRootfs(board string, g *libgadget.GadgetContext) (error, string) {
 		return err, ""
 	}
 	
+	bashLine := fmt.Sprintf(`%q`, fmt.Sprintf("computermouth/gbgos-%s-$(cat .branch):$(date --iso-8601)-$(git rev-parse --short=8 HEAD)", board))
+	
 	// get hash for container
 	hash, stderr, err := libgadget.RunLocalCommand(binary,
-		g,
+		"", g,
 		"run",
 		"-i",
 		"--rm",
 		latestContainer,
 		"/bin/bash",
 		"-c",
-		//~ `"\"echo 'computermouth/gbgos-chippro-\\$(cat .branch):\\$(date --iso-8601)-\\$(git rev-parse --short=8 HEAD)'\""`,
 		`/bin/echo computermouth/gbgos-chippro-$(cat .branch):$(date --iso-8601)-$(git rev-parse --short=8 HEAD)`,
+		//~ "/bin/echo",
+		//~ bashLine,
 		)
 	
 	log.WithFields(log.Fields{
 		"function": "GadgetAddRootfs",
 		"name":     latestContainer,
+		"raw":		`/bin/echo computermouth/gbgos-chippro-$(cat .branch):$(date --iso-8601)-$(git rev-parse --short=8 HEAD)`,
+		"bashLine": bashLine,
 		"stream":   "stdout",
 		"stage":    "get tag name",
 	}).Debug(hash)
 	log.WithFields(log.Fields{
 		"function": "GadgetAddRootfs",
 		"name":     latestContainer,
+		"bashLine": bashLine,
 		"stream":   "stderr",
 		"stage":    "get tag name",
 	}).Debug(stderr)
@@ -121,6 +127,29 @@ func GadgetAddRootfs(board string, g *libgadget.GadgetContext) (error, string) {
 	if err != nil {
 		log.Error("Failed to parse build image information")
 		return err, hash
+	}
+	
+	// tag container
+	stdout, stderr, err = libgadget.RunLocalCommand(binary,
+		"", g,
+		"tag",
+		latestContainer,
+		hash)
+
+	log.WithFields(log.Fields{
+		"function": "GadgetAddRootfs",
+		"name":     latestContainer,
+		"stage":    "docker tag",
+	}).Debug(stdout)
+	log.WithFields(log.Fields{
+		"function": "GadgetAddRootfs",
+		"name":     latestContainer,
+		"stage":    "docker tag",
+	}).Debug(stderr)
+	
+	if err != nil {
+		log.Error("Failed to tag build image")
+		return err, ""
 	}
 	
 	log.Debugf("hash: %s", hash)

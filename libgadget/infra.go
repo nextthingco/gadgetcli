@@ -471,7 +471,7 @@ func EnsureKeys() error {
 func EnsureDocker(binary string, g *GadgetContext) error {
 
 	stdout, stderr, err := RunLocalCommand(binary,
-	g,
+	"", g,
 	"version")
 
 	if g.Verbose {
@@ -507,7 +507,7 @@ func RunRemoteCommand(client *ssh.Client, cmd ...string) (*bytes.Buffer, *bytes.
 	return &outBuffer, &errBuffer, err
 }
 
-func RunLocalCommand(binary string, g *GadgetContext, arguments ...string) (string, string, error) {
+func RunLocalCommand(binary string, filter string, g *GadgetContext, arguments ...string) (string, string, error) {
 	log.Debugf("Calling %s %s", binary, arguments)
 
 	cmd := exec.Command(binary, arguments...)
@@ -539,7 +539,7 @@ func RunLocalCommand(binary string, g *GadgetContext, arguments ...string) (stri
 			}
 		} else {
 			for outScanner.Scan(){
-				if strings.Contains(outScanner.Text(), "Step "){
+				if filter != "" && strings.Contains(outScanner.Text(), filter){
 					log.Infof("    %s",string(outScanner.Text()))
 				}
 				outBuffer.WriteString(string(outScanner.Text()))
