@@ -12,15 +12,14 @@ LIBGADGET_SOURCES=$(shell ls libgadget/*.go)
 
 DEPENDS=\
 	golang.org/x/crypto/ssh\
-	github.com/tmc/scp\
 	gopkg.in/yaml.v2\
 	gopkg.in/satori/go.uuid.v1\
 	golang.org/x/crypto/ssh\
 	golang.org/x/crypto/ssh/terminal\
 	gopkg.in/sirupsen/logrus.v1\
 	gopkg.in/cheggaaa/pb.v1\
-	github.com/nextthingco/logrus-gadget-formatter\
-	github.com/gin-gonic/gin\
+	github.com/tmc/scp\
+	github.com/nextthingco/logrus-gadget-formatter
 
 gadget: libgadget $(GADGET_SOURCES) $(VERSION_FILE) $(LIBGADGET_SOURCES)
 	@echo "Building Gadget"
