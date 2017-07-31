@@ -21,7 +21,7 @@ package libgadget
 import (
 	"errors"
 	"fmt"
-	log "github.com/sirupsen/logrus"
+	log "gopkg.in/sirupsen/logrus.v1"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"

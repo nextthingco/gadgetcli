@@ -23,7 +23,7 @@ import (
 	"fmt"
 	"github.com/nextthingco/libgadget"
 	"github.com/satori/go.uuid"
-	log "github.com/sirupsen/logrus"
+	log "gopkg.in/sirupsen/logrus.v1"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os/exec"

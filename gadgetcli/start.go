@@ -21,7 +21,7 @@ package main
 import (
 	"errors"
 	"github.com/nextthingco/libgadget"
-	log "github.com/sirupsen/logrus"
+	log "gopkg.in/sirupsen/logrus.v1"
 	"strings"
 )
 

@@ -17,7 +17,7 @@ DEPENDS=\
 	github.com/satori/go.uuid\
 	golang.org/x/crypto/ssh\
 	golang.org/x/crypto/ssh/terminal\
-	github.com/sirupsen/logrus\
+	gopkg.in/sirupsen/logrus.v1\
 	gopkg.in/cheggaaa/pb.v1\
 	github.com/nextthingco/logrus-gadget-formatter\
 	github.com/gin-gonic/gin\

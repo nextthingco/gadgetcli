@@ -22,7 +22,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/nextthingco/libgadget"
-	log "github.com/sirupsen/logrus"
+	log "gopkg.in/sirupsen/logrus.v1"
 )
 
 // Process the build arguments and execute build

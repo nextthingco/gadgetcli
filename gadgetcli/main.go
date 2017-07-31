@@ -23,7 +23,7 @@ import (
 	"flag"
 	"github.com/nextthingco/libgadget"
 	gadgetFormatter "github.com/nextthingco/logrus-gadget-formatter"
-	log "github.com/sirupsen/logrus"
+	log "gopkg.in/sirupsen/logrus.v1"
 	"os"
 	"path/filepath"
 	"strings"

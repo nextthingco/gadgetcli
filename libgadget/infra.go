@@ -26,7 +26,7 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
-	log "github.com/sirupsen/logrus"
+	log "gopkg.in/sirupsen/logrus.v1"
 	"github.com/tmc/scp"
 	"golang.org/x/crypto/ssh"
 	"io/ioutil"

@@ -20,7 +20,7 @@ package main
 
 import (
 	"github.com/nextthingco/libgadget"
-	log "github.com/sirupsen/logrus"
+	log "gopkg.in/sirupsen/logrus.v1"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/terminal"
 	"os"
