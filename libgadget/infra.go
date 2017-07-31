@@ -180,7 +180,7 @@ func RequiredSsh() error {
 	}
 
 	if !defaultPrivExists {
-		log.Warn("Unable to locate default gadget ssh key, generating..")
+		log.Info("Creating default gadget ssh key..")
 
 		log.WithFields(log.Fields{
 			"function": "RequiredSsh",
@@ -214,7 +214,7 @@ func RequiredSsh() error {
 	}
 
 	if !gadgetPrivExists && !gadgetPubExists {
-		log.Warn("Unable to locate personal gadget ssh keys, generating..")
+		log.Info("Creating personal gadget ssh keys..")
 
 		log.WithFields(log.Fields{
 			"function":    "RequiredSsh",
@@ -471,7 +471,7 @@ func EnsureKeys() error {
 func EnsureDocker(binary string, g *GadgetContext) error {
 
 	stdout, stderr, err := RunLocalCommand(binary,
-	g,
+	"", g,
 	"version")
 
 	if g.Verbose {
@@ -507,7 +507,7 @@ func RunRemoteCommand(client *ssh.Client, cmd ...string) (*bytes.Buffer, *bytes.
 	return &outBuffer, &errBuffer, err
 }
 
-func RunLocalCommand(binary string, g *GadgetContext, arguments ...string) (string, string, error) {
+func RunLocalCommand(binary string, filter string, g *GadgetContext, arguments ...string) (string, string, error) {
 	log.Debugf("Calling %s %s", binary, arguments)
 
 	cmd := exec.Command(binary, arguments...)
@@ -527,17 +527,22 @@ func RunLocalCommand(binary string, g *GadgetContext, arguments ...string) (stri
 	outScanner := bufio.NewScanner(stdOutReader)
 	errScanner := bufio.NewScanner(stdErrReader)
 	
+	var outBuffer bytes.Buffer
+	var errBuffer bytes.Buffer
+	
 	// goroutines to print stdout and stderr [doesn't quite work]
 	go func(){
 		if g.Verbose {
 			for outScanner.Scan(){
 				log.Debugf(string(outScanner.Text()))
+				outBuffer.WriteString(string(outScanner.Text()))
 			}
 		} else {
 			for outScanner.Scan(){
-				if strings.Contains(outScanner.Text(), "Step "){
+				if filter != "" && strings.Contains(outScanner.Text(), filter){
 					log.Infof("    %s",string(outScanner.Text()))
 				}
+				outBuffer.WriteString(string(outScanner.Text()))
 			}
 		}
 	}()
@@ -548,6 +553,7 @@ func RunLocalCommand(binary string, g *GadgetContext, arguments ...string) (stri
 		for errScanner.Scan(){
 			log.Warnf(string(errScanner.Text()))
 			printedStderr = true
+			errBuffer.WriteString(string(errScanner.Text()))
 		}
 	}()
 	
@@ -557,7 +563,7 @@ func RunLocalCommand(binary string, g *GadgetContext, arguments ...string) (stri
 		log.Warn("Use `gadget -v <command>` for more info.")
 	}
 	
-	return outScanner.Text(), errScanner.Text(), execErr
+	return outBuffer.String(), errBuffer.String(), execErr
 }
 
 func PrependToStrings(stringArray []string, prefix string) []string {

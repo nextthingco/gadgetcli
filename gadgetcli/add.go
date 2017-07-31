@@ -26,15 +26,132 @@ import (
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
+	"os/exec"
+)
+
+var (
+	defconfigList = []string{"chippro", "chippro4gb", "chip"}
 )
 
 func addUsage() error {
-	log.Info("Usage: gadget [flags] add [type] [name]")
-	log.Info("               *opt        *req   *req ")
-	log.Info("Type: service | onboot                 ")
-	log.Info("Name: friendly name for container      ")
+	log.Info("Usage:  gadget [flags] add [type] [name]    ")
+	log.Info("                *opt        *req   *req     ")
+	log.Info("Type:           service | onboot | rootfs   ")
+	log.Info("Name (service): friendly name for container ")
+	log.Info("Name (rootfs):  valid defconfig prefix      ")
 
 	return errors.New("Incorrect add usage")
+}
+
+func GadgetAddRootfs(board string, g *libgadget.GadgetContext) (error, string) {
+	
+	log.Infof("Retrieving build image for '%s'", board)
+	
+	// find docker binary in path
+	binary, err := exec.LookPath("docker")
+	if err != nil {
+		log.Error("Failed to find local docker binary")
+		log.Warn("Is docker installed?")
+		
+		log.WithFields(log.Fields{
+			"function": "GadgetAddRootfs",
+			"stage":    "LookPath(docker)",
+		}).Debug("Couldn't find docker in the $PATH")
+		return err, ""
+	}
+	
+	err = libgadget.EnsureDocker(binary, g)
+	if err != nil {
+		log.Errorf("Failed to contact the docker daemon.")
+		log.Warnf("Is it installed and running with appropriate permissions?")
+		return err, ""
+	}
+	
+	latestContainer := fmt.Sprintf("computermouth/gbgos-%s-%s:latest", board, libgadget.GitBranch)
+	
+	// pull container
+	stdout, stderr, err := libgadget.RunLocalCommand(binary,
+		"Downloading", g,
+		"pull",
+		latestContainer)
+
+	log.WithFields(log.Fields{
+		"function": "GadgetAddRootfs",
+		"name":     latestContainer,
+		"stage":    "docker pull",
+	}).Debug(stdout)
+	log.WithFields(log.Fields{
+		"function": "GadgetAddRootfs",
+		"name":     latestContainer,
+		"stage":    "docker pull",
+	}).Debug(stderr)
+	
+	if err != nil {
+		log.Error("Failed to download build image")
+		return err, ""
+	}
+	
+	bashLine := fmt.Sprintf("%s", fmt.Sprintf("/bin/echo computermouth/gbgos-%s-$(cat .branch):$(date --iso-8601)-$(git rev-parse --short=8 HEAD)", board))
+		
+	// get hash for container
+	hash, stderr, err := libgadget.RunLocalCommand(binary,
+		"", g,
+		"run",
+		"-i",
+		"--rm",
+		latestContainer,
+		"/bin/bash",
+		"-c",
+		bashLine,
+		)
+	
+	log.WithFields(log.Fields{
+		"function": "GadgetAddRootfs",
+		"name":     latestContainer,
+		"bashLine": bashLine,
+		"stream":   "stdout",
+		"stage":    "get tag name",
+	}).Debug(hash)
+	log.WithFields(log.Fields{
+		"function": "GadgetAddRootfs",
+		"name":     latestContainer,
+		"bashLine": bashLine,
+		"stream":   "stderr",
+		"stage":    "get tag name",
+	}).Debug(stderr)
+	
+	
+	if err != nil {
+		log.Error("Failed to parse build image information")
+		return err, hash
+	}
+	
+	// tag container
+	stdout, stderr, err = libgadget.RunLocalCommand(binary,
+		"", g,
+		"tag",
+		latestContainer,
+		hash)
+
+	log.WithFields(log.Fields{
+		"function": "GadgetAddRootfs",
+		"name":     latestContainer,
+		"stage":    "docker tag",
+	}).Debug(stdout)
+	log.WithFields(log.Fields{
+		"function": "GadgetAddRootfs",
+		"name":     latestContainer,
+		"stage":    "docker tag",
+	}).Debug(stderr)
+	
+	if err != nil {
+		log.Error("Failed to tag build image")
+		return err, ""
+	}
+	
+	log.Debugf("hash: %s", hash)
+	
+	return nil, hash
 }
 
 // Process the build arguments and execute build
@@ -60,6 +177,26 @@ func GadgetAdd(args []string, g *libgadget.GadgetContext) error {
 		g.Config.Services = append(g.Config.Services, addGadgetContainer)
 	case "onboot":
 		g.Config.Onboot = append(g.Config.Onboot, addGadgetContainer)
+	case "rootfs":
+		matched := ""
+		for _, i := range defconfigList {
+			if args[1] == i {
+				matched = i
+				break
+			}
+		}
+		if matched == "" {
+			log.Errorf("  %q is not valid defconfig.", args[1])
+			return addUsage()
+		}
+		
+		garError, garHash := GadgetAddRootfs(matched, g)
+		if garError != nil {
+			return garError
+		}
+		
+		g.Config.Rootfs.From = matched
+		g.Config.Rootfs.Hash = garHash
 	default:
 		log.Errorf("  %q is not valid command.", args[0])
 		return addUsage()
