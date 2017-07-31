@@ -22,7 +22,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/nextthingco/libgadget"
-	"github.com/satori/go.uuid"
+	"gopkg.in/satori/go.uuid.v1"
 	log "gopkg.in/sirupsen/logrus.v1"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"

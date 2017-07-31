@@ -14,7 +14,7 @@ DEPENDS=\
 	golang.org/x/crypto/ssh\
 	github.com/tmc/scp\
 	gopkg.in/yaml.v2\
-	github.com/satori/go.uuid\
+	gopkg.in/satori/go.uuid.v1\
 	golang.org/x/crypto/ssh\
 	golang.org/x/crypto/ssh/terminal\
 	gopkg.in/sirupsen/logrus.v1\

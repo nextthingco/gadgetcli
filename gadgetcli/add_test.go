@@ -21,7 +21,7 @@ package main
 import (
 	"fmt"
 	"github.com/nextthingco/libgadget"
-	"github.com/satori/go.uuid"
+	"gopkg.in/satori/go.uuid.v1"
 	"reflect"
 	"testing"
 )
