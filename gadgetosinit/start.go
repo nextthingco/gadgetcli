@@ -52,7 +52,7 @@ func GadgetOsInit(args []string, g *libgadget.GadgetContext) error {
 
 		commands := strings.Join(container.Command[:], " ")
 
-		stdout, stderr, err := libgadget.RunLocalCommand(binary, g, "start", container.Alias)
+		stdout, stderr, err := libgadget.RunLocalCommand(binary, "", g, "start", container.Alias)
 
 		log.WithFields(log.Fields{
 			"function": "GadgetStart",

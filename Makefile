@@ -21,6 +21,10 @@ DEPENDS=\
 	github.com/tmc/scp\
 	github.com/nextthingco/logrus-gadget-formatter
 
+## Bottom two libs here^^ are essentially one-off code chunks which aren't
+## likely to be updated. Neither has tags, and thus, gopkg.in links aren't
+## being used.
+
 gadget: libgadget $(GADGET_SOURCES) $(VERSION_FILE) $(LIBGADGET_SOURCES)
 	@echo "Building Gadget"
 	@go build -o gadget -ldflags="-s -w" -v ./gadgetcli
