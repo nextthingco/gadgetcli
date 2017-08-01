@@ -26,9 +26,9 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
-	log "gopkg.in/sirupsen/logrus.v1"
 	"github.com/tmc/scp"
 	"golang.org/x/crypto/ssh"
+	log "gopkg.in/sirupsen/logrus.v1"
 	"io/ioutil"
 	"math/rand"
 	"os"
@@ -471,8 +471,8 @@ func EnsureKeys() error {
 func EnsureDocker(binary string, g *GadgetContext) error {
 
 	stdout, stderr, err := RunLocalCommand(binary,
-	"", g,
-	"version")
+		"", g,
+		"version")
 
 	if g.Verbose {
 		log.WithFields(log.Fields{
@@ -480,10 +480,10 @@ func EnsureDocker(binary string, g *GadgetContext) error {
 		}).Debugf(stdout)
 
 		log.WithFields(log.Fields{
-			"function":             "EnsureDocker",
+			"function": "EnsureDocker",
 		}).Debugf(stderr)
 	}
-	
+
 	return err
 }
 
@@ -518,57 +518,56 @@ func RunLocalCommand(binary string, filter string, g *GadgetContext, arguments .
 	if execErr != nil {
 		log.Debugf("Couldn't connect to cmd.StdoutPipe()")
 	}
-	
+
 	stdErrReader, execErr := cmd.StderrPipe()
 	if execErr != nil {
 		log.Debugf("Couldn't connect to cmd.StderrPipe()")
 	}
-	
+
 	outScanner := bufio.NewScanner(stdOutReader)
 	errScanner := bufio.NewScanner(stdErrReader)
-	
+
 	var outBuffer bytes.Buffer
 	var errBuffer bytes.Buffer
-	
+
 	// goroutines to print stdout and stderr [doesn't quite work]
-	go func(){
+	go func() {
 		if g.Verbose {
-			for outScanner.Scan(){
+			for outScanner.Scan() {
 				log.Debugf(string(outScanner.Text()))
 				outBuffer.WriteString(string(outScanner.Text()))
 			}
 		} else {
-			for outScanner.Scan(){
-				if filter != "" && strings.Contains(outScanner.Text(), filter){
-					log.Infof("    %s",string(outScanner.Text()))
+			for outScanner.Scan() {
+				if filter != "" && strings.Contains(outScanner.Text(), filter) {
+					log.Infof("    %s", string(outScanner.Text()))
 				}
 				outBuffer.WriteString(string(outScanner.Text()))
 			}
 		}
 	}()
-	
+
 	printedStderr := false
-	
-	go func(){
-		for errScanner.Scan(){
+
+	go func() {
+		for errScanner.Scan() {
 			log.Warnf(string(errScanner.Text()))
 			printedStderr = true
 			errBuffer.WriteString(string(errScanner.Text()))
 		}
 	}()
-	
+
 	execErr = cmd.Run()
-	
-	if printedStderr && ! g.Verbose {
+
+	if printedStderr && !g.Verbose {
 		log.Warn("Use `gadget -v <command>` for more info.")
 	}
-	
+
 	return outBuffer.String(), errBuffer.String(), execErr
 }
 
 func PrependToStrings(stringArray []string, prefix string) []string {
 
-	//~ log.Infof("len(stringArray): %d", len(stringArray))
 	if len(stringArray) == 0 || (len(stringArray) == 1 && stringArray[0] == "") {
 		return []string{""}
 	}
@@ -577,7 +576,7 @@ func PrependToStrings(stringArray []string, prefix string) []string {
 		s := []string{prefix, value}
 		stringArray[key] = strings.Join(s, "")
 	}
-	return stringArray //strings.Join(stringArray, " ")
+	return stringArray
 }
 
 func FindStagedContainers(args []string, containers GadgetContainers) (GadgetContainers, error) {

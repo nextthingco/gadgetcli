@@ -44,39 +44,39 @@ func addUsage() error {
 }
 
 func GadgetAddRootfs(board string, g *libgadget.GadgetContext) (error, string) {
-	
+
 	if g.Config.Rootfs.From != "" ||
 		g.Config.Rootfs.Hash != "" {
-			
+
 		log.Error("Rootfs entry already exists")
 		log.Infof("Clear values: 'from: %s' and 'hash: %s' to update the image base", g.Config.Rootfs.From, g.Config.Rootfs.Hash)
 		return errors.New("Rootfs setting already exists"), ""
 	}
-	
+
 	log.Infof("Retrieving build image for '%s'", board)
-	
+
 	// find docker binary in path
 	binary, err := exec.LookPath("docker")
 	if err != nil {
 		log.Error("Failed to find local docker binary")
 		log.Warn("Is docker installed?")
-		
+
 		log.WithFields(log.Fields{
 			"function": "GadgetAddRootfs",
 			"stage":    "LookPath(docker)",
 		}).Debug("Couldn't find docker in the $PATH")
 		return err, ""
 	}
-	
+
 	err = libgadget.EnsureDocker(binary, g)
 	if err != nil {
 		log.Errorf("Failed to contact the docker daemon.")
 		log.Warnf("Is it installed and running with appropriate permissions?")
 		return err, ""
 	}
-	
+
 	latestContainer := fmt.Sprintf("nextthingco/gadget-build-%s-%s:latest", board, libgadget.GitBranch)
-	
+
 	// pull container
 	stdout, stderr, err := libgadget.RunLocalCommand(binary,
 		"Downloading", g,
@@ -93,14 +93,14 @@ func GadgetAddRootfs(board string, g *libgadget.GadgetContext) (error, string) {
 		"name":     latestContainer,
 		"stage":    "docker pull",
 	}).Debug(stderr)
-	
+
 	if err != nil {
 		log.Error("Failed to download build image")
 		return err, ""
 	}
-	
+
 	bashLine := fmt.Sprintf("%s", fmt.Sprintf("/bin/echo nextthingco/gadget-build-%s-$(cat .branch)", board))
-		
+
 	// get hash for container
 	hash, stderr, err := libgadget.RunLocalCommand(binary,
 		"", g,
@@ -111,8 +111,8 @@ func GadgetAddRootfs(board string, g *libgadget.GadgetContext) (error, string) {
 		"/bin/bash",
 		"-c",
 		bashLine,
-		)
-	
+	)
+
 	log.WithFields(log.Fields{
 		"function": "GadgetAddRootfs",
 		"name":     latestContainer,
@@ -127,13 +127,12 @@ func GadgetAddRootfs(board string, g *libgadget.GadgetContext) (error, string) {
 		"stream":   "stderr",
 		"stage":    "get tag name",
 	}).Debug(stderr)
-	
-	
+
 	if err != nil {
 		log.Error("Failed to parse build image information")
 		return err, hash
 	}
-	
+
 	// tag container
 	stdout, stderr, err = libgadget.RunLocalCommand(binary,
 		"", g,
@@ -151,14 +150,14 @@ func GadgetAddRootfs(board string, g *libgadget.GadgetContext) (error, string) {
 		"name":     latestContainer,
 		"stage":    "docker tag",
 	}).Debug(stderr)
-	
+
 	if err != nil {
 		log.Error("Failed to tag build image")
 		return err, ""
 	}
-	
+
 	log.Debugf("hash: %s", hash)
-	
+
 	return nil, hash
 }
 
@@ -197,12 +196,12 @@ func GadgetAdd(args []string, g *libgadget.GadgetContext) error {
 			log.Errorf("  %q is not valid defconfig.", args[1])
 			return addUsage()
 		}
-		
+
 		garError, garHash := GadgetAddRootfs(matched, g)
 		if garError != nil {
 			return garError
 		}
-		
+
 		g.Config.Rootfs.From = matched
 		g.Config.Rootfs.Hash = garHash
 	default:

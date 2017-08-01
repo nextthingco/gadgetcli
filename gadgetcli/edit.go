@@ -22,12 +22,11 @@ import (
 	"errors"
 	"github.com/nextthingco/libgadget"
 	log "gopkg.in/sirupsen/logrus.v1"
-	"os/exec"
 	"os"
+	"os/exec"
 )
 
-var (
-)
+var ()
 
 func editUsage() error {
 	log.Info("Usage:  gadget [flags] edit [type] [value]     ")
@@ -40,65 +39,65 @@ func editUsage() error {
 }
 
 func GadgetEditKernel(g *libgadget.GadgetContext) error {
-	
+
 	cmd := exec.Command("docker", "run", "-it", "--rm", g.Config.Rootfs.Hash, "make", "linux-menuconfig")
 
 	cmd.Env = os.Environ()
 
-	cmd.Stdin , cmd.Stdout, cmd.Stderr = os.Stdin, os.Stdout, os.Stderr
-	
-    if err := cmd.Start(); err != nil {
-        log.Errorf("An error occured: ", err)
-        return err
-    }
-    
-    cmd.Wait()	
-	
+	cmd.Stdin, cmd.Stdout, cmd.Stderr = os.Stdin, os.Stdout, os.Stderr
+
+	if err := cmd.Start(); err != nil {
+		log.Errorf("An error occured: ", err)
+		return err
+	}
+
+	cmd.Wait()
+
 	return nil
 }
 
 func GadgetEditUserspace(g *libgadget.GadgetContext) error {
-	
+
 	cmd := exec.Command("docker", "run", "-it", "--rm", g.Config.Rootfs.Hash, "make", "menuconfig")
 
 	cmd.Env = os.Environ()
 
-	cmd.Stdin , cmd.Stdout, cmd.Stderr = os.Stdin, os.Stdout, os.Stderr
-	
-    if err := cmd.Start(); err != nil {
-        log.Errorf("An error occured: ", err)
-        return err
-    }
-    
-    cmd.Wait()	
-	
+	cmd.Stdin, cmd.Stdout, cmd.Stderr = os.Stdin, os.Stdout, os.Stderr
+
+	if err := cmd.Start(); err != nil {
+		log.Errorf("An error occured: ", err)
+		return err
+	}
+
+	cmd.Wait()
+
 	return nil
 }
 
 func GadgetEditUboot(g *libgadget.GadgetContext) error {
-	
+
 	cmd := exec.Command("docker", "run", "-it", "--rm", g.Config.Rootfs.Hash, "make", "uboot-menuconfig")
 
 	cmd.Env = os.Environ()
 
-	cmd.Stdin , cmd.Stdout, cmd.Stderr = os.Stdin, os.Stdout, os.Stderr
-	
-    if err := cmd.Start(); err != nil {
-        log.Errorf("An error occured: ", err)
-        return err
-    }
-    
-    cmd.Wait()	
-	
+	cmd.Stdin, cmd.Stdout, cmd.Stderr = os.Stdin, os.Stdout, os.Stderr
+
+	if err := cmd.Start(); err != nil {
+		log.Errorf("An error occured: ", err)
+		return err
+	}
+
+	cmd.Wait()
+
 	return nil
 }
 
 // Process the build arguments and execute build
 func GadgetEdit(args []string, g *libgadget.GadgetContext) error {
-	
+
 	log.Info("Edit")
 	log.Debugf("args %s", args)
-	
+
 	// find docker binary in path
 	binary, err := exec.LookPath("docker")
 	if err != nil {
@@ -111,19 +110,19 @@ func GadgetEdit(args []string, g *libgadget.GadgetContext) error {
 		}).Debug("Couldn't find docker in the $PATH")
 		return err
 	}
-	
+
 	err = libgadget.EnsureDocker(binary, g)
 	if err != nil {
 		log.Errorf("Failed to contact the docker daemon.")
 		log.Warnf("Is it installed and running with appropriate permissions?")
 		return err
 	}
-	
+
 	if len(args) != 2 {
 		log.Error("Invalid arguments for `gadget edit`")
-		return editUsage();
+		return editUsage()
 	}
-	
+
 	// parse arguments
 	switch args[0] {
 	case "rootfs":

@@ -92,7 +92,7 @@ func GadgetRmiDanglers(g *libgadget.GadgetContext) error {
 	}
 
 	log.Debug("Removing danglers:")
-	
+
 	// not checking for error, as it's bound to fail when there are no dangles
 	stdout, stderr, _ := libgadget.RunRemoteCommand(client, "docker", "rmi", `$(docker images -q --filter "dangling=true")`)
 
@@ -118,7 +118,7 @@ func GadgetPurge(garbage []string, g *libgadget.GadgetContext) error {
 	if err != nil {
 		return err
 	}
-	
+
 	// not checking for error, as it's bound to fail when there are no dangles
 	log.Info("Removing containers ..")
 	stdout, stderr, _ := libgadget.RunRemoteCommand(client, "docker", "rm", "-f", `$(docker ps -aq)`)
@@ -131,7 +131,7 @@ func GadgetPurge(garbage []string, g *libgadget.GadgetContext) error {
 		"function":     "GadgetPurge",
 		"delete-stage": "rm -f",
 	}).Debug(stderr)
-	
+
 	log.Info("Removing images..")
 	stdout, stderr, _ = libgadget.RunRemoteCommand(client, "docker", "rmi", "-f", `$(docker images -aq)`)
 
@@ -143,7 +143,7 @@ func GadgetPurge(garbage []string, g *libgadget.GadgetContext) error {
 		"function":     "GadgetPurge",
 		"delete-stage": "rmi -f",
 	}).Debug(stderr)
-	
+
 	log.Info("Removing volumes..")
 	stdout, stderr, _ = libgadget.RunRemoteCommand(client, "docker", "volume", "rm", `$(docker volume ls -q)`)
 
@@ -178,7 +178,7 @@ func GadgetDelete(args []string, g *libgadget.GadgetContext) error {
 
 	for _, container := range stagedContainers {
 		log.Infof("  %s", container.ImageAlias)
-		
+
 		// delete container
 		stdout, stderr, err := libgadget.RunRemoteCommand(client, "docker rm", container.Alias)
 
@@ -192,7 +192,7 @@ func GadgetDelete(args []string, g *libgadget.GadgetContext) error {
 			"name":       container.Alias,
 			"stop-stage": "rm",
 		}).Debug(stderr)
-		
+
 		// delete image
 		err = GadgetRmi(args, g)
 
@@ -206,7 +206,7 @@ func GadgetDelete(args []string, g *libgadget.GadgetContext) error {
 			"name":         container.Alias,
 			"delete-stage": "rmi",
 		}).Debug(stdout)
-		
+
 		// delete image danglers
 		err = GadgetRmiDanglers(g)
 

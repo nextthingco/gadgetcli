@@ -41,7 +41,7 @@ func GadgetBuild(args []string, g *libgadget.GadgetContext) error {
 		}).Debug("Couldn't find docker in the $PATH")
 		return err
 	}
-	
+
 	err = libgadget.EnsureDocker(binary, g)
 	if err != nil {
 		log.Errorf("Failed to contact the docker daemon.")
@@ -57,7 +57,7 @@ func GadgetBuild(args []string, g *libgadget.GadgetContext) error {
 
 	for _, container := range stagedContainers {
 		log.Infof("  '%s'", container.Name)
-		
+
 		// use local directory for build
 		if container.Directory != "" {
 			containerDirectory := fmt.Sprintf("%s/%s", g.WorkingDirectory, container.Directory)

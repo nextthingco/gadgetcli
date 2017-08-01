@@ -19,24 +19,20 @@ along with Gadget.  If not, see <http://www.gnu.org/licenses/>.
 package main
 
 import (
-	"github.com/nextthingco/libgadget"
-	log "gopkg.in/sirupsen/logrus.v1"
-	"golang.org/x/crypto/ssh"
-	"golang.org/x/crypto/ssh/terminal"
-	"os"
-	"runtime"
 	"errors"
 	"fmt"
-	//~ "os/signal"
+	"github.com/nextthingco/libgadget"
+	"golang.org/x/crypto/ssh"
+	"golang.org/x/crypto/ssh/terminal"
+	log "gopkg.in/sirupsen/logrus.v1"
+	"os"
+	"runtime"
 )
 
 func GadgetShellContainer(args []string, g *libgadget.GadgetContext) error {
-	
+
 	stagedContainer, err := libgadget.FindStagedContainers(args, append(g.Config.Onboot, g.Config.Services...))
-	//~ if err != nil {
-		//~ return err
-	//~ }	
-	
+
 	log.Infof("Attempting to connect to '%s'", args[0])
 
 	client, err := libgadget.GadgetLogin(libgadget.GadgetPrivKeyLocation)
@@ -56,12 +52,11 @@ func GadgetShellContainer(args []string, g *libgadget.GadgetContext) error {
 		}).Debugf("%v", err)
 		return err
 	}
-	
+
 	session.Stdout = os.Stdout
 	session.Stderr = os.Stderr
 	session.Stdin = os.Stdin
-	
-	
+
 	modes := ssh.TerminalModes{
 		ssh.ECHO:   1, // enable echoing
 		ssh.ECHONL: 1,
@@ -70,7 +65,7 @@ func GadgetShellContainer(args []string, g *libgadget.GadgetContext) error {
 		modes = ssh.TerminalModes{
 			ssh.ECHO:   0, // disable echoing
 			ssh.ECHONL: 0,
-			ssh.IGNCR: 1,
+			ssh.IGNCR:  1,
 		}
 	}
 
@@ -83,7 +78,6 @@ func GadgetShellContainer(args []string, g *libgadget.GadgetContext) error {
 		return err
 	}
 
-	
 	if err := session.Start(fmt.Sprintf(`docker attach --detach-keys ctrl-d %s`, stagedContainer[0].Alias)); err != nil {
 		log.WithFields(log.Fields{
 			"function":    "GadgetShell",
@@ -91,12 +85,12 @@ func GadgetShellContainer(args []string, g *libgadget.GadgetContext) error {
 		}).Debugf("%v", err)
 		return err
 	}
-	
+
 	log.WithFields(log.Fields{
 		"function": "GadgetShell",
 	}).Debug("Entering container shell..")
 	log.Info("Stop and enter host shell: CTRL+C")
-		
+
 	if terminal.IsTerminal(0) {
 		oldState, err := terminal.MakeRaw(0)
 		if err != nil {
@@ -111,39 +105,12 @@ func GadgetShellContainer(args []string, g *libgadget.GadgetContext) error {
 		log.Warn("This doesn't look like a real terminal. The shell may exhibit some strange behaviour.")
 	}
 
-	//~ d := make(chan os.Signal, 1)
-	//~ signal.Notify(d, os.Interrupt)
-	//~ go func() error {
-		//~ for {
-			//~ <-d
-			//~ log.Info("^D")
-			
-			//~ interruptClient, err := libgadget.GadgetLogin(libgadget.GadgetPrivKeyLocation)
-			//~ if err != nil {
-				//~ log.Errorf("Failed to connect to Gadget")
-				//~ return err
-			//~ }
-			
-			//~ killCmd := fmt.Sprintf(`kill -9 $(pidof docker)`, stagedContainer[0].Alias)
-			//~ //$(ps aux | grep "docker attach --detach-keys ctrl-d %s" | grep -v grep | awk '{print $1}')`, stagedContainer[0].Alias)
-			
-			//~ _, _, err = libgadget.RunRemoteCommand(interruptClient, killCmd)			
-			//~ if err != nil {
-				//~ interruptClient.Close()
-				//~ return err
-			//~ }
-			
-		//~ }
-	//~ }()
-	
-	//~ log.Debug(fmt.Sprintf(`kill -9 $(ps aux | grep "%s" | grep -v grep | awk '{print $1}')`, stagedContainer[0].Alias))
-
 	session.Wait()
 
 	log.WithFields(log.Fields{
 		"function": "GadgetShell",
 	}).Debug("Closed shell.")
-	
+
 	return err
 }
 
@@ -155,10 +122,10 @@ func GadgetShell(args []string, g *libgadget.GadgetContext) error {
 		log.Errorf("Failed to connect to Gadget")
 		return err
 	}
-	
+
 	// shell into a specific container
 	if len(args) == 1 {
-		err := GadgetShellContainer(args, g);
+		err := GadgetShellContainer(args, g)
 		if err != nil {
 			log.Errorf("Failed to connect to %s", args[0])
 			return err
@@ -187,12 +154,11 @@ func GadgetShell(args []string, g *libgadget.GadgetContext) error {
 		}).Debugf("%v", err)
 		return err
 	}
-	
+
 	session.Stdout = os.Stdout
 	session.Stderr = os.Stderr
 	session.Stdin = os.Stdin
-	
-	
+
 	modes := ssh.TerminalModes{
 		ssh.ECHO:   1, // enable echoing
 		ssh.ECHONL: 1,
@@ -201,7 +167,7 @@ func GadgetShell(args []string, g *libgadget.GadgetContext) error {
 		modes = ssh.TerminalModes{
 			ssh.ECHO:   0, // disable echoing
 			ssh.ECHONL: 0,
-			ssh.IGNCR: 1,
+			ssh.IGNCR:  1,
 		}
 	}
 
@@ -225,14 +191,13 @@ func GadgetShell(args []string, g *libgadget.GadgetContext) error {
 	log.WithFields(log.Fields{
 		"function": "GadgetShell",
 	}).Debug("Entering shell..")
-	
+
 	if terminal.IsTerminal(0) {
 		oldState, err := terminal.MakeRaw(0)
 		if err != nil {
 			log.WithFields(log.Fields{
 				"function":    "GadgetShell",
 				"shell-stage": "terminal.MakeRaw",
-				
 			}).Debugf("%v", err)
 			return err
 		}
