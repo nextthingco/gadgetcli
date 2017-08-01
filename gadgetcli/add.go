@@ -45,6 +45,14 @@ func addUsage() error {
 
 func GadgetAddRootfs(board string, g *libgadget.GadgetContext) (error, string) {
 	
+	if g.Config.Rootfs.From != "" ||
+		g.Config.Rootfs.Hash != "" {
+			
+		log.Error("Rootfs entry already exists")
+		log.Infof("Clear values: 'from: %s' and 'hash: %s' to update the image base", g.Config.Rootfs.From, g.Config.Rootfs.Hash)
+		return errors.New("Rootfs setting already exists"), ""
+	}
+	
 	log.Infof("Retrieving build image for '%s'", board)
 	
 	// find docker binary in path
@@ -67,7 +75,7 @@ func GadgetAddRootfs(board string, g *libgadget.GadgetContext) (error, string) {
 		return err, ""
 	}
 	
-	latestContainer := fmt.Sprintf("computermouth/gbgos-%s-%s:latest", board, libgadget.GitBranch)
+	latestContainer := fmt.Sprintf("nextthingco/gadget-build-%s-%s:latest", board, libgadget.GitBranch)
 	
 	// pull container
 	stdout, stderr, err := libgadget.RunLocalCommand(binary,
@@ -91,7 +99,7 @@ func GadgetAddRootfs(board string, g *libgadget.GadgetContext) (error, string) {
 		return err, ""
 	}
 	
-	bashLine := fmt.Sprintf("%s", fmt.Sprintf("/bin/echo computermouth/gbgos-%s-$(cat .branch):$(date --iso-8601)-$(git rev-parse --short=8 HEAD)", board))
+	bashLine := fmt.Sprintf("%s", fmt.Sprintf("/bin/echo nextthingco/gadget-build-%s-$(cat .branch)", board))
 		
 	// get hash for container
 	hash, stderr, err := libgadget.RunLocalCommand(binary,
