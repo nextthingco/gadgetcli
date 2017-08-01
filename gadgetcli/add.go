@@ -27,6 +27,7 @@ import (
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os/exec"
+	"os"
 )
 
 var (
@@ -53,7 +54,7 @@ func GadgetAddRootfs(board string, g *libgadget.GadgetContext) (error, string) {
 		return errors.New("Rootfs setting already exists"), ""
 	}
 
-	log.Infof("Retrieving build image for '%s'", board)
+	log.Infof("Retrieving build image for '%s':", board)
 
 	// find docker binary in path
 	binary, err := exec.LookPath("docker")
@@ -78,21 +79,11 @@ func GadgetAddRootfs(board string, g *libgadget.GadgetContext) (error, string) {
 	latestContainer := fmt.Sprintf("nextthingco/gadget-build-%s-%s:latest", board, libgadget.GitBranch)
 
 	// pull container
-	stdout, stderr, err := libgadget.RunLocalCommand(binary,
-		"Downloading", g,
-		"pull",
-		latestContainer)
-
-	log.WithFields(log.Fields{
-		"function": "GadgetAddRootfs",
-		"name":     latestContainer,
-		"stage":    "docker pull",
-	}).Debug(stdout)
-	log.WithFields(log.Fields{
-		"function": "GadgetAddRootfs",
-		"name":     latestContainer,
-		"stage":    "docker pull",
-	}).Debug(stderr)
+	pullCmd := exec.Command("docker", "pull", latestContainer)
+	pullCmd.Env = os.Environ()
+	pullCmd.Stdin, pullCmd.Stdout, pullCmd.Stderr = os.Stdin, os.Stdout, os.Stderr
+	err = pullCmd.Start()
+	pullCmd.Wait()
 
 	if err != nil {
 		log.Error("Failed to download build image")
@@ -134,7 +125,7 @@ func GadgetAddRootfs(board string, g *libgadget.GadgetContext) (error, string) {
 	}
 
 	// tag container
-	stdout, stderr, err = libgadget.RunLocalCommand(binary,
+	stdout, stderr, err := libgadget.RunLocalCommand(binary,
 		"", g,
 		"tag",
 		latestContainer,
@@ -157,6 +148,7 @@ func GadgetAddRootfs(board string, g *libgadget.GadgetContext) (error, string) {
 	}
 
 	log.Debugf("hash: %s", hash)
+	log.Info("Done ✔", hash)
 
 	return nil, hash
 }
