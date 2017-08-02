@@ -57,6 +57,7 @@ type GadgetContainer struct {
 	Net          string
 	PID          string "pid,omitempty"
 	Readonly     bool
+	Forking      bool
 	Command      []string `yaml:",flow"`
 	Binds        []string `yaml:",flow"`
 	Capabilities []string `yaml:",flow"`
@@ -76,6 +77,7 @@ func TemplateConfig(gName, gUu1, gUu2 string) GadgetConfig {
 				Name:  "hello-world",
 				Image: "arm32v7/hello-world",
 				UUID:  gUu2,
+				Forking: false,
 			},
 		},
 	}

@@ -57,7 +57,9 @@ func GadgetEditKernel(g *libgadget.GadgetContext) error {
 }
 
 func GadgetEditUserspace(g *libgadget.GadgetContext) error {
-
+	
+	return nil // just quit until the defconfigs are save-able
+	
 	cmd := exec.Command("docker", "run", "-it", "--rm", g.Config.Rootfs.Hash, "make", "menuconfig")
 
 	cmd.Env = os.Environ()
@@ -75,6 +77,8 @@ func GadgetEditUserspace(g *libgadget.GadgetContext) error {
 }
 
 func GadgetEditUboot(g *libgadget.GadgetContext) error {
+	
+	return nil // just quit until the defconfigs are save-able
 
 	cmd := exec.Command("docker", "run", "-it", "--rm", g.Config.Rootfs.Hash, "make", "uboot-menuconfig")
 

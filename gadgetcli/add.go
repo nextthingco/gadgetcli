@@ -230,9 +230,10 @@ func GadgetAdd(args []string, g *libgadget.GadgetContext) error {
 	log.Infof("Adding new %s: \"%s\" ", args[0], args[1])
 
 	addGadgetContainer := libgadget.GadgetContainer{
-		Name:  args[1],
-		Image: fmt.Sprintf("%s/%s", g.Config.Name, args[1]),
-		UUID:  fmt.Sprintf("%s", addUu),
+		Name:    args[1],
+		Image:   fmt.Sprintf("%s/%s", g.Config.Name, args[1]),
+		UUID:    fmt.Sprintf("%s", addUu),
+		Forking: false,
 	}
 
 	// parse arguments
