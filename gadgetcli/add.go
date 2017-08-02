@@ -28,6 +28,8 @@ import (
 	"io/ioutil"
 	"os/exec"
 	"os"
+	"os/user"
+	"runtime"
 )
 
 var (
@@ -147,8 +149,71 @@ func GadgetAddRootfs(board string, g *libgadget.GadgetContext) (error, string) {
 		return err, ""
 	}
 
+	// fetch kernelconfig
+	curdirBinds := fmt.Sprintf("%s:/save", g.WorkingDirectory)
+	saveFile := "/save/" + board + "-linux.config"
+	linuxFile := "/opt/gadget-os-proto/gadget/board/nextthing/" + board + "/configs/linux.config"
+	
+	stdout, stderr, err = libgadget.RunLocalCommand(binary,
+		"", g,
+		"run", "--rm", "-v", curdirBinds,
+		latestContainer,
+		"/bin/cp", linuxFile, saveFile)
+
+	log.WithFields(log.Fields{
+		"function": "GadgetAddRootfs",
+		"name":     latestContainer,
+		"stage":    "docker tag",
+	}).Debug(stdout)
+	log.WithFields(log.Fields{
+		"function": "GadgetAddRootfs",
+		"name":     latestContainer,
+		"stage":    "docker tag",
+	}).Debug(stderr)
+
+	if err != nil {
+		log.Error("Failed to tag build image")
+		return err, ""
+	}
+
+	// chown kernelconfig	
+	if runtime.GOOS != "windows" {
+		
+		whois, err := user.Current()
+		if err != nil {
+			log.Error("Failed to retrieve UID/GID")
+			return err, ""
+		}
+		
+		chownAs := whois.Uid + ":" + whois.Gid
+		
+		stdout, stderr, err = libgadget.RunLocalCommand(binary,
+			"", g,
+			"run", "--rm", "-v", curdirBinds,
+			latestContainer,
+			"/bin/chown", chownAs, saveFile)
+
+		log.WithFields(log.Fields{
+			"function": "GadgetAddRootfs",
+			"name":     latestContainer,
+			"stage":    "docker tag",
+		}).Debug(stdout)
+		log.WithFields(log.Fields{
+			"function": "GadgetAddRootfs",
+			"name":     latestContainer,
+			"stage":    "docker tag",
+		}).Debug(stderr)
+
+		if err != nil {
+			log.Error("Failed to tag build image")
+			return err, ""
+		}
+		
+	}
+
 	log.Debugf("hash: %s", hash)
-	log.Info("Done ✔", hash)
+	log.Info("Done ✔")
+	log.Infof("kernel config saved to '%s-linux.config'", board)
 
 	return nil, hash
 }
