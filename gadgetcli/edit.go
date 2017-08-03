@@ -24,6 +24,9 @@ import (
 	log "gopkg.in/sirupsen/logrus.v1"
 	"os"
 	"os/exec"
+	"os/user"
+	"runtime"
+	"fmt"
 )
 
 var ()
@@ -39,8 +42,43 @@ func editUsage() error {
 }
 
 func GadgetEditKernel(g *libgadget.GadgetContext) error {
+	
+	// find docker binary in path
+	binary, err := exec.LookPath("docker")
+	if err != nil {
+		log.Error("Failed to find local docker binary")
+		log.Warn("Is docker installed?")
 
-	cmd := exec.Command("docker", "run", "-it", "--rm", g.Config.Rootfs.Hash, "make", "linux-menuconfig")
+		log.WithFields(log.Fields{
+			"function": "GadgetAddRootfs",
+			"stage":    "LookPath(docker)",
+		}).Debug("Couldn't find docker in the $PATH")
+		return err
+	}
+
+	err = libgadget.EnsureDocker(binary, g)
+	if err != nil {
+		log.Errorf("Failed to contact the docker daemon.")
+		log.Warnf("Is it installed and running with appropriate permissions?")
+		return err
+	}
+	
+	image := g.Config.Rootfs.Hash
+	board := g.Config.Rootfs.From
+	
+	linuxConfig := fmt.Sprintf("%s/%s-linux.config", g.WorkingDirectory, board)
+	configExists, err := libgadget.PathExists(linuxConfig)
+	if ! configExists {
+		log.Errorf("Could not locate '%s'", linuxConfig)
+		return errors.New("Failed to locate linux config")
+	}
+	if err != nil {
+		log.Errorf("Failed to determine if '%s' exists", linuxConfig)
+		return err
+	}
+
+	curdirBinds := fmt.Sprintf("%s/%s-linux.config:/opt/gadget-os-proto/gadget/board/nextthing/%s/configs/linux.config", g.WorkingDirectory, board, board)
+	cmd := exec.Command("docker", "run", "-it", "--rm", "-e", "no_docker=1", "-v", curdirBinds, image, "make", "gadget_edit_linux_defconfig")
 
 	cmd.Env = os.Environ()
 
@@ -52,6 +90,44 @@ func GadgetEditKernel(g *libgadget.GadgetContext) error {
 	}
 
 	cmd.Wait()
+
+	// chown kernelconfig	
+	if runtime.GOOS != "windows" {
+		
+		whois, err := user.Current()
+		if err != nil {
+			log.Error("Failed to retrieve UID/GID")
+			return err
+		}
+		
+		chownAs := whois.Uid + ":" + whois.Gid
+		
+		defconfig := fmt.Sprintf("/opt/gadget-os-proto/gadget/board/nextthing/%s/configs/linux.config", board)
+		
+		stdout, stderr, err := libgadget.RunLocalCommand(binary,
+			"", g,
+			"run", "--rm", "-v", curdirBinds,
+			image,
+			"/bin/chown", chownAs, defconfig)
+
+		log.WithFields(log.Fields{
+			"function": "GadgetAddRootfs",
+			"name":     image,
+			"stage":    "docker tag",
+		}).Debug(stdout)
+		log.WithFields(log.Fields{
+			"function": "GadgetAddRootfs",
+			"name":     image,
+			"stage":    "docker tag",
+		}).Debug(stderr)
+
+		if err != nil {
+			log.Error("Failed to chown linux config")
+			return err
+		}
+		
+	}
+
 
 	return nil
 }

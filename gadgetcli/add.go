@@ -152,13 +152,12 @@ func GadgetAddRootfs(board string, g *libgadget.GadgetContext) (error, string) {
 	// fetch kernelconfig
 	curdirBinds := fmt.Sprintf("%s:/save", g.WorkingDirectory)
 	saveFile := "/save/" + board + "-linux.config"
-	linuxFile := "/opt/gadget-os-proto/gadget/board/nextthing/" + board + "/configs/linux.config"
 	
 	stdout, stderr, err = libgadget.RunLocalCommand(binary,
 		"", g,
-		"run", "--rm", "-v", curdirBinds,
+		"run", "--rm", "-v", curdirBinds, "-e", "no_docker=1", "-e", "BOARD=" + board,
 		latestContainer,
-		"/bin/cp", linuxFile, saveFile)
+		"make", "gadget_export_linux_defconfig")
 
 	log.WithFields(log.Fields{
 		"function": "GadgetAddRootfs",
