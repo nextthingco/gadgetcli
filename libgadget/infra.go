@@ -158,7 +158,7 @@ func RequiredSsh() error {
 	}
 
 	if !sshDirExists {
-		err = os.Mkdir(sshLocation, 0644)
+		err = os.Mkdir(sshLocation, 0700)
 		if err != nil {
 			log.WithFields(log.Fields{
 				"function": "RequiredSsh",

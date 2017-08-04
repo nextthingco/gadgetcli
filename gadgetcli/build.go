@@ -79,7 +79,7 @@ func GadgetBuildRootfs(g *libgadget.GadgetContext) error {
 	}
 
 	if !imagesDirExists {
-		err = os.Mkdir(imagesDir, 0644)
+		err = os.Mkdir(imagesDir, 0755)
 		if err != nil {
 			log.WithFields(log.Fields{
 				"function": "GadgetBuildRootfs",
@@ -89,7 +89,6 @@ func GadgetBuildRootfs(g *libgadget.GadgetContext) error {
 		}
 	}
 	
-	//~ boardDefConfig := board + "_defconfig"
 	linuxConfigBinds := fmt.Sprintf("%s/%s-linux.config:/opt/gadget-os-proto/gadget/board/nextthing/%s/configs/linux.config", g.WorkingDirectory, board, board)
 	imagesBinds := fmt.Sprintf("%s:/opt/output/images", imagesDir)
 	cmd := exec.Command("docker", "run", "-it", "--rm", "-e", "BOARD=" + board, "-e", "no_docker=1", "-v", imagesBinds, "-v", linuxConfigBinds, image, "make", "gadget_build")
@@ -115,12 +114,12 @@ func GadgetBuildRootfs(g *libgadget.GadgetContext) error {
 		}
 		
 		chownAs := whois.Uid + ":" + whois.Gid
-		
+		imagesBinds := fmt.Sprintf("%s:/chown", imagesDir)
 		stdout, stderr, err := libgadget.RunLocalCommand(binary,
 			"", g,
 			"run", "--rm", "-v", imagesBinds,
 			image,
-			"/bin/chown", chownAs, "/opt/output/images/*")
+			"/bin/chown", "-R", chownAs, "/chown")
 
 		log.WithFields(log.Fields{
 			"function": "GadgetAddRootfs",
