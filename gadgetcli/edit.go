@@ -84,6 +84,8 @@ func GadgetEditKernel(g *libgadget.GadgetContext) error {
 
 	cmd.Stdin, cmd.Stdout, cmd.Stderr = os.Stdin, os.Stdout, os.Stderr
 
+	log.Info("Edit kernel configuration")
+	
 	if err := cmd.Start(); err != nil {
 		log.Errorf("An error occured: ", err)
 		return err
@@ -175,7 +177,6 @@ func GadgetEditUboot(g *libgadget.GadgetContext) error {
 // Process the build arguments and execute build
 func GadgetEdit(args []string, g *libgadget.GadgetContext) error {
 
-	log.Info("Edit")
 	log.Debugf("args %s", args)
 
 	// find docker binary in path
