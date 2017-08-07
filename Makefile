@@ -45,10 +45,15 @@ gadget_release: libgadget $(GADGET_SOURCES) $(VERSION_FILE) $(LIBGADGET_SOURCES)
 	@mkdir -p build/linux_arm64
 	@mkdir -p build/windows
 	@mkdir -p build/darwin
+	@echo "  Linux AMD64"
 	@GOOS=linux GOARCH=amd64 go build -o build/linux/gadget -ldflags="-s -w" -v ./gadgetcli
+	@echo "  Linux ARM"
 	@GOOS=linux GOARCH=arm go build -o build/linux_arm/gadget -ldflags="-s -w" -v ./gadgetcli
+	@echo "  Linux ARM64"
 	@GOOS=linux GOARCH=arm64 go build -o build/linux_arm64/gadget -ldflags="-s -w" -v ./gadgetcli
+	@echo "  Windows AMD64"
 	@GOOS=windows GOARCH=amd64 go build -o build/windows/gadget.exe -ldflags="-s -w" -v ./gadgetcli
+	@echo "  MacOS"
 	@GOOS=darwin GOARCH=amd64 go build -o build/darwin/gadget -ldflags="-s -w" -v ./gadgetcli
 
 gadgetosinit_release: libgadget $(GADGET_SOURCES) $(VERSION_FILE) $(LIBGADGET_SOURCES)
