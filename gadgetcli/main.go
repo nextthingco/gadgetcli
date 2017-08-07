@@ -51,6 +51,7 @@ var Commands = []GadgetCommand{
 	{Name: "shell", Function: GadgetShell, NeedsConfig: true},
 	{Name: "logs", Function: GadgetLogs, NeedsConfig: true},
 	{Name: "run", Function: GadgetRun, NeedsConfig: false},
+	{Name: "tag", Function: GadgetTag, NeedsConfig: true},
 	{Name: "version", Function: GadgetVersion, NeedsConfig: false},
 	{Name: "help", Function: GadgetHelp, NeedsConfig: false},
 }
@@ -94,6 +95,7 @@ func main() {
 		log.Info("  status      Fetch status of container[s]")
 		log.Info("  delete      Remove container[s] from gadget")
 		log.Info("  shell       Connect to remote device running GadgetOS")
+		log.Info("  tag         Tag built container[s] for config management")
 		log.Info("  logs        Fetch logs(stdout) of container[s]")
 		log.Info("  version     Print version information")
 		log.Info("  help        Print this message")
