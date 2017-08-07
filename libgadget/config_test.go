@@ -109,7 +109,6 @@ services:
 func TestLoadConfig(t *testing.T) {
 
 	// run the init test [on pre-existing /tmp/gadget.yml]
-	//~ TestGadgetInit(t)
 
 	initContext := GadgetContext{
 		WorkingDirectory: "/tmp",

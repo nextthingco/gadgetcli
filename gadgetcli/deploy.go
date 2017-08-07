@@ -21,9 +21,9 @@ package main
 import (
 	"errors"
 	"github.com/nextthingco/libgadget"
-	log "gopkg.in/sirupsen/logrus.v1"
 	"golang.org/x/crypto/ssh"
 	"gopkg.in/cheggaaa/pb.v1"
+	log "gopkg.in/sirupsen/logrus.v1"
 	"io"
 	"os/exec"
 	"strings"
@@ -100,7 +100,7 @@ func DeployContainer(client *ssh.Client, container *libgadget.GadgetContainer, g
 		log.Debug("Closing session")
 	}
 	session.Close()
-	
+
 	restart := ""
 	mode, err := FindRunMode(container.UUID, g.Config.Onboot, g.Config.Services)
 	if err != nil {
@@ -132,10 +132,9 @@ func DeployContainer(client *ssh.Client, container *libgadget.GadgetContainer, g
 
 	log.Debugf("docker create --name %s %s %s %s %s %s %s %s", container.Alias,
 		net, pid, readOnly, binds, caps, devs, restart, container.ImageAlias, commands)
-	
-	
+
 	// delete image danglers
-	err = GadgetRmiDanglers( g)
+	err = GadgetRmiDanglers(g)
 
 	log.WithFields(log.Fields{
 		"function":     "GadgetDelete",
@@ -147,7 +146,7 @@ func DeployContainer(client *ssh.Client, container *libgadget.GadgetContainer, g
 		"name":         container.Alias,
 		"delete-stage": "rmi (danglers)",
 	}).Debug(stderr)
-	
+
 	if err != nil {
 
 		log.Errorf("Failed to set %s to always restart on Gadget", container.Alias)
