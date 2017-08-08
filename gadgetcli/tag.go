@@ -27,10 +27,13 @@ import (
 )
 
 func tagUsage() error {
-	log.Info("Usage:  gadget [flags] tag [repository] [tag]     ")
-	log.Info("                *opt           *req      *opt     ")
-	log.Info("Value (repository): repository for        ")
-	log.Info("Value (rootfs): kernel <more to be added soon> ")
+	log.Info("Usage:  gadget [flags] tag [options] [repository] [name]                ")
+	log.Info("                *opt          *opt       *req      *opt                 ")
+	log.Info("Value (repository): repository for where container can be pushed/pulled ")
+	log.Info("Value (name): friendly name for a single container to tag               ")
+    log.Infof("Options:                                                               ")
+    log.Info("  -t <tag>                                                              ")
+    log.Info("      tag for the container (default: latest)                           ")
 
 	return errors.New("Incorrect edit usage")
 }
@@ -41,6 +44,16 @@ func GadgetTag(args []string, g *libgadget.GadgetContext) error {
 	if len(args) < 1 {
 		return tagUsage()
 	}
+
+    // Break out the other options
+    tagName := "latest"
+    leftovers := args
+    if args[0] == "-t" && len(args) > 2 {
+        tagName = args[1]
+        leftovers = args[2:]
+    } else if args[0] == "-t" && len(args) < 2{
+        return tagUsage()
+    }
 
 	// find docker binary in path
 	binary, err := exec.LookPath("docker")
@@ -65,16 +78,18 @@ func GadgetTag(args []string, g *libgadget.GadgetContext) error {
 	log.Info("Tagging:")
 
 	// We're going to tag all the containers in the config
-	stagedContainers := append(g.Config.Onboot, g.Config.Services...)
+    // if we send in a name, we should be good and only tag the one we want
+    stagedContainers := append(g.Config.Onboot, g.Config.Services...)
+    if len(leftovers) > 1 {
+        // Skip over the first element in the leftovers list as it's the repo name
+        stagedContainers, _ = libgadget.FindStagedContainers(leftovers[1:], append(g.Config.Onboot, g.Config.Services...))
+    }
 
 	tagFailed := false
 
 	for _, container := range stagedContainers {
-        // Figure out the tag name
-        taggedImage := fmt.Sprintf("%s/%s", args[0], container.Name)
-        if len(args) > 1 {
-            taggedImage = fmt.Sprintf("%s/%s:%s", args[0], container.Name, args[1])
-        }
+        // Figure out the full tag name, leftovers[0] is the repo name
+        taggedImage := fmt.Sprintf("%s/%s:%s", leftovers[0], container.Name, tagName)
 
         log.Infof("  '%s' ➡ '%s'", container.ImageAlias, taggedImage)
 
