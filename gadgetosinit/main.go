@@ -84,7 +84,7 @@ func main() {
 	g := libgadget.GadgetContext{}
 
 	g.WorkingDirectory = "/data/"
-	
+
 	flag.Parse()
 
 	var gFormatter *gadgetFormatter.TextFormatter

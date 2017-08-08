@@ -20,13 +20,13 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"github.com/nextthingco/libgadget"
 	log "gopkg.in/sirupsen/logrus.v1"
 	"os"
 	"os/exec"
 	"os/user"
 	"runtime"
-	"fmt"
 )
 
 var ()
@@ -42,7 +42,7 @@ func editUsage() error {
 }
 
 func GadgetEditKernel(g *libgadget.GadgetContext) error {
-	
+
 	// find docker binary in path
 	binary, err := exec.LookPath("docker")
 	if err != nil {
@@ -62,13 +62,13 @@ func GadgetEditKernel(g *libgadget.GadgetContext) error {
 		log.Warnf("Is it installed and running with appropriate permissions?")
 		return err
 	}
-	
+
 	image := g.Config.Rootfs.Hash
 	board := g.Config.Rootfs.From
-	
+
 	linuxConfig := fmt.Sprintf("%s/%s-linux.config", g.WorkingDirectory, board)
 	configExists, err := libgadget.PathExists(linuxConfig)
-	if ! configExists {
+	if !configExists {
 		log.Errorf("Could not locate '%s'", linuxConfig)
 		return errors.New("Failed to locate linux config")
 	}
@@ -85,7 +85,7 @@ func GadgetEditKernel(g *libgadget.GadgetContext) error {
 	cmd.Stdin, cmd.Stdout, cmd.Stderr = os.Stdin, os.Stdout, os.Stderr
 
 	log.Info("Edit kernel configuration")
-	
+
 	if err := cmd.Start(); err != nil {
 		log.Errorf("An error occured: ", err)
 		return err
@@ -93,19 +93,19 @@ func GadgetEditKernel(g *libgadget.GadgetContext) error {
 
 	cmd.Wait()
 
-	// chown kernelconfig	
+	// chown kernelconfig
 	if runtime.GOOS != "windows" {
-		
+
 		whois, err := user.Current()
 		if err != nil {
 			log.Error("Failed to retrieve UID/GID")
 			return err
 		}
-		
+
 		chownAs := whois.Uid + ":" + whois.Gid
-		
+
 		defconfig := fmt.Sprintf("/opt/gadget-os-proto/gadget/board/nextthing/%s/configs/linux.config", board)
-		
+
 		stdout, stderr, err := libgadget.RunLocalCommand(binary,
 			"", g,
 			"run", "--rm", "-v", curdirBinds,
@@ -127,17 +127,16 @@ func GadgetEditKernel(g *libgadget.GadgetContext) error {
 			log.Error("Failed to chown linux config")
 			return err
 		}
-		
-	}
 
+	}
 
 	return nil
 }
 
 func GadgetEditUserspace(g *libgadget.GadgetContext) error {
-	
+
 	return nil // just quit until the defconfigs are save-able
-	
+
 	cmd := exec.Command("docker", "run", "-it", "--rm", g.Config.Rootfs.Hash, "make", "menuconfig")
 
 	cmd.Env = os.Environ()
@@ -155,7 +154,7 @@ func GadgetEditUserspace(g *libgadget.GadgetContext) error {
 }
 
 func GadgetEditUboot(g *libgadget.GadgetContext) error {
-	
+
 	return nil // just quit until the defconfigs are save-able
 
 	cmd := exec.Command("docker", "run", "-it", "--rm", g.Config.Rootfs.Hash, "make", "uboot-menuconfig")

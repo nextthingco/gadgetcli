@@ -26,8 +26,8 @@ import (
 	log "gopkg.in/sirupsen/logrus.v1"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
-	"os/exec"
 	"os"
+	"os/exec"
 	"os/user"
 	"runtime"
 )
@@ -152,10 +152,10 @@ func GadgetAddRootfs(board string, g *libgadget.GadgetContext) (error, string) {
 	// fetch kernelconfig
 	curdirBinds := fmt.Sprintf("%s:/save", g.WorkingDirectory)
 	saveFile := "/save/" + board + "-linux.config"
-	
+
 	stdout, stderr, err = libgadget.RunLocalCommand(binary,
 		"", g,
-		"run", "--rm", "-v", curdirBinds, "-e", "no_docker=1", "-e", "BOARD=" + board,
+		"run", "--rm", "-v", curdirBinds, "-e", "no_docker=1", "-e", "BOARD="+board,
 		latestContainer,
 		"make", "gadget_export_linux_defconfig")
 
@@ -175,17 +175,17 @@ func GadgetAddRootfs(board string, g *libgadget.GadgetContext) (error, string) {
 		return err, ""
 	}
 
-	// chown kernelconfig	
+	// chown kernelconfig
 	if runtime.GOOS != "windows" {
-		
+
 		whois, err := user.Current()
 		if err != nil {
 			log.Error("Failed to retrieve UID/GID")
 			return err, ""
 		}
-		
+
 		chownAs := whois.Uid + ":" + whois.Gid
-		
+
 		stdout, stderr, err = libgadget.RunLocalCommand(binary,
 			"", g,
 			"run", "--rm", "-v", curdirBinds,
@@ -207,7 +207,7 @@ func GadgetAddRootfs(board string, g *libgadget.GadgetContext) (error, string) {
 			log.Error("Failed to tag build image")
 			return err, ""
 		}
-		
+
 	}
 
 	log.Debugf("hash: %s", hash)

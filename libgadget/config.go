@@ -74,9 +74,9 @@ func TemplateConfig(gName, gUu1, gUu2 string) GadgetConfig {
 		Type: "docker",
 		Onboot: []GadgetContainer{
 			{
-				Name:  "hello-world",
-				Image: "arm32v7/hello-world",
-				UUID:  gUu2,
+				Name:    "hello-world",
+				Image:   "arm32v7/hello-world",
+				UUID:    gUu2,
 				Forking: false,
 			},
 		},

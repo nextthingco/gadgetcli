@@ -23,16 +23,16 @@ import (
 	"fmt"
 	"github.com/nextthingco/libgadget"
 	log "gopkg.in/sirupsen/logrus.v1"
+	"os"
 	"os/exec"
 	"os/user"
-	"os"
 	"path/filepath"
 	"runtime"
 )
 
 func GadgetBuildRootfs(g *libgadget.GadgetContext) error {
 	log.Infof("  '%s' rootfs", g.Config.Rootfs.From)
-	
+
 	// find docker binary in path
 	binary, err := exec.LookPath("docker")
 	if err != nil {
@@ -52,13 +52,13 @@ func GadgetBuildRootfs(g *libgadget.GadgetContext) error {
 		log.Warnf("Is it installed and running with appropriate permissions?")
 		return err
 	}
-	
+
 	image := g.Config.Rootfs.Hash
 	board := g.Config.Rootfs.From
-	
+
 	linuxConfig := fmt.Sprintf("%s/%s-linux.config", g.WorkingDirectory, board)
 	configExists, err := libgadget.PathExists(linuxConfig)
-	if ! configExists {
+	if !configExists {
 		log.Errorf("Could not locate '%s'", linuxConfig)
 		return errors.New("Failed to locate linux config")
 	}
@@ -66,7 +66,7 @@ func GadgetBuildRootfs(g *libgadget.GadgetContext) error {
 		log.Errorf("Failed to determine if '%s' exists", linuxConfig)
 		return err
 	}
-	
+
 	// check/create ./.build/$board/output
 	imagesDir := filepath.Join(g.WorkingDirectory, "/.images/")
 	imagesDirExists, err := libgadget.PathExists(imagesDir)
@@ -88,10 +88,10 @@ func GadgetBuildRootfs(g *libgadget.GadgetContext) error {
 			return err
 		}
 	}
-	
+
 	linuxConfigBinds := fmt.Sprintf("%s/%s-linux.config:/opt/gadget-os-proto/gadget/board/nextthing/%s/configs/linux.config", g.WorkingDirectory, board, board)
 	imagesBinds := fmt.Sprintf("%s:/opt/output/images", imagesDir)
-	cmd := exec.Command("docker", "run", "-it", "--rm", "-e", "BOARD=" + board, "-e", "no_docker=1", "-v", imagesBinds, "-v", linuxConfigBinds, image, "make", "gadget_build")
+	cmd := exec.Command("docker", "run", "-it", "--rm", "-e", "BOARD="+board, "-e", "no_docker=1", "-v", imagesBinds, "-v", linuxConfigBinds, image, "make", "gadget_build")
 
 	cmd.Env = os.Environ()
 
@@ -104,15 +104,15 @@ func GadgetBuildRootfs(g *libgadget.GadgetContext) error {
 
 	cmd.Wait()
 
-	// chown kernelconfig	
+	// chown kernelconfig
 	if runtime.GOOS != "windows" {
-		
+
 		whois, err := user.Current()
 		if err != nil {
 			log.Error("Failed to retrieve UID/GID")
 			return err
 		}
-		
+
 		chownAs := whois.Uid + ":" + whois.Gid
 		imagesBinds := fmt.Sprintf("%s:/chown", imagesDir)
 		stdout, stderr, err := libgadget.RunLocalCommand(binary,
@@ -136,9 +136,9 @@ func GadgetBuildRootfs(g *libgadget.GadgetContext) error {
 			log.Error("Failed to chown linux config")
 			return err
 		}
-		
+
 	}
-	
+
 	return nil
 }
 
@@ -276,11 +276,11 @@ func GadgetBuild(args []string, g *libgadget.GadgetContext) error {
 		}
 
 	}
-	
+
 	if buildFailed {
 		err = errors.New("Failed to build one or more artifacts")
 	}
-	
+
 	if len(args) < 1 && g.Config.Rootfs.From != "" && g.Config.Rootfs.Hash != "" {
 		err = GadgetBuildRootfs(g)
 		if err != nil {
@@ -288,6 +288,6 @@ func GadgetBuild(args []string, g *libgadget.GadgetContext) error {
 			return err
 		}
 	}
-	
+
 	return err
 }
