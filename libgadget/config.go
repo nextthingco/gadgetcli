@@ -34,6 +34,7 @@ type GadgetContext struct {
 	Verbose          bool
 	WorkingDirectory string
 }
+
 type GadgetConfig struct {
 	Spec     string
 	Name     string
