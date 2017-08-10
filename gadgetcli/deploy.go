@@ -123,14 +123,14 @@ func DeployContainer(client *ssh.Client, container *libgadget.GadgetContainer, g
 	}
 
 	binds := strings.Join(libgadget.PrependToStrings(container.Binds[:], "-v "), " ")
-	caps := strings.Join(libgadget.PrependToStrings(container.Capabilities[:], "--cap-add "), " ")
+	caps := strings.Join(libgadget.PrependToStrings(container.Capabilities[:], " --cap-add "), " ")
 	devs := strings.Join(libgadget.PrependToStrings(container.Devices[:], "--device "), " ")
 	commands := strings.Join(container.Command[:], " ")
 
 	stdout, stderr, err := libgadget.RunRemoteCommand(client, "docker create --name", container.Alias,
 		net, pid, readOnly, binds, caps, devs, restart, container.ImageAlias, commands)
 
-	log.Debugf("docker create --name %s %s %s %s %s %s %s %s", container.Alias,
+	log.Debugf("docker create --name %s %s %s %s %s %s %s %s %s %s", container.Alias,
 		net, pid, readOnly, binds, caps, devs, restart, container.ImageAlias, commands)
 
 	// delete image danglers
