@@ -44,7 +44,7 @@ var (
 	ArtDefs = []ArtifactDef{
 		ArtifactDef { 
 			Board:        "chippro",
-			Artifacts:    []string {"some.tar", "ntc-gr8-crumb.dtb", "rootfs.ubifs"},
+			Artifacts:    []string {"zImage", "ntc-gr8-crumb.dtb", "rootfs.ubifs"},
 			ArtifactType: []string {"kernel", "fdt", "rootfs"},
 		},
 		//~ ArtifactDef { 
@@ -132,7 +132,7 @@ func GadgetFlashFile(client *ssh.Client, artifactLocation string, artifactType s
 	
 	// set reader command
 	sessionCmd := fmt.Sprintf("update_volume %s %d %x", artifactType, size, checksum.Sum(nil))
-	sessionCmd = fmt.Sprintf("cat > %s", artifactType)
+	//~ sessionCmd = fmt.Sprintf("cat > %s", artifactType)
 	//~ sessionCmd := fmt.Sprintf("/bin/sh -x /sbin/dumbcat %s %d %x %s", artifactType, size, checksum.Sum(nil), contents_bytes)
 	log.Debugf("sessionCmd: %s", sessionCmd)
 	
