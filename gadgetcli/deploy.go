@@ -224,7 +224,7 @@ func GadgetDeploy(args []string, g *libgadget.GadgetContext) error {
 		}
 
 		_ = GadgetStop(tmpName, g)
-		_ = GadgetRm(tmpName, g)
+		_ = GadgetRm(container, g)
 
 		if !g.Verbose {
 			log.SetLevel(log.InfoLevel)

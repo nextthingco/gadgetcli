@@ -25,7 +25,7 @@ import (
 )
 
 // Process the build arguments and execute build
-func GadgetRm(args []string, g *libgadget.GadgetContext) error {
+func GadgetRm(container libgadget.GadgetContainer, g *libgadget.GadgetContext) error {
 
 	libgadget.EnsureKeys()
 
@@ -36,49 +36,40 @@ func GadgetRm(args []string, g *libgadget.GadgetContext) error {
 	}
 
 	log.Info("Removing:")
-	stagedContainers, _ := libgadget.FindStagedContainers(args, append(g.Config.Onboot, g.Config.Services...))
 
-	var rmFailed bool = false
+	log.Infof("  %s", container.Alias)
 
-	for _, container := range stagedContainers {
-		log.Infof("  %s", container.Alias)
+	stdout, stderr, err := libgadget.RunRemoteCommand(client, "docker rm", container.Alias)
 
-		stdout, stderr, err := libgadget.RunRemoteCommand(client, "docker rm", container.Alias)
+	log.WithFields(log.Fields{
+		"function":   "GadgetRm",
+		"name":       container.Alias,
+		"stop-stage": "rm",
+	}).Debug(stdout)
+	log.WithFields(log.Fields{
+		"function":   "GadgetRm",
+		"name":       container.Alias,
+		"stop-stage": "rm",
+	}).Debug(stderr)
+
+	if err != nil {
 
 		log.WithFields(log.Fields{
 			"function":   "GadgetRm",
 			"name":       container.Alias,
 			"stop-stage": "rm",
-		}).Debug(stdout)
-		log.WithFields(log.Fields{
-			"function":   "GadgetRm",
-			"name":       container.Alias,
-			"stop-stage": "rm",
-		}).Debug(stderr)
+		}).Debug("This is likely due to specifying containers for a previous operation, but trying to stop all")
 
-		if err != nil {
-
-			rmFailed = true
-
-			log.WithFields(log.Fields{
-				"function":   "GadgetRm",
-				"name":       container.Alias,
-				"stop-stage": "rm",
-			}).Debug("This is likely due to specifying containers for a previous operation, but trying to stop all")
-
-			log.Errorf("Failed to stop '%s' on Gadget", container.Name)
-			log.Warn("Was it ever started?")
-
-		} else {
-			log.Info("  - stopped")
-		}
+		log.Errorf("Failed to stop '%s' on Gadget", container.Name)
+		log.Warn("Was it ever started?")
+		
+		return err
+		
+	} else {
+		log.Info("  - stopped")
 	}
 
-	if rmFailed {
-		err = errors.New("A problem was encountered in GadgetStop")
-	}
-
-	return err
+	return nil
 }
 
 // Process the build arguments and execute build
