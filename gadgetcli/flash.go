@@ -64,12 +64,12 @@ func GadgetFlashFile(client *ssh.Client, artifactLocation string, artifactType s
 	log.Debugf("artTyp: %s", artifactType)
 	
 	// open the file
-	artFile, err := os.Open(artifactLocation)
-	if err != nil || artFile == nil {
+	checkFile, err := os.Open(artifactLocation)
+	if err != nil || checkFile == nil {
 		log.Errorf("Failed to open file %s", artifactLocation)
 		return err
 	}
-	defer artFile.Close()
+	defer checkFile.Close()
 	//~ artReader := bufio.NewReader(artFile)
 	
 	
@@ -80,12 +80,20 @@ func GadgetFlashFile(client *ssh.Client, artifactLocation string, artifactType s
 	}
 	
 	// get file size
-	fi, err := artFile.Stat()
+	fi, err := checkFile.Stat()
 	if err != nil {
 		log.Errorf("Failed to stat file")
 		return err
 	}
 	size := int(fi.Size())
+
+	// get hash
+	checksum := sha256.New()
+	if _, err := io.Copy(checksum, checkFile); err != nil {
+		log.Error("Failed to get checksum")
+		return err
+	}
+	log.Debugf("checksum: %x", checksum.Sum(nil))
 
 	// create pipe for local -> remote file transmission
 	//~ pr, pw := io.Pipe()
@@ -99,6 +107,13 @@ func GadgetFlashFile(client *ssh.Client, artifactLocation string, artifactType s
 		return fmt.Errorf("Unable to setup stdin for session: %v", err)
 	}
 	
+	// open the file
+	artFile, err := os.Open(artifactLocation)
+	if err != nil || checkFile == nil {
+		log.Errorf("Failed to open file %s", artifactLocation)
+		return err
+	}
+	defer artFile.Close()
 	
 	go func(){
 		if _, err := io.Copy(stdin, artFile); err != nil {
@@ -113,15 +128,6 @@ func GadgetFlashFile(client *ssh.Client, artifactLocation string, artifactType s
 
 	log.Debug("  Starting session")
 	
-	// get hash
-	checksum := sha256.New()
-	if _, err := io.Copy(checksum, artFile); err != nil {
-		log.Error("Failed to get checksum")
-		return err
-	}
-	log.Debugf("checksum: %x", checksum.Sum(nil))
-	
-	
 	//~ bar.Start()
 	
 	//~ contents_bytes, err := ioutil.ReadAll(artFile)
@@ -133,6 +139,7 @@ func GadgetFlashFile(client *ssh.Client, artifactLocation string, artifactType s
 	// set reader command
 	sessionCmd := fmt.Sprintf("update_volume %s %d %x", artifactType, size, checksum.Sum(nil))
 	//~ sessionCmd = fmt.Sprintf("cat > %s", artifactType)
+	//~ sessionCmd = "md5sum"
 	//~ sessionCmd := fmt.Sprintf("/bin/sh -x /sbin/dumbcat %s %d %x %s", artifactType, size, checksum.Sum(nil), contents_bytes)
 	log.Debugf("sessionCmd: %s", sessionCmd)
 	
