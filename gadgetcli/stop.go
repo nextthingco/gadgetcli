@@ -62,9 +62,9 @@ func GadgetRm(container libgadget.GadgetContainer, g *libgadget.GadgetContext) e
 
 		log.Errorf("Failed to stop '%s' on Gadget", container.Name)
 		log.Warn("Was it ever started?")
-		
+
 		return err
-		
+
 	} else {
 		log.Info("  - stopped")
 	}

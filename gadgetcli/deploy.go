@@ -148,7 +148,6 @@ func DeployContainer(client *ssh.Client, container *libgadget.GadgetContainer, g
 	}).Debug(stderr)
 
 	if err != nil {
-
 		log.Errorf("Failed to set %s to always restart on Gadget", container.Alias)
 		return err
 	}

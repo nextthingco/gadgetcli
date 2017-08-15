@@ -46,7 +46,7 @@ func GadgetRmi(container libgadget.GadgetContainer, g *libgadget.GadgetContext) 
 		"name":         container.Alias,
 		"delete-stage": "rmi",
 	}).Debug(stdout)
-	
+
 	log.WithFields(log.Fields{
 		"function":     "GadgetRmi",
 		"name":         container.Alias,
@@ -110,7 +110,7 @@ func GadgetPurge(garbage []string, g *libgadget.GadgetContext) error {
 	}
 
 	// not checking for error, as it's bound to fail when there are no dangles
-	
+
 	log.Info("Removing containers ..")
 	stdout, stderr, _ := libgadget.RunRemoteCommand(client, "docker", "rm", "-f", `$(docker ps -aq)`)
 
@@ -163,27 +163,27 @@ func GadgetDelete(args []string, g *libgadget.GadgetContext) error {
 
 	for _, container := range stagedContainers {
 		log.Infof("  %s", container.ImageAlias)
-		
+
 		storedLevel := log.GetLevel()
-		if ! g.Verbose {
+		if !g.Verbose {
 			log.SetLevel(log.ErrorLevel)
 		}
-		
+
 		// stop container
 		log.Debug("Stopping container: %s", container.Alias)
-		toStop := []string{ container.Name }
+		toStop := []string{container.Name}
 		err := GadgetStop(toStop, g)
 		if err != nil {
 			deleteFailed = true
 		}
-		
+
 		// remove container
 		log.Debug("Removing container: %s", container.Alias)
 		err = GadgetRm(container, g)
 		if err != nil {
 			deleteFailed = true
 		}
-		
+
 		// delete image
 		log.Debug("Deleting image: %s", container.ImageAlias)
 		err = GadgetRmi(container, g)
@@ -195,10 +195,10 @@ func GadgetDelete(args []string, g *libgadget.GadgetContext) error {
 		log.Debug("Deleting image danglers: %s", container.ImageAlias)
 		_ = GadgetRmiDanglers(g)
 
-		if ! g.Verbose {
+		if !g.Verbose {
 			log.SetLevel(storedLevel)
 		}
-		
+
 		if err != nil {
 
 			log.WithFields(log.Fields{
@@ -214,7 +214,7 @@ func GadgetDelete(args []string, g *libgadget.GadgetContext) error {
 		}
 
 	}
-	
+
 	var err error = nil
 	if deleteFailed {
 		err = errors.New("Failed to delete one or more containers")
