@@ -19,14 +19,14 @@ along with Gadget.  If not, see <http://www.gnu.org/licenses/>.
 package main
 
 import (
+	"crypto/sha256"
 	"errors"
+	"fmt"
 	"github.com/nextthingco/libgadget"
 	"golang.org/x/crypto/ssh"
 	"gopkg.in/cheggaaa/pb.v1"
 	log "gopkg.in/sirupsen/logrus.v1"
 	"io"
-	"crypto/sha256"
-	"fmt"
 	"os"
 )
 

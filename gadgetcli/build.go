@@ -167,126 +167,132 @@ func GadgetBuild(args []string, g *libgadget.GadgetContext) error {
 
 	log.Info("Building:")
 
-	stagedContainers, _ := libgadget.FindStagedContainers(args, append(g.Config.Onboot, g.Config.Services...))
+	if len(args) == 1 &&
+		args[0] == "rootfs" &&
+		g.Config.Rootfs.From != "" &&
+		g.Config.Rootfs.Hash != "" {
 
-	buildFailed := false
-
-	for _, container := range stagedContainers {
-		log.Infof("  '%s'", container.Name)
-
-		// use local directory for build
-		if container.Directory != "" {
-			containerDirectory := fmt.Sprintf("%s/%s", g.WorkingDirectory, container.Directory)
-			stdout, stderr, err := libgadget.RunLocalCommand(binary,
-				"Step ", g,
-				"build",
-				"--tag",
-				container.ImageAlias,
-				containerDirectory)
-
-			log.WithFields(log.Fields{
-				"function": "GadgetBuild",
-				"name":     container.Alias,
-				"stage":    "docker build",
-			}).Debug(stdout)
-			log.WithFields(log.Fields{
-				"function": "GadgetBuild",
-				"name":     container.Alias,
-				"stage":    "docker build",
-			}).Debug(stderr)
-
-			if err != nil {
-				buildFailed = true
-
-				log.Errorf("Failed to build '%s'", container.Name)
-
-				log.WithFields(log.Fields{
-					"function": "GadgetBuild",
-					"name":     container.Alias,
-				}).Debug("The build command returned an error, possible sources are any docker failure scenario")
-
-			} else {
-				log.Info("    Done ✔")
-			}
-
-		} else {
-			stdout, stderr, err := libgadget.RunLocalCommand(binary,
-				"Download", g,
-				"pull",
-				container.Image)
-
-			log.WithFields(log.Fields{
-				"function": "GadgetBuild",
-				"name":     container.Alias,
-				"stage":    "docker pull",
-			}).Debug(stdout)
-			log.WithFields(log.Fields{
-				"function": "GadgetBuild",
-				"name":     container.Alias,
-				"stage":    "docker pull",
-			}).Debug(stderr)
-
-			if err != nil {
-
-				buildFailed = true
-
-				log.Errorf("Failed to build '%s'", container.Name)
-				log.Warn("Are you sure '%s' is a valid image [and tag]?")
-
-				log.WithFields(log.Fields{
-					"function": "GadgetBuild",
-					"name":     container.Alias,
-				}).Debug("The build command returned an error, possible sources are any docker failure scenario")
-
-				continue
-
-			}
-
-			stdout, stderr, err = libgadget.RunLocalCommand(binary,
-				"", g,
-				"tag",
-				container.Image,
-				container.ImageAlias)
-
-			log.WithFields(log.Fields{
-				"function": "GadgetBuild",
-				"name":     container.Alias,
-				"stage":    "docker tag",
-			}).Debug(stdout)
-			log.WithFields(log.Fields{
-				"function": "GadgetBuild",
-				"name":     container.Alias,
-				"stage":    "docker tag",
-			}).Debug(stderr)
-
-			if err != nil {
-
-				buildFailed = true
-
-				log.Errorf("Failed to build '%s'", container.Name)
-
-				log.WithFields(log.Fields{
-					"function": "GadgetBuild",
-					"name":     container.Alias,
-				}).Debug("The build command returned an error, possible sources are any docker failure scenario")
-
-			} else {
-				log.Info("    Done ✔")
-			}
-		}
-
-	}
-
-	if buildFailed {
-		err = errors.New("Failed to build one or more artifacts")
-	}
-
-	if len(args) < 1 && g.Config.Rootfs.From != "" && g.Config.Rootfs.Hash != "" {
 		err = GadgetBuildRootfs(g)
 		if err != nil {
 			log.Errorf("Failed to build rootfs")
 			return err
 		}
+	} else {
+
+		stagedContainers, _ := libgadget.FindStagedContainers(args, append(g.Config.Onboot, g.Config.Services...))
+
+		buildFailed := false
+
+		for _, container := range stagedContainers {
+			log.Infof("  '%s'", container.Name)
+
+			// use local directory for build
+			if container.Directory != "" {
+				containerDirectory := fmt.Sprintf("%s/%s", g.WorkingDirectory, container.Directory)
+				stdout, stderr, err := libgadget.RunLocalCommand(binary,
+					"Step ", g,
+					"build",
+					"--tag",
+					container.ImageAlias,
+					containerDirectory)
+
+				log.WithFields(log.Fields{
+					"function": "GadgetBuild",
+					"name":     container.Alias,
+					"stage":    "docker build",
+				}).Debug(stdout)
+				log.WithFields(log.Fields{
+					"function": "GadgetBuild",
+					"name":     container.Alias,
+					"stage":    "docker build",
+				}).Debug(stderr)
+
+				if err != nil {
+					buildFailed = true
+
+					log.Errorf("Failed to build '%s'", container.Name)
+
+					log.WithFields(log.Fields{
+						"function": "GadgetBuild",
+						"name":     container.Alias,
+					}).Debug("The build command returned an error, possible sources are any docker failure scenario")
+
+				} else {
+					log.Info("    Done ✔")
+				}
+
+			} else {
+				stdout, stderr, err := libgadget.RunLocalCommand(binary,
+					"Download", g,
+					"pull",
+					container.Image)
+
+				log.WithFields(log.Fields{
+					"function": "GadgetBuild",
+					"name":     container.Alias,
+					"stage":    "docker pull",
+				}).Debug(stdout)
+				log.WithFields(log.Fields{
+					"function": "GadgetBuild",
+					"name":     container.Alias,
+					"stage":    "docker pull",
+				}).Debug(stderr)
+
+				if err != nil {
+
+					buildFailed = true
+
+					log.Errorf("Failed to build '%s'", container.Name)
+					log.Warn("Are you sure '%s' is a valid image [and tag]?")
+
+					log.WithFields(log.Fields{
+						"function": "GadgetBuild",
+						"name":     container.Alias,
+					}).Debug("The build command returned an error, possible sources are any docker failure scenario")
+
+					continue
+
+				}
+
+				stdout, stderr, err = libgadget.RunLocalCommand(binary,
+					"", g,
+					"tag",
+					container.Image,
+					container.ImageAlias)
+
+				log.WithFields(log.Fields{
+					"function": "GadgetBuild",
+					"name":     container.Alias,
+					"stage":    "docker tag",
+				}).Debug(stdout)
+				log.WithFields(log.Fields{
+					"function": "GadgetBuild",
+					"name":     container.Alias,
+					"stage":    "docker tag",
+				}).Debug(stderr)
+
+				if err != nil {
+
+					buildFailed = true
+
+					log.Errorf("Failed to build '%s'", container.Name)
+
+					log.WithFields(log.Fields{
+						"function": "GadgetBuild",
+						"name":     container.Alias,
+					}).Debug("The build command returned an error, possible sources are any docker failure scenario")
+
+				} else {
+					log.Info("    Done ✔")
+				}
+			}
+
+		}
+
+		if buildFailed {
+			err = errors.New("Failed to build one or more artifacts")
+		}
+
 	}
 
 	return err
