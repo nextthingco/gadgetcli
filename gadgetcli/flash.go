@@ -25,13 +25,9 @@ import (
 	"gopkg.in/cheggaaa/pb.v1"
 	log "gopkg.in/sirupsen/logrus.v1"
 	"io"
-	//~ "io/ioutil"
-	//~ "bufio"
 	"crypto/sha256"
 	"fmt"
 	"os"
-	//~ "os/exec"
-	//~ "strings"
 )
 
 type ArtifactDef struct {
@@ -144,24 +140,9 @@ func GadgetFlashFile(client *ssh.Client, artifactLocation string, artifactType s
 
 	bar.Start()
 
-	//~ contents_bytes, err := ioutil.ReadAll(artFile)
-	//~ if err != nil {
-	//~ log.Errorf("Failed to read file")
-	//~ return err
-	//~ }
-
 	// set reader command
 	sessionCmd := fmt.Sprintf("update_volume %s %d %x", artifactType, size, checksum.Sum(nil))
-	//~ sessionCmd = fmt.Sprintf("cat > %s", artifactType)
-	//~ sessionCmd = "md5sum"
-	//~ sessionCmd := fmt.Sprintf("/bin/sh -x /sbin/dumbcat %s %d %x %s", artifactType, size, checksum.Sum(nil), contents_bytes)
 	log.Debugf("sessionCmd: %s", sessionCmd)
-
-	//~ go func() {
-	//~ w, _ := session.StdinPipe()
-	//~ defer w.Close()
-	//~ fmt.Fprintln(w, contents_bytes)
-	//~ }()
 
 	if err := session.Start(sessionCmd); err != nil {
 		return err
