@@ -31,6 +31,7 @@ import (
 	log "gopkg.in/sirupsen/logrus.v1"
 	"io/ioutil"
 	"math/rand"
+	"net"
 	"os"
 	"os/exec"
 	"os/user"
@@ -71,7 +72,8 @@ FwRYLLbqbGByhykSn5ybp/DuSQpH4blitu/fEYOg6QX/I/6zayd+
 -----END RSA PRIVATE KEY-----
 `
 
-	ip = ""
+	ip     = ""
+	hostIp = ""
 
 	sshLocation            = ""
 	defaultPrivKeyLocation = ""
@@ -142,8 +144,10 @@ func RequiredSsh() error {
 		// check OS for IP address
 		if runtime.GOOS == "windows" {
 			ip = "192.168.82.1:22"
+			hostIp = "192.168.82.2"
 		} else {
 			ip = "192.168.81.1:22"
+			hostIp = "192.168.81.2"
 		}
 	}
 
@@ -259,7 +263,33 @@ func RequiredSsh() error {
 	return nil
 }
 
+func EnsureIp() error {
+
+	ifaces, _ := net.Interfaces()
+	// handle err
+	for _, i := range ifaces {
+		addrs, _ := i.Addrs()
+		// handle err
+		for _, addr := range addrs {
+			var localIP net.IP
+			switch v := addr.(type) {
+			case *net.IPNet:
+				localIP = v.IP
+				log.Debugf("Found IP: %s", localIP.String())
+				log.Debugf("Searching for: %s", hostIp)
+				if localIP.String() == hostIp {
+					return nil
+				}
+			}
+		}
+	}
+
+	return errors.New("Could not find Gadget IP")
+
+}
+
 func GadgetLogin(keyLocation string) (*ssh.Client, error) {
+
 	key, err := ioutil.ReadFile(keyLocation)
 	if err != nil {
 		log.WithFields(log.Fields{
@@ -428,7 +458,13 @@ func GadgetInstallKeys() error {
 
 func EnsureKeys() error {
 
-	_, err := GadgetLogin(GadgetPrivKeyLocation)
+	err := EnsureIp()
+	if err != nil {
+		log.Error("Gadget device is either not connected, or not ready")
+		return err
+	}
+
+	_, err = GadgetLogin(GadgetPrivKeyLocation)
 	if err != nil {
 		log.Warn("  Private key login failed, trying default key")
 
