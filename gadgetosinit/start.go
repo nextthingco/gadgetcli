@@ -52,16 +52,16 @@ func GadgetOsInit(args []string, g *libgadget.GadgetContext) error {
 
 		commands := strings.Join(container.Command[:], " ")
 
-		interactive := ""
+		interactive := "-i"
 		if container.Forking {
-			interactive = "-i"
+			interactive = " "
 		}
 
 		// TODO: check all binds/devices for existance
 		// and log that information, as well as this programs general output
 		// somewhere retrieveable by gadgetcli
 
-		stdout, stderr, err := libgadget.RunLocalCommand(binary, "", g, interactive, "start", container.Alias)
+		stdout, stderr, err := libgadget.RunLocalCommand(binary, "", g, "start", interactive, container.Alias)
 
 		log.WithFields(log.Fields{
 			"function": "GadgetStart",
