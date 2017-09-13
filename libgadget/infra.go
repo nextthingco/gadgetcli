@@ -139,17 +139,25 @@ func RequiredSsh() error {
 	GadgetPrivKeyLocation = filepath.Join(sshLocation, "gadget_rsa")
 	GadgetPubKeyLocation = filepath.Join(sshLocation, "gadget_rsa.pub")
 
-	present := false
-	if ip, present = os.LookupEnv("GADGET_ADDR"); present == false {
+	ipPresent := false
+	if ip, ipPresent = os.LookupEnv("GADGET_ADDR"); ipPresent == false {
 		// check OS for IP address
 		if runtime.GOOS == "windows" {
 			ip = "192.168.82.1:22"
-			hostIp = "192.168.82.2"
 		} else {
 			ip = "192.168.81.1:22"
-			hostIp = "192.168.81.2"
 		}
 	}
+
+	hostIpPresent := false
+	if hostIp, hostIpPresent = os.LookupEnv("GADGET_HOST_ADDR"); hostIpPresent == false {
+		// check OS for IP address
+		if runtime.GOOS == "windows" {
+			hostIp = "192.168.82.2"
+		} else {
+			hostIp = "192.168.81.2"
+		}
+	}	
 
 	// check/create ~/.ssh
 	sshDirExists, err := PathExists(sshLocation)
