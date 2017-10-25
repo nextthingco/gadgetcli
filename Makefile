@@ -6,6 +6,7 @@ VERSION_FILE=libgadget/version.go
 
 ## This is an arbitrary comment to arbitrarily change the commit hash
 
+GOPATH?=$(shell go env GOPATH)
 GADGET_SOURCES=$(shell ls gadgetcli/*.go)
 GADGETOSINIT_SOURCES=$(shell ls gadgetosinit/*.go)
 LIBGADGET_SOURCES=$(shell ls libgadget/*.go)
@@ -61,7 +62,7 @@ gadgetosinit_release: libgadget $(GADGET_SOURCES) $(VERSION_FILE) $(LIBGADGET_SO
 	@mkdir -p build/linux_arm
 	@mkdir -p build/linux_arm64
 	@GOOS=linux GOARCH=arm go build -o build/linux_arm/gadgetosinit -ldflags="-s -w" ./gadgetosinit
-	@GOOS=linux GOARCH=arm go build -o build/linux_arm64/gadgetosinit -ldflags="-s -w" ./gadgetosinit
+	@GOOS=linux GOARCH=arm64 go build -o build/linux_arm64/gadgetosinit -ldflags="-s -w" ./gadgetosinit
 
 libgadget: genversion
 	@echo "Building libgadget"
