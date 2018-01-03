@@ -1,7 +1,7 @@
 VERSION="0.0"
 GIT_COMMIT=$(shell git rev-parse --short HEAD)
 GIT_BRANCH=$(shell git rev-parse --abbrev-ref HEAD)
-BUILD_DATE=$(shell date --iso-8601)
+BUILD_DATE=$(shell date '+%Y-%m-%d')
 VERSION_FILE=libgadget/version.go
 
 ## This is an arbitrary comment to arbitrarily change the commit hash
