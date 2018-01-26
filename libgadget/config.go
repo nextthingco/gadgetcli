@@ -21,7 +21,7 @@ package libgadget
 import (
 	"errors"
 	"fmt"
-	log "github.com/sirupsen/logrus"
+	log "gopkg.in/sirupsen/logrus.v1"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"
@@ -34,13 +34,20 @@ type GadgetContext struct {
 	Verbose          bool
 	WorkingDirectory string
 }
+
 type GadgetConfig struct {
 	Spec     string
 	Name     string
 	UUID     string
 	Type     string
+	Rootfs   GadgetRootfs "rootfs,omitempty"
 	Onboot   []GadgetContainer
 	Services []GadgetContainer
+}
+
+type GadgetRootfs struct {
+	From string
+	Hash string
 }
 
 type GadgetContainer struct {
@@ -49,8 +56,9 @@ type GadgetContainer struct {
 	Image        string
 	Directory    string
 	Net          string
-	PID          string   "pid,omitempty"
+	PID          string "pid,omitempty"
 	Readonly     bool
+	Forking      bool
 	Command      []string `yaml:",flow"`
 	Binds        []string `yaml:",flow"`
 	Capabilities []string `yaml:",flow"`
@@ -67,9 +75,10 @@ func TemplateConfig(gName, gUu1, gUu2 string) GadgetConfig {
 		Type: "docker",
 		Onboot: []GadgetContainer{
 			{
-				Name:  "hello-world",
-				Image: "arm32v7/hello-world",
-				UUID:  gUu2,
+				Name:    "hello-world",
+				Image:   "arm32v7/hello-world:linux",
+				UUID:    gUu2,
+				Forking: false,
 			},
 		},
 	}
@@ -133,9 +142,6 @@ func isDriveLetter(path string) bool {
 func WalkUp(bottom_dir string) (string, error) {
 
 	var rc error = nil
-	// TODO: error checking on path
-	//~ bottom_dir,_ = filepath.Abs(bottom_dir)
-	//~ ^ moved to loadConfig -- only runs once, usable later
 
 	if _, err := os.Stat(fmt.Sprintf("%s/gadget.yml", bottom_dir)); err != nil {
 

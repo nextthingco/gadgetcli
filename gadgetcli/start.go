@@ -21,7 +21,7 @@ package main
 import (
 	"errors"
 	"github.com/nextthingco/libgadget"
-	log "github.com/sirupsen/logrus"
+	log "gopkg.in/sirupsen/logrus.v1"
 	"strings"
 )
 
@@ -43,38 +43,7 @@ func GadgetStart(args []string, g *libgadget.GadgetContext) error {
 	for _, container := range stagedContainers {
 
 		log.Infof("  %s", container.Alias)
-		//~ binds := strings.Join( libgadget.PrependToStrings(container.Binds[:],"-v "), " ")
 		commands := strings.Join(container.Command[:], " ")
-
-		//~ stdout, stderr, err := libgadget.RunRemoteCommand(client, "docker create --name", container.Alias, binds, container.ImageAlias, commands)
-
-		//~ log.WithFields(log.Fields{
-		//~ "function": "GadgetStart",
-		//~ "name": container.Alias,
-		//~ "start-stage": "create",
-		//~ }).Debug(stdout)
-		//~ log.WithFields(log.Fields{
-		//~ "function": "GadgetStart",
-		//~ "name": container.Alias,
-		//~ "start-stage": "create",
-		//~ }).Debug(stderr)
-
-		//~ if err != nil {
-
-		//~ // fail loudly, but continue
-
-		//~ log.WithFields(log.Fields{
-		//~ "function": "GadgetStart",
-		//~ "name": container.Alias,
-		//~ "start-stage": "create",
-		//~ }).Debug("This is likely due to specifying containers for deploying, but trying to start all")
-
-		//~ log.Debugf("Failed to create %s on Gadget,", container.Alias)
-		//~ log.Debug("it might have already been deployed,")
-		//~ log.Debug("Or creation otherwise failed")
-
-		//~ startFailed = true
-		//~ }
 
 		stdout, stderr, err := libgadget.RunRemoteCommand(client, "docker start", container.Alias)
 

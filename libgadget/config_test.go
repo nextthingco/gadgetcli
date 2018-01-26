@@ -21,7 +21,7 @@ package libgadget
 import (
 	"fmt"
 	"github.com/nextthingco/libgadget"
-	"github.com/satori/go.uuid"
+	"gopkg.in/satori/go.uuid.v1"
 	"reflect"
 	"testing"
 )
@@ -44,7 +44,7 @@ func TestTemplateConfig(t *testing.T) {
 		Onboot: []libgadget.GadgetContainer{
 			{
 				Name:  "hello-world",
-				Image: "arm32v7/hello-world",
+				Image: "arm32v7/hello-world:linux",
 				UUID:  fmt.Sprintf("%s", initUu2),
 			},
 		},
@@ -109,7 +109,6 @@ services:
 func TestLoadConfig(t *testing.T) {
 
 	// run the init test [on pre-existing /tmp/gadget.yml]
-	//~ TestGadgetInit(t)
 
 	initContext := GadgetContext{
 		WorkingDirectory: "/tmp",

@@ -21,7 +21,7 @@ package main
 import (
 	"errors"
 	"github.com/nextthingco/libgadget"
-	log "github.com/sirupsen/logrus"
+	log "gopkg.in/sirupsen/logrus.v1"
 	"os/exec"
 	"strings"
 )
@@ -52,7 +52,23 @@ func GadgetOsInit(args []string, g *libgadget.GadgetContext) error {
 
 		commands := strings.Join(container.Command[:], " ")
 
-		stdout, stderr, err := libgadget.RunLocalCommand(binary, g, "start", container.Alias)
+		// TODO: check all binds/devices for existance
+		// and log that information, as well as this programs general output
+		// somewhere retrieveable by gadgetcli
+
+		// clean this up
+		
+		var stdout string
+		var stderr string
+		
+		if container.Forking {
+			interactive := " "
+			stdout, stderr, err = libgadget.RunLocalCommand(binary, "", g, "start", interactive, container.Alias)
+		} else {
+			interactive := "-i"
+			stdout, stderr, err = libgadget.RunLocalCommand(binary, "", g, "start", interactive, container.Alias)
+		}
+
 
 		log.WithFields(log.Fields{
 			"function": "GadgetStart",

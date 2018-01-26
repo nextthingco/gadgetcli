@@ -21,9 +21,9 @@ package main
 import (
 	"errors"
 	"github.com/nextthingco/libgadget"
-	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/ssh"
 	"gopkg.in/cheggaaa/pb.v1"
+	log "gopkg.in/sirupsen/logrus.v1"
 	"io"
 	"os/exec"
 	"strings"
@@ -100,7 +100,7 @@ func DeployContainer(client *ssh.Client, container *libgadget.GadgetContainer, g
 		log.Debug("Closing session")
 	}
 	session.Close()
-	
+
 	restart := ""
 	mode, err := FindRunMode(container.UUID, g.Config.Onboot, g.Config.Services)
 	if err != nil {
@@ -123,19 +123,18 @@ func DeployContainer(client *ssh.Client, container *libgadget.GadgetContainer, g
 	}
 
 	binds := strings.Join(libgadget.PrependToStrings(container.Binds[:], "-v "), " ")
-	caps := strings.Join(libgadget.PrependToStrings(container.Capabilities[:], "--cap-add "), " ")
+	caps := strings.Join(libgadget.PrependToStrings(container.Capabilities[:], " --cap-add "), " ")
 	devs := strings.Join(libgadget.PrependToStrings(container.Devices[:], "--device "), " ")
 	commands := strings.Join(container.Command[:], " ")
 
 	stdout, stderr, err := libgadget.RunRemoteCommand(client, "docker create --name", container.Alias,
 		net, pid, readOnly, binds, caps, devs, restart, container.ImageAlias, commands)
 
-	log.Debugf("docker create --name %s %s %s %s %s %s %s %s", container.Alias,
+	log.Debugf("docker create --name %s %s %s %s %s %s %s %s %s %s", container.Alias,
 		net, pid, readOnly, binds, caps, devs, restart, container.ImageAlias, commands)
-	
-	
+
 	// delete image danglers
-	err = GadgetRmiDanglers( g)
+	err = GadgetRmiDanglers(g)
 
 	log.WithFields(log.Fields{
 		"function":     "GadgetDelete",
@@ -147,9 +146,8 @@ func DeployContainer(client *ssh.Client, container *libgadget.GadgetContainer, g
 		"name":         container.Alias,
 		"delete-stage": "rmi (danglers)",
 	}).Debug(stderr)
-	
-	if err != nil {
 
+	if err != nil {
 		log.Errorf("Failed to set %s to always restart on Gadget", container.Alias)
 		return err
 	}
@@ -225,14 +223,16 @@ func GadgetDeploy(args []string, g *libgadget.GadgetContext) error {
 		}
 
 		_ = GadgetStop(tmpName, g)
-		_ = GadgetRm(tmpName, g)
+		_ = GadgetRm(container, g)
 
 		if !g.Verbose {
 			log.SetLevel(log.InfoLevel)
 		}
 
 		err = DeployContainer(client, &container, g)
-		deployFailed = true
+		if err != nil {
+			deployFailed = true
+		}
 	}
 
 	if deployFailed == true {

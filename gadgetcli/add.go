@@ -22,19 +22,199 @@ import (
 	"errors"
 	"fmt"
 	"github.com/nextthingco/libgadget"
-	"github.com/satori/go.uuid"
-	log "github.com/sirupsen/logrus"
+	"gopkg.in/satori/go.uuid.v1"
+	log "gopkg.in/sirupsen/logrus.v1"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
+	"os"
+	"os/exec"
+	"os/user"
+	"runtime"
+)
+
+var (
+	defconfigList = []string{"chippro", "chippro4gb", "chip"}
 )
 
 func addUsage() error {
-	log.Info("Usage: gadget [flags] add [type] [name]")
-	log.Info("               *opt        *req   *req ")
-	log.Info("Type: service | onboot                 ")
-	log.Info("Name: friendly name for container      ")
+	log.Info("Usage:  gadget [flags] add [type] [name]    ")
+	log.Info("                *opt        *req   *req     ")
+	log.Info("Type:           service | onboot | rootfs   ")
+	log.Info("Name (service): friendly name for container ")
+	log.Info("Name (rootfs):  valid defconfig prefix      ")
 
 	return errors.New("Incorrect add usage")
+}
+
+func GadgetAddRootfs(board string, g *libgadget.GadgetContext) (error, string) {
+
+	if g.Config.Rootfs.From != "" ||
+		g.Config.Rootfs.Hash != "" {
+
+		log.Error("Rootfs entry already exists")
+		log.Infof("Clear values: 'from: %s' and 'hash: %s' to update the image base", g.Config.Rootfs.From, g.Config.Rootfs.Hash)
+		return errors.New("Rootfs setting already exists"), ""
+	}
+
+	log.Infof("Retrieving build image for '%s':", board)
+
+	// find docker binary in path
+	binary, err := exec.LookPath("docker")
+	if err != nil {
+		log.Error("Failed to find local docker binary")
+		log.Warn("Is docker installed?")
+
+		log.WithFields(log.Fields{
+			"function": "GadgetAddRootfs",
+			"stage":    "LookPath(docker)",
+		}).Debug("Couldn't find docker in the $PATH")
+		return err, ""
+	}
+
+	err = libgadget.EnsureDocker(binary, g)
+	if err != nil {
+		log.Errorf("Failed to contact the docker daemon.")
+		log.Warnf("Is it installed and running with appropriate permissions?")
+		return err, ""
+	}
+
+	latestContainer := fmt.Sprintf("nextthingco/gadget-build-%s-%s:latest", board, libgadget.GitBranch)
+
+	// pull container
+	pullCmd := exec.Command("docker", "pull", latestContainer)
+	pullCmd.Env = os.Environ()
+	pullCmd.Stdin, pullCmd.Stdout, pullCmd.Stderr = os.Stdin, os.Stdout, os.Stderr
+	err = pullCmd.Start()
+	pullCmd.Wait()
+
+	if err != nil {
+		log.Error("Failed to download build image")
+		return err, ""
+	}
+
+	bashLine := fmt.Sprintf("%s", fmt.Sprintf("/bin/echo nextthingco/gadget-build-%s-$(cat .branch)", board))
+
+	// get hash for container
+	hash, stderr, err := libgadget.RunLocalCommand(binary,
+		"", g,
+		"run",
+		"-i",
+		"--rm",
+		latestContainer,
+		"/bin/bash",
+		"-c",
+		bashLine,
+	)
+
+	log.WithFields(log.Fields{
+		"function": "GadgetAddRootfs",
+		"name":     latestContainer,
+		"bashLine": bashLine,
+		"stream":   "stdout",
+		"stage":    "get tag name",
+	}).Debug(hash)
+	log.WithFields(log.Fields{
+		"function": "GadgetAddRootfs",
+		"name":     latestContainer,
+		"bashLine": bashLine,
+		"stream":   "stderr",
+		"stage":    "get tag name",
+	}).Debug(stderr)
+
+	if err != nil {
+		log.Error("Failed to parse build image information")
+		return err, hash
+	}
+
+	// tag container
+	stdout, stderr, err := libgadget.RunLocalCommand(binary,
+		"", g,
+		"tag",
+		latestContainer,
+		hash)
+
+	log.WithFields(log.Fields{
+		"function": "GadgetAddRootfs",
+		"name":     latestContainer,
+		"stage":    "docker tag",
+	}).Debug(stdout)
+	log.WithFields(log.Fields{
+		"function": "GadgetAddRootfs",
+		"name":     latestContainer,
+		"stage":    "docker tag",
+	}).Debug(stderr)
+
+	if err != nil {
+		log.Error("Failed to tag build image")
+		return err, ""
+	}
+
+	// fetch kernelconfig
+	curdirBinds := fmt.Sprintf("%s:/save", g.WorkingDirectory)
+	saveFile := "/save/" + board + "-linux.config"
+
+	stdout, stderr, err = libgadget.RunLocalCommand(binary,
+		"", g,
+		"run", "--rm", "-v", curdirBinds, "-e", "no_docker=1", "-e", "BOARD="+board,
+		latestContainer,
+		"make", "gadget_export_linux_defconfig")
+
+	log.WithFields(log.Fields{
+		"function": "GadgetAddRootfs",
+		"name":     latestContainer,
+		"stage":    "docker tag",
+	}).Debug(stdout)
+	log.WithFields(log.Fields{
+		"function": "GadgetAddRootfs",
+		"name":     latestContainer,
+		"stage":    "docker tag",
+	}).Debug(stderr)
+
+	if err != nil {
+		log.Error("Failed to tag build image")
+		return err, ""
+	}
+
+	// chown kernelconfig
+	if runtime.GOOS != "windows" {
+
+		whois, err := user.Current()
+		if err != nil {
+			log.Error("Failed to retrieve UID/GID")
+			return err, ""
+		}
+
+		chownAs := whois.Uid + ":" + whois.Gid
+
+		stdout, stderr, err = libgadget.RunLocalCommand(binary,
+			"", g,
+			"run", "--rm", "-v", curdirBinds,
+			latestContainer,
+			"/bin/chown", chownAs, saveFile)
+
+		log.WithFields(log.Fields{
+			"function": "GadgetAddRootfs",
+			"name":     latestContainer,
+			"stage":    "docker tag",
+		}).Debug(stdout)
+		log.WithFields(log.Fields{
+			"function": "GadgetAddRootfs",
+			"name":     latestContainer,
+			"stage":    "docker tag",
+		}).Debug(stderr)
+
+		if err != nil {
+			log.Error("Failed to tag build image")
+			return err, ""
+		}
+
+	}
+
+	log.Debugf("hash: %s", hash)
+	log.Info("Done ✔")
+	log.Infof("kernel config saved to '%s-linux.config'", board)
+
+	return nil, hash
 }
 
 // Process the build arguments and execute build
@@ -49,9 +229,10 @@ func GadgetAdd(args []string, g *libgadget.GadgetContext) error {
 	log.Infof("Adding new %s: \"%s\" ", args[0], args[1])
 
 	addGadgetContainer := libgadget.GadgetContainer{
-		Name:  args[1],
-		Image: fmt.Sprintf("%s/%s", g.Config.Name, args[1]),
-		UUID:  fmt.Sprintf("%s", addUu),
+		Name:    args[1],
+		Image:   fmt.Sprintf("%s/%s", g.Config.Name, args[1]),
+		UUID:    fmt.Sprintf("%s", addUu),
+		Forking: false,
 	}
 
 	// parse arguments
@@ -60,6 +241,26 @@ func GadgetAdd(args []string, g *libgadget.GadgetContext) error {
 		g.Config.Services = append(g.Config.Services, addGadgetContainer)
 	case "onboot":
 		g.Config.Onboot = append(g.Config.Onboot, addGadgetContainer)
+	case "rootfs":
+		matched := ""
+		for _, i := range defconfigList {
+			if args[1] == i {
+				matched = i
+				break
+			}
+		}
+		if matched == "" {
+			log.Errorf("  %q is not valid defconfig.", args[1])
+			return addUsage()
+		}
+
+		garError, garHash := GadgetAddRootfs(matched, g)
+		if garError != nil {
+			return garError
+		}
+
+		g.Config.Rootfs.From = matched
+		g.Config.Rootfs.Hash = garHash
 	default:
 		log.Errorf("  %q is not valid command.", args[0])
 		return addUsage()

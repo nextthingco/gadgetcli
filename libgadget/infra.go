@@ -26,11 +26,12 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"github.com/tmc/scp"
 	"golang.org/x/crypto/ssh"
+	log "gopkg.in/sirupsen/logrus.v1"
 	"io/ioutil"
 	"math/rand"
+	"net"
 	"os"
 	"os/exec"
 	"os/user"
@@ -71,7 +72,8 @@ FwRYLLbqbGByhykSn5ybp/DuSQpH4blitu/fEYOg6QX/I/6zayd+
 -----END RSA PRIVATE KEY-----
 `
 
-	ip = ""
+	ip     = ""
+	hostIp = ""
 
 	sshLocation            = ""
 	defaultPrivKeyLocation = ""
@@ -137,8 +139,8 @@ func RequiredSsh() error {
 	GadgetPrivKeyLocation = filepath.Join(sshLocation, "gadget_rsa")
 	GadgetPubKeyLocation = filepath.Join(sshLocation, "gadget_rsa.pub")
 
-	present := false
-	if ip, present = os.LookupEnv("GADGET_ADDR"); present == false {
+	ipPresent := false
+	if ip, ipPresent = os.LookupEnv("GADGET_ADDR"); ipPresent == false {
 		// check OS for IP address
 		if runtime.GOOS == "windows" {
 			ip = "192.168.82.1:22"
@@ -146,6 +148,16 @@ func RequiredSsh() error {
 			ip = "192.168.81.1:22"
 		}
 	}
+
+	hostIpPresent := false
+	if hostIp, hostIpPresent = os.LookupEnv("GADGET_HOST_ADDR"); hostIpPresent == false {
+		// check OS for IP address
+		if runtime.GOOS == "windows" {
+			hostIp = "192.168.82.2"
+		} else {
+			hostIp = "192.168.81.2"
+		}
+	}	
 
 	// check/create ~/.ssh
 	sshDirExists, err := PathExists(sshLocation)
@@ -158,7 +170,7 @@ func RequiredSsh() error {
 	}
 
 	if !sshDirExists {
-		err = os.Mkdir(sshLocation, 0644)
+		err = os.Mkdir(sshLocation, 0700)
 		if err != nil {
 			log.WithFields(log.Fields{
 				"function": "RequiredSsh",
@@ -180,7 +192,7 @@ func RequiredSsh() error {
 	}
 
 	if !defaultPrivExists {
-		log.Warn("Unable to locate default gadget ssh key, generating..")
+		log.Info("Creating default gadget ssh key..")
 
 		log.WithFields(log.Fields{
 			"function": "RequiredSsh",
@@ -214,7 +226,7 @@ func RequiredSsh() error {
 	}
 
 	if !gadgetPrivExists && !gadgetPubExists {
-		log.Warn("Unable to locate personal gadget ssh keys, generating..")
+		log.Info("Creating personal gadget ssh keys..")
 
 		log.WithFields(log.Fields{
 			"function":    "RequiredSsh",
@@ -259,7 +271,33 @@ func RequiredSsh() error {
 	return nil
 }
 
+func EnsureIp() error {
+
+	ifaces, _ := net.Interfaces()
+	// handle err
+	for _, i := range ifaces {
+		addrs, _ := i.Addrs()
+		// handle err
+		for _, addr := range addrs {
+			var localIP net.IP
+			switch v := addr.(type) {
+			case *net.IPNet:
+				localIP = v.IP
+				log.Debugf("Found IP: %s", localIP.String())
+				log.Debugf("Searching for: %s", hostIp)
+				if localIP.String() == hostIp {
+					return nil
+				}
+			}
+		}
+	}
+
+	return errors.New("Could not find Gadget IP")
+
+}
+
 func GadgetLogin(keyLocation string) (*ssh.Client, error) {
+
 	key, err := ioutil.ReadFile(keyLocation)
 	if err != nil {
 		log.WithFields(log.Fields{
@@ -428,7 +466,13 @@ func GadgetInstallKeys() error {
 
 func EnsureKeys() error {
 
-	_, err := GadgetLogin(GadgetPrivKeyLocation)
+	err := EnsureIp()
+	if err != nil {
+		log.Error("Gadget device is either not connected, or not ready")
+		return err
+	}
+
+	_, err = GadgetLogin(GadgetPrivKeyLocation)
 	if err != nil {
 		log.Warn("  Private key login failed, trying default key")
 
@@ -471,8 +515,8 @@ func EnsureKeys() error {
 func EnsureDocker(binary string, g *GadgetContext) error {
 
 	stdout, stderr, err := RunLocalCommand(binary,
-	g,
-	"version")
+		"", g,
+		"version")
 
 	if g.Verbose {
 		log.WithFields(log.Fields{
@@ -480,10 +524,10 @@ func EnsureDocker(binary string, g *GadgetContext) error {
 		}).Debugf(stdout)
 
 		log.WithFields(log.Fields{
-			"function":             "EnsureDocker",
+			"function": "EnsureDocker",
 		}).Debugf(stderr)
 	}
-	
+
 	return err
 }
 
@@ -507,7 +551,7 @@ func RunRemoteCommand(client *ssh.Client, cmd ...string) (*bytes.Buffer, *bytes.
 	return &outBuffer, &errBuffer, err
 }
 
-func RunLocalCommand(binary string, g *GadgetContext, arguments ...string) (string, string, error) {
+func RunLocalCommand(binary string, filter string, g *GadgetContext, arguments ...string) (string, string, error) {
 	log.Debugf("Calling %s %s", binary, arguments)
 
 	cmd := exec.Command(binary, arguments...)
@@ -518,51 +562,56 @@ func RunLocalCommand(binary string, g *GadgetContext, arguments ...string) (stri
 	if execErr != nil {
 		log.Debugf("Couldn't connect to cmd.StdoutPipe()")
 	}
-	
+
 	stdErrReader, execErr := cmd.StderrPipe()
 	if execErr != nil {
 		log.Debugf("Couldn't connect to cmd.StderrPipe()")
 	}
-	
+
 	outScanner := bufio.NewScanner(stdOutReader)
 	errScanner := bufio.NewScanner(stdErrReader)
-	
+
+	var outBuffer bytes.Buffer
+	var errBuffer bytes.Buffer
+
 	// goroutines to print stdout and stderr [doesn't quite work]
-	go func(){
+	go func() {
 		if g.Verbose {
-			for outScanner.Scan(){
+			for outScanner.Scan() {
 				log.Debugf(string(outScanner.Text()))
+				outBuffer.WriteString(string(outScanner.Text()))
 			}
 		} else {
-			for outScanner.Scan(){
-				if strings.Contains(outScanner.Text(), "Step "){
-					log.Infof("    %s",string(outScanner.Text()))
+			for outScanner.Scan() {
+				if filter != "" && strings.Contains(outScanner.Text(), filter) {
+					log.Infof("    %s", string(outScanner.Text()))
 				}
+				outBuffer.WriteString(string(outScanner.Text()))
 			}
 		}
 	}()
-	
+
 	printedStderr := false
-	
-	go func(){
-		for errScanner.Scan(){
+
+	go func() {
+		for errScanner.Scan() {
 			log.Warnf(string(errScanner.Text()))
 			printedStderr = true
+			errBuffer.WriteString(string(errScanner.Text()))
 		}
 	}()
-	
+
 	execErr = cmd.Run()
-	
-	if printedStderr && ! g.Verbose {
+
+	if printedStderr && !g.Verbose {
 		log.Warn("Use `gadget -v <command>` for more info.")
 	}
-	
-	return outScanner.Text(), errScanner.Text(), execErr
+
+	return outBuffer.String(), errBuffer.String(), execErr
 }
 
 func PrependToStrings(stringArray []string, prefix string) []string {
 
-	//~ log.Infof("len(stringArray): %d", len(stringArray))
 	if len(stringArray) == 0 || (len(stringArray) == 1 && stringArray[0] == "") {
 		return []string{""}
 	}
@@ -571,7 +620,7 @@ func PrependToStrings(stringArray []string, prefix string) []string {
 		s := []string{prefix, value}
 		stringArray[key] = strings.Join(s, "")
 	}
-	return stringArray //strings.Join(stringArray, " ")
+	return stringArray
 }
 
 func FindStagedContainers(args []string, containers GadgetContainers) (GadgetContainers, error) {

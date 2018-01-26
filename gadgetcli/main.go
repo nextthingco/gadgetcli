@@ -23,7 +23,7 @@ import (
 	"flag"
 	"github.com/nextthingco/libgadget"
 	gadgetFormatter "github.com/nextthingco/logrus-gadget-formatter"
-	log "github.com/sirupsen/logrus"
+	log "gopkg.in/sirupsen/logrus.v1"
 	"os"
 	"path/filepath"
 	"strings"
@@ -42,13 +42,17 @@ var Commands = []GadgetCommand{
 	{Name: "add", Function: GadgetAdd, NeedsConfig: true},
 	{Name: "build", Function: GadgetBuild, NeedsConfig: true},
 	{Name: "deploy", Function: GadgetDeploy, NeedsConfig: true},
+	{Name: "flash", Function: GadgetFlash, NeedsConfig: true},
+	{Name: "edit", Function: GadgetEdit, NeedsConfig: true},
 	{Name: "start", Function: GadgetStart, NeedsConfig: true},
 	{Name: "stop", Function: GadgetStop, NeedsConfig: true},
 	{Name: "status", Function: GadgetStatus, NeedsConfig: true},
 	{Name: "delete", Function: GadgetDelete, NeedsConfig: true},
-	{Name: "shell", Function: GadgetShell, NeedsConfig: false},
+	{Name: "purge", Function: GadgetPurge, NeedsConfig: false},
+	{Name: "shell", Function: GadgetShell, NeedsConfig: true},
 	{Name: "logs", Function: GadgetLogs, NeedsConfig: true},
 	{Name: "run", Function: GadgetRun, NeedsConfig: false},
+	{Name: "tag", Function: GadgetTag, NeedsConfig: true},
 	{Name: "version", Function: GadgetVersion, NeedsConfig: false},
 	{Name: "help", Function: GadgetHelp, NeedsConfig: false},
 }
@@ -85,13 +89,17 @@ func main() {
 		log.Info("Commands:")
 		log.Info("  init        Initialize gadget project")
 		log.Info("  add         Add new container to config")
-		log.Info("  build       Build container[s]")
+		log.Info("  edit        Edit rootfs configuration")
+		log.Info("  build       Build container[s] and/or rootfs")
 		log.Info("  deploy      Deploy container[s]")
+		log.Info("  flash       Flash rootfs to device running GadgetOS")
 		log.Info("  start       Run container[s]")
 		log.Info("  stop        Stop running container[s]")
 		log.Info("  status      Fetch status of container[s]")
 		log.Info("  delete      Remove container[s] from gadget")
 		log.Info("  shell       Connect to remote device running GadgetOS")
+		log.Info("  purge       Remove container[s], logs, and config from device running GadgetOS")
+		log.Info("  tag         Tag built container[s] for config management")
 		log.Info("  logs        Fetch logs(stdout) of container[s]")
 		log.Info("  version     Print version information")
 		log.Info("  help        Print this message")
